@@ -16,7 +16,9 @@
     "logoff": "node tools/logoff.js",
     "merge": "node tools/merge-stock.js",
     "full-stock": "node tools/full-stock.js",
-    "merge-full": "node tools/merge-full.js"
+    "merge-full": "node tools/merge-full.js",
+    "stock": "node tools/stock.js",
+    "apply-matrix": "node tools/apply-matrix.js"
   },
   "dependencies": {
     "playwright-core": "^1.49.0"
