@@ -116,7 +116,12 @@ export async function chain(ctx, steps) {
       }
 
       const lines = step.items?.length ? await agent.addLines(ctx, step.items) : [];
-      const filed = await agent.finalize(ctx, { confirm: !!step.confirm, lines });
+      // `items` and `allowShort` ride along for the agents that gate on them —
+      // a transfer checks the source warehouse against the codes as asked for,
+      // and the sales agents ignore keys they do not use.
+      const filed = await agent.finalize(ctx, {
+        confirm: !!step.confirm, lines, items: step.items ?? [], allowShort: !!step.allowShort,
+      });
       done.push({ document: agent.profile.name, ...created, lines, ...filed });
     } catch (e) {
       await agent.backOut(ctx).catch(() => {});

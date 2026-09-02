@@ -19,7 +19,10 @@ export const meta = {
   input: {
     list: 'boolean — רק להציג את הסוכנים ומצב המיפוי שלהם, בלי להתחבר',
     document: 'string — שם המסמך או התווית בעברית. למשל "חשבונית מס"',
-    customer: 'string — קוד או שם לקוח',
+    customer: 'string — קוד או שם לקוח (מסמכי מכירה בלבד)',
+    storeFrom: 'string — ממחסן. תעודת העברה בלבד, ואין לה לקוח',
+    storeTo: 'string — למחסן. תעודת העברה בלבד',
+    allowShort: 'boolean, תעודת העברה בלבד — לקלוט גם כשמלאי המקור לא מספיק או לא ניתן לאימות',
     store: 'string, אופציונלי — מחסן',
     priceList: 'string, אופציונלי — מחירון',
     date: 'string dd/mm/yyyy, אופציונלי',
@@ -78,15 +81,25 @@ export async function run(ctx) {
   }
 
   const lines = input.items?.length ? await agent.addLines(ctx, input.items) : [];
-  // The lines go to `finalize` so an agent can check the money it is about to
-  // commit against them — a sum that matches the wrong side of the VAT line is
-  // the one error the totals alone cannot show.
-  const filed = await agent.finalize(ctx, { confirm: !dryRun, lines });
+  // The lines go to `finalize` so an agent can check what it is about to commit
+  // against them: for a sales document that is money on the wrong side of the
+  // VAT line, for a transfer it is stock the source warehouse does not have.
+  // `items` goes along too — it carries the codes as asked for, before Comax
+  // rewrote them into the field.
+  const filed = await agent.finalize(ctx, {
+    confirm: !dryRun, lines, items: input.items ?? [], allowShort: !!input.allowShort,
+  });
 
   const totals = filed.totals ?? {};
   console.log(`\n  ${agent.profile.label} ${created.docNo ?? ''}`);
   for (const l of lines) console.log(`    ${l.item}  ×${l.qty}  @${l.price}  -${l.discount ?? 0}%  = ${l.amount ?? '?'}`);
-  console.log(`\n  לפני מע"מ: ${totals.beforeVat ?? '?'}   מע"מ: ${totals.vat ?? '?'}   סה"כ: ${totals.total ?? '?'}`);
+  // A transfer has no VAT block at all — printing three question marks where a
+  // quantity belongs reads as a failed read rather than as a different document.
+  if (totals.quantity != null) {
+    console.log(`\n  ממחסן ${filed.stores?.from ?? '?'} → למחסן ${filed.stores?.to ?? '?'}   סה"כ כמות: ${totals.quantity}`);
+  } else {
+    console.log(`\n  לפני מע"מ: ${totals.beforeVat ?? '?'}   מע"מ: ${totals.vat ?? '?'}   סה"כ: ${totals.total ?? '?'}`);
+  }
   console.log(filed.filed ? '\n  המסמך נקלט.\n' : '\n  המסמך פתוח על המסך ולא נקלט.\n');
 
   return { document: agent.profile.name, ...created, lines, ...filed };
