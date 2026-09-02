@@ -205,8 +205,52 @@ export async function finalize(ctx, profile) {
 
   const dlg = frameFor(page, profile.frames.closeDialog ?? /Close|Kbl|Ishur/i);
   if (dlg) {
+    // How many copies this document must claim to print.
+    //
+    // A quote takes 0 and is done. **A tax invoice refuses 0** — Comax answers
+    // "חובת הדפסה לפחות עותק אחד !" and simply does not file, which looks like
+    // a successful click and is not. So the count is per document.
+    //
+    // Asking for a copy is safe because `browser.js` neutralises `window.print`
+    // (`suppressPrintDialog`, on by default): the document is already committed
+    // by the time printing would start, so dropping the print keeps the filing
+    // and loses only the paper. With that suppression off, a copy count above 0
+    // opens `chrome://print/`, which the agent can neither click, screenshot,
+    // nor close — the session is stuck until a human clears it.
+    const copies = String(profile.printCopies ?? 0);
+    await human.select('#PrintCopies', copies, { scope: dlg, label: `עותקים = ${copies}` })
+      .catch(() => logger.step(profile.name, 'אין #PrintCopies בדיאלוג — ממשיך'));
     await human.click('#OK', { scope: dlg, label: `אישור ${profile.finalizeLabel}` });
     await human.settle('filed');
+
+    // Success is the dialog going away, not the click landing.
+    //
+    // Comax rejects a bad copy count by painting an error and staying put, so a
+    // click that "worked" and a document that filed are different things — the
+    // agent reported 6500084 as נקלט with the confirmation dialog still on
+    // screen behind it.
+    //
+    // But the dialog does not vanish on the click either: Comax tears it down a
+    // few seconds later, and checking once immediately reported the *opposite*
+    // lie about the very same document. So: wait for it to go, and only call it
+    // a failure when it is still there at the end.
+    const closeRe = profile.frames.closeDialog ?? /Close|Kbl|Ishur/i;
+    let still = null;
+    for (let i = 0; i < 8; i++) {
+      still = frameFor(page, closeRe);
+      if (!still) break;
+      await page.waitForTimeout(1000);
+    }
+    if (still) {
+      const why = await still.innerText('body').catch(() => '');
+      const err = await page.evaluate(() => document.body?.innerText?.match(/[^\n]*!\s*$/m)?.[0] ?? null).catch(() => null);
+      throw new Error(
+        `${profile.label}: דיאלוג הקליטה עדיין פתוח — המסמך לא נקלט.\n`
+        + (err ? `  קומקס אומר: ${err.trim()}\n` : '')
+        + `  הדיאלוג: ${JSON.stringify(why.replace(/\s+/g, ' ').slice(0, 120))}\n`
+        + '  המסמך פתוח על המסך. היציאה בלי לקלוט: #DoExit ואז #Cancel.',
+      );
+    }
   }
   await dismissPopups(ctx);
   logger.step(profile.name, `${profile.label} נקלט`);

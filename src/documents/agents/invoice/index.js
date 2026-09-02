@@ -17,8 +17,24 @@
  * - **The path is `Doc650/Inv_Mlay/`**, while `Doc652` hides under
  *   `Doc650/InvKab_Mlay/`. Matching on "Doc650" alone catches both.
  */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import * as engine from '../../engine.js';
+import { ROOT } from '../../../config.js';
 import { readTotals as readTotalsBlock, money, vatRegime } from '../../../document-totals.js';
+
+/**
+ * The price lists we have observed, with whether their prices carry VAT.
+ * Read once at import: it is a small file and a missing entry only costs the
+ * gate one of its three witnesses.
+ */
+const PRICE_LISTS = (() => {
+  try {
+    return JSON.parse(readFileSync(resolve(ROOT, 'knowledge/lists.json'), 'utf8')).priceLists ?? [];
+  } catch {
+    return [];
+  }
+})();
 
 export const profile = {
   name: 'invoice',
@@ -30,33 +46,105 @@ export const profile = {
   discountColumn: 'הנחה %', // with the space — Doc652 has none
   hasItemFilter: false, // no #wPrt, unlike Doc652V and Doc612V
 
-  // Only `list` is verified so far: Doc650V.aspx was opened and its 126
-  // elements read off it live (02/09/2026) — see AGENT.md for what is actually
-  // on it. The header and line screens are next; until they are mapped the
-  // engine refuses to drive them.
-  mapped: { list: true, header: false, lines: false },
+  /**
+   * A tax invoice is always written on מחירון קבוצות — דרור's rule, 02/09/2026.
+   *
+   * Not a fallback for an empty field: it is forced even when the customer card
+   * fills in something else. 429028 carries no price list at all (מחירון משויך
+   * = 0), and a customer that prefills מכירה ראשי would put the lines on the
+   * VAT-inclusive side of a document whose prices were agreed net.
+   *
+   * `lists.json` has this one as `vatIncluded: false`, which is what makes the
+   * VAT gate below resolve instead of refusing.
+   */
+  forcePriceList: 'מחירון קבוצות',
+
+  // `list` and `header` verified live (02/09/2026): Doc650V.aspx read off the
+  // screen, then #newRec opened Doc650U.asp and its 57 elements were read too.
+  // The line screens are still unmapped; until they are, the engine refuses to
+  // drive them.
+  mapped: { list: true, header: true, lines: true },
 
   frames: {
     list: /Doc650V\.aspx?/i,
     header: /Doc650U\.aspx?/i,
     linesGrid: /Doc650LinesV\.aspx?/i,
     lineForm: /Doc650LinesU\.aspx?/i,
+    // Named exactly, not left to the engine's `/Close|Kbl|Ishur/i` fallback:
+    // filing leaves a `Doc650CloseIo_sql.asp` frame behind, which that fallback
+    // matches and would read as "the dialog never closed".
+    closeDialog: /Doc650CloseU\.asp/i,
   },
 
+  // Read off Doc650U.asp live. `#OK` is the green tick; `#OKNot` is the blue
+  // "אישור ללא הזמנות" beside it and `#OKRikuz` is "אישור + ריכוז" — three ways
+  // to leave the header, all of which only advance to the lines.
+  // `#DocNo` is an *input whose value is empty*: the number Comax assigned sits
+  // in its label, `(6500084)`. Nothing writes it — the number is automatic.
   header: {
-    new: '#newRec', ok: '#OK', cancel: '#Cancel', docId: '#DocId',
+    new: '#newRec', ok: '#OK', okNoOrders: '#OKNot', cancel: '#Cancel', docId: '#DocNo',
     customer: '#IdxLk', store: '#Store', priceList: '#Mhr',
     date: '#DateDoc', agent: '#Sochen', details: '#Pratim',
   },
 
   line: {
     item: '#Prt', qty: '#Cmt', price: '#Mhr', discount: '#AczDis',
-    remark: '#Remark', amount: '#Scm', ok: '#OK', okNew: '#OkNew',
+    remark: '#Remark', amount: '#Scm', ok: '#OK', okNew: '#OKNew',
   },
 
   totals: { beforeVat: '#ScmBeforeMaam', vat: '#Scm_Maam', total: '#Scm' },
   finalizeLabel: 'קליטת חשבונית',
+
+  /**
+   * A tax invoice must claim at least one printed copy.
+   *
+   * 0 is what a quote uses, and on Doc650 it is rejected outright: Comax shows
+   * "חובת הדפסה לפחות עותק אחד !" in red and leaves the document unfiled, while
+   * the click itself looks like it worked. Observed on 6500084, 02/09/2026.
+   *
+   * Safe because `browser.js` neutralises `window.print` — the filing is already
+   * committed by the time the print would fire.
+   */
+  printCopies: 1,
 };
+
+/**
+ * The header input with the price list forced, whatever the caller asked for.
+ *
+ * `fillHeader` writes the customer first and the price list after, so this also
+ * beats whatever the customer card prefilled — which is the point: the rule is
+ * "change it to מחירון קבוצות even if Comax already put מכירה ראשי there".
+ */
+function forcedList(ctx, input) {
+  if (!profile.forcePriceList) return input;
+  if (input.priceList && input.priceList !== profile.forcePriceList) {
+    ctx.logger.step('מחירון', `התבקש "${input.priceList}" — נדרס ל-"${profile.forcePriceList}" (כלל החשבונית).`);
+  }
+  return { ...input, priceList: profile.forcePriceList };
+}
+
+/**
+ * Read the price list back off the committed header and refuse to go on if it
+ * is not the one we forced.
+ *
+ * Typing into a Max2000 lookup is not the same as it accepting the value — the
+ * field can silently keep what the customer card put there. Since this single
+ * field decides whether every line is net or gross, it gets read back rather
+ * than assumed.
+ */
+async function assertPriceList(ctx, frame, header) {
+  if (!profile.forcePriceList) return;
+  const got = (header?.מחירון ?? await frame.locator(profile.header.priceList).inputValue().catch(() => null) ?? '').trim();
+  if (got.includes(profile.forcePriceList)) {
+    ctx.logger.step('מחירון', `${got} ✓`);
+    return;
+  }
+  throw new Error(
+    `המחירון בכותרת הוא "${got || '(ריק)'}" ולא "${profile.forcePriceList}" — עוצר לפני אישור הכותרת.\n`
+    + '  המחירון קובע אם השורות לפני מע"מ או כוללות אותו, וחשבונית על המחירון הלא נכון גובה 18% שגויים.\n'
+    + '  היציאה הבטוחה: #Cancel בכותרת.',
+  );
+}
 
 /**
  * Open a new invoice and fill its header. Stops before the header is committed
@@ -67,9 +155,10 @@ export async function create(ctx, input) {
 
   const listFrame = await engine.openList(ctx, profile);
   const { frame, preview } = await engine.startNew(ctx, profile, listFrame);
-  const customer = await engine.fillHeader(ctx, profile, frame, input);
+  const customer = await engine.fillHeader(ctx, profile, frame, forcedList(ctx, input));
 
   const header = await engine.readHeader(profile, frame);
+  await assertPriceList(ctx, frame, header);
   logger.save('header.json', header);
   await logger.shot(page, 'header-ready');
 
@@ -121,26 +210,57 @@ function resolveVatRegime(lines, totals) {
   const declared = totals.vatIncludedLabel == null ? null
     : totals.vatIncludedLabel ? 'included' : 'excluded';
 
-  const measured = lines?.length
-    ? vatRegime(lines.map((l) => ({ total: l.amount })), totals)
-    : { mode: 'unknown', source: 'no-lines', lineSum: 0 };
+  // The middle witness MAP.md prescribes and the first version skipped: a price
+  // list Comax names but does not annotate. "מחירון קבוצות" prints bare, with
+  // no "(כולל מע''מ)" suffix, so the footer alone can never resolve it — and it
+  // is the price list every tax invoice here uses.
+  const catalogued = catalogueRegime(totals.priceList);
+
+  /**
+   * The line sum comes from the grid's own `ScmBeforeDis`, not from adding up
+   * what the line dialog showed.
+   *
+   * `addLine` reads `#Scm` immediately after typing, and Comax has not
+   * recalculated it yet — it still holds quantity × the *price list* price
+   * (6 × 239.89 = 1,439.35) rather than the discounted 869.70. Summing those
+   * gave 5,517.48 against a real document of 3,448.80 and made this gate refuse
+   * a perfectly good invoice. The grid's figure is the one Comax itself uses.
+   */
+  const lineSum = totals.subtotal ?? null;
+  const measured = lineSum != null
+    ? vatRegime([{ total: lineSum }], totals)
+    : lines?.length
+      ? vatRegime(lines.map((l) => ({ total: l.amount })), totals)
+      : { mode: 'unknown', source: 'no-lines', lineSum: 0 };
+
+  const witnesses = [
+    ['footer', declared],
+    ['lists.json', catalogued],
+    [measured.source, measured.mode === 'unknown' ? null : measured.mode],
+  ].filter(([, v]) => v);
 
   const common = {
     priceList: totals.priceList,
     rate: totals.vatRate,
     lineSum: measured.lineSum,
     declared,
+    catalogued,
     measured: measured.mode === 'unknown' ? null : measured.mode,
+    witnesses: witnesses.map(([k]) => k),
   };
 
-  if (declared && measured.mode !== 'unknown') {
-    return declared === measured.mode
-      ? { ...common, mode: declared, source: 'both' }
-      : { ...common, mode: 'conflict', source: 'both' };
-  }
-  if (declared) return { ...common, mode: declared, source: 'footer' };
-  if (measured.mode !== 'unknown') return { ...common, mode: measured.mode, source: measured.source };
-  return { ...common, mode: 'unknown', source: 'none' };
+  if (!witnesses.length) return { ...common, mode: 'unknown', source: 'none' };
+  const modes = new Set(witnesses.map(([, v]) => v));
+  if (modes.size > 1) return { ...common, mode: 'conflict', source: witnesses.map(([k]) => k).join('+') };
+  return { ...common, mode: witnesses[0][1], source: witnesses.map(([k]) => k).join('+') };
+}
+
+/** What `knowledge/lists.json` records about a price list, if anything. */
+function catalogueRegime(name) {
+  if (!name) return null;
+  const entry = PRICE_LISTS.find((p) => p.name && String(name).includes(p.name));
+  if (!entry || entry.vatIncluded == null) return null;
+  return entry.vatIncluded ? 'included' : 'excluded';
 }
 
 /** What the money means, in one line, for the log and for the human. */
