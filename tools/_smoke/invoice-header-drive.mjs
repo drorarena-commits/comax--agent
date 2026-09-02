@@ -5,7 +5,7 @@
  * Deliberately does not press #newRec: a draft is already open from the mapping
  * click, and starting another would strand it.
  *
- *   node tools/_smoke/invoice-header-drive.mjs
+ *   node tools/_smoke/invoice-header-drive.mjs ['{"customer":"…"}' | path.json]
  *
  * Stops at the lines screen. Adds no lines and files nothing.
  */
@@ -14,15 +14,21 @@ import { RunLogger } from '../../src/logger.js';
 import { inspectPage, digest } from '../../src/inspect.js';
 import { profile } from '../../src/documents/agents/invoice/index.js';
 import * as engine from '../../src/documents/engine.js';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ROOT } from '../../src/config.js';
 
+// Hebrew values do not survive a shell single-quoted argument on every console,
+// so a path to a JSON file is accepted alongside inline JSON — same as the
+// transfer tools.
+const arg = process.argv[2];
+const given = !arg ? {} : JSON.parse(arg.trim().startsWith('{') ? arg : readFileSync(arg, 'utf8'));
+
 const INPUT = {
   customer: '429028',
-  store: 'ראשי',
-  priceList: 'מחירון קבוצות',
-  details: 'משקפות',
+  store: 'מחסן קבוצות',
+  priceList: profile.forcePriceList,
+  ...given,
 };
 
 const logger = new RunLogger('invoice-header-drive');
@@ -54,17 +60,22 @@ console.log(`\n  מחירון ${mhr} ✓ — מאשר כותרת (זה רק מת
 
 await engine.commitHeader(ctx, profile, header);
 
-const snap = await inspectPage(page);
-const base = resolve(ROOT, 'knowledge/screens', 'invoice-lines');
-writeFileSync(`${base}.json`, JSON.stringify(snap, null, 2), 'utf8');
-writeFileSync(`${base}.txt`, digest(snap), 'utf8');
-console.log(`\n  → ${base}.json`);
 await logger.shot(page, 'lines-screen');
 
-for (const f of snap.frames) {
-  if (!/Doc650Lines/i.test(f.url || '')) continue;
-  console.log(`\n  FRAME ${f.url.replace(/\?.*/, '').split('/').pop()} (${f.elementCount})`);
-  console.log('    ' + f.elements.filter((e) => e.id).map((e) => e.id).join(', '));
+// Only on request: the mapping snapshot in knowledge/screens is a record of the
+// screen, and a real customer's document would overwrite it with their data.
+if (INPUT.snapshot) {
+  const snap = await inspectPage(page);
+  const base = resolve(ROOT, 'knowledge/screens', 'invoice-lines');
+  writeFileSync(`${base}.json`, JSON.stringify(snap, null, 2), 'utf8');
+  writeFileSync(`${base}.txt`, digest(snap), 'utf8');
+  console.log(`\n  → ${base}.json`);
+
+  for (const f of snap.frames) {
+    if (!/Doc650Lines/i.test(f.url || '')) continue;
+    console.log(`\n  FRAME ${f.url.replace(/\?.*/, '').split('/').pop()} (${f.elementCount})`);
+    console.log('    ' + f.elements.filter((e) => e.id).map((e) => e.id).join(', '));
+  }
 }
 
 console.log(`\n  מספר המסמך: ${await engine.readDocNumber(ctx, profile) ?? '(לא נקרא)'}`);

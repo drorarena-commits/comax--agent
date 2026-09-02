@@ -18,7 +18,7 @@
  * unless the frame it is aimed at really is the header, and `finalize` is the
  * only function allowed to press the lines-screen `#OK`.
  */
-import { dismissPopups, fillLookup, openProgram } from '../navigate.js';
+import { dismissPopups, fillLookup, framePath, openProgram } from '../navigate.js';
 
 /** A profile that has not been mapped yet must not be driven blind. */
 export function assertMapped(profile, stage) {
@@ -30,7 +30,21 @@ export function assertMapped(profile, stage) {
   );
 }
 
-const frameFor = (page, re) => page.frames().find((f) => re.test(f.url()));
+/**
+ * Find an open frame by its screen, matching on the **path only**.
+ *
+ * Max2000 puts the parent frame's name in the query string, so a full-URL match
+ * reads frames that merely mention another screen. This is not theoretical: the
+ * transfer header carries `SwNoClose=0`, the engine's default close-dialog
+ * pattern `/Close|Kbl|Ishur/i` matched *that*, and `finalize` on 4700239 looked
+ * for `#PrintCopies` in the header, pressed the header's own `#OK`, and then
+ * reported the document unfiled while its real confirmation dialog sat open on
+ * screen. Same shape as `/Doc650_ShihzurP/` catching `Doc650_HtmlP_T13.asp`.
+ */
+const frameFor = (page, re) => page.frames().find((f) => re.test(framePath(f.url())));
+
+/** The same path-only test, for the places that hold a frame rather than find one. */
+const isScreen = (re, frame) => re.test(framePath(frame.url()));
 
 /**
  * The open lines frame, for an agent that needs to read it itself.
@@ -63,7 +77,7 @@ export async function startNew(ctx, profile, listFrame) {
   await human.click(profile.header.new, { scope: listFrame, label: `הוספה (${profile.label} חדש)` });
   await human.settle('header form');
 
-  const frame = page.frames().find((f) => profile.frames.header.test(f.url()) && !before.has(f.url()))
+  const frame = page.frames().find((f) => isScreen(profile.frames.header, f) && !before.has(f.url()))
     ?? frameFor(page, profile.frames.header);
   if (!frame) throw new Error(`${profile.label}: טופס הכותרת לא נפתח.`);
 
@@ -115,7 +129,7 @@ export async function readHeader(profile, frame) {
  */
 export async function commitHeader(ctx, profile, frame) {
   const { human } = ctx;
-  if (!profile.frames.header.test(frame.url())) {
+  if (!isScreen(profile.frames.header, frame)) {
     throw new Error(
       `סירוב: ביקשו לאשר כותרת אבל ה-frame הוא ${frame.url().split('/').pop()?.split('?')[0]}. ` +
       `${profile.header.ok} במסך שורות קולט את המסמך.`,

@@ -49,9 +49,16 @@ export const profile = {
     header: /Doc470U\.aspx?/i,
     linesGrid: /Doc470LinesV\.aspx?/i,
     lineForm: /Doc470LinesU\.aspx?/i,
-    // Deliberately absent: `closeDialog`. Filing has never been run on Doc470,
-    // so the name of its confirmation frame is unknown, and a guess here would
-    // read as verified. The engine falls back to /Close|Kbl|Ishur/i.
+    /**
+     * Named exactly, and the engine's `/Close|Kbl|Ishur/i` fallback must never
+     * be allowed to stand in for it here: the header URL carries `SwNoClose=0`
+     * in its query string, so on 4700239 that fallback matched **the header**,
+     * found no `#PrintCopies` in it, pressed the header's own `#OK`, and then
+     * reported the document unfiled while `Doc470CloseU` sat open on screen.
+     * `frameFor` now matches on path only, which is the real fix; this is the
+     * belt to that pair of braces.
+     */
+    closeDialog: /Doc470CloseU\.asp$/i,
   },
 
   /**
@@ -90,12 +97,15 @@ export const profile = {
   finalizeLabel: 'קליטת תעודת העברה',
 
   /**
-   * Untested on Doc470. 1 is the invoice's proven value and is safe because
-   * `browser.js` neutralises `window.print`; 0 is what a quote uses and is
-   * rejected outright by an invoice. Which of the two this document wants will
-   * only be known the first time one is really filed.
+   * **תעודת העברה תמיד 0** — כלל של דרור, 02/09/2026.
+   *
+   * Not the invoice's value: Doc650 refuses 0 outright ("חובת הדפסה לפחות עותק
+   * אחד !") and this document does not. It is an internal stock movement, so
+   * there is nothing to hand anybody — a printed copy of it is waste paper.
+   * The first filing here went out with 1 because the number had been copied
+   * across from the invoice before the rule was stated.
    */
-  printCopies: 1,
+  printCopies: 0,
 };
 
 /* ── the local stock export ────────────────────────────────────────────── */

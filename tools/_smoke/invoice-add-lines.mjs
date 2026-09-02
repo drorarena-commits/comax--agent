@@ -8,19 +8,23 @@
  *
  * Items are identified by the plain barcode SKU — not the מק"ט חלופי.
  *
- *   node tools/_smoke/invoice-add-lines.mjs
+ *   node tools/_smoke/invoice-add-lines.mjs ['{"items":[…]}' | path.json]
+ *
+ * `price` may be left out of an item: Comax fills #Mhr from the header's price
+ * list and the read-back reports what it actually used. That is safer than
+ * typing a number guessed from the catalogue export, which carries מחירון 1 —
+ * a different price list than the one the document is written on.
  */
 import { attachBrowser } from '../../src/browser.js';
 import { RunLogger } from '../../src/logger.js';
 import * as invoice from '../../src/documents/agents/invoice/index.js';
 import * as engine from '../../src/documents/engine.js';
+import { readFileSync } from 'node:fs';
 
-const ITEMS = [
-  { code: '3468337082118', qty: 6, price: 289.9, discount: 50, note: 'Ultra Swipe MR 110 EMERALD/CYBER/LIME' },
-  { code: '3468337548560', qty: 6, price: 289.9, discount: 50, note: 'Ultra Swipe MR 170 EMERALD-PLUM-CYBER_LIME' },
-  { code: '3468336511602', qty: 6, price: 289.9, discount: 50, note: 'Ultra Swipe MR 600 BLUE/SILVER' },
-  { code: '3468337548591', qty: 6, price: 279.9, discount: 50, note: 'Core Swipe Mirror 170 EMERALD-PLUM-BLACK' },
-];
+const arg = process.argv[2];
+const input = !arg ? {} : JSON.parse(arg.trim().startsWith('{') ? arg : readFileSync(arg, 'utf8'));
+const ITEMS = input.items ?? [];
+if (!ITEMS.length) { console.log('אין פריטים. העבר {"items":[{code,qty,discount}]}'); process.exit(1); }
 
 const logger = new RunLogger('invoice-add-lines');
 const s = await attachBrowser({ logger });
@@ -39,7 +43,7 @@ if (!page.frames().some((f) => invoice.profile.frames.lineForm.test(f.url()))) {
   await human.settle('line dialog');
 }
 
-for (const i of ITEMS) logger.step('planned', `${i.code}  ${i.note}  ×${i.qty}  @${i.price}  -${i.discount}%`);
+for (const i of ITEMS) logger.step('planned', `${i.code}  ${i.note ?? ''}  ×${i.qty}  @${i.price ?? 'מחירון'}  -${i.discount ?? 0}%`);
 
 const lines = await invoice.addLines(ctx, ITEMS);
 

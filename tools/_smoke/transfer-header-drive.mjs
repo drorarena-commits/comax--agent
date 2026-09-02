@@ -1,11 +1,13 @@
 /**
- * Fills the transfer header that is ALREADY OPEN (Doc470U), commits it and maps
- * the lines screens. Used once, to learn Doc470Lines* through a real document.
+ * Fills the transfer header that is ALREADY OPEN (Doc470U), commits it and
+ * snapshots the lines screens. Written to learn Doc470Lines* through a real
+ * document, and kept as the way to walk a transfer up to its lines by hand.
  *
- * Deliberately does not press #newRec: a draft is already open from the mapping
- * click, and starting another would strand it.
+ * Deliberately does not press #newRec: a draft is already open from the
+ * `npm run open-program -- a111` + #newRec that got here, and starting another
+ * would strand it.
  *
- *   node tools/_smoke/transfer-header-drive.mjs
+ *   node tools/_smoke/transfer-header-drive.mjs ['{"storeFrom":"…","storeTo":"…","details":"…"}' | path.json]
  *
  * Stops at the lines screen. Adds no lines and files nothing.
  */
@@ -13,13 +15,18 @@ import { attachBrowser } from '../../src/browser.js';
 import { RunLogger } from '../../src/logger.js';
 import { inspectPage, digest } from '../../src/inspect.js';
 import { fillLookup, dismissPopups } from '../../src/navigate.js';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ROOT } from '../../src/config.js';
 
-const FROM = 'ראשי';
-const TO = 'מחסן קבוצות';
-const DETAILS = 'מיפוי סוכן - לא לקליטה';
+// Hebrew values do not survive a shell single-quoted argument on every console,
+// so a path to a JSON file is accepted alongside inline JSON.
+const arg = process.argv[2];
+const input = !arg ? {} : JSON.parse(arg.trim().startsWith('{') ? arg : readFileSync(arg, 'utf8'));
+
+const FROM = input.storeFrom ?? 'ראשי';
+const TO = input.storeTo ?? 'מחסן קבוצות';
+const DETAILS = input.details ?? 'מיפוי סוכן - לא לקליטה';
 
 const logger = new RunLogger('transfer-header-drive');
 const s = await attachBrowser({ logger });
@@ -67,17 +74,22 @@ await human.click('#OK', { scope: header, label: 'אישור הכותרת' });
 await human.settle('transfer created');
 await dismissPopups(ctx);
 
-const snap = await inspectPage(page);
-const base = resolve(ROOT, 'knowledge/screens', 'transfer-lines');
-writeFileSync(`${base}.json`, JSON.stringify(snap, null, 2), 'utf8');
-writeFileSync(`${base}.txt`, digest(snap), 'utf8');
-console.log(`\n  → ${base}.json`);
 await logger.shot(page, 'lines-screen');
 
-for (const f of snap.frames) {
-  if (!/Doc470/i.test(f.url || '') || /Doc470[VU]\.asp/i.test(f.url || '')) continue;
-  console.log(`\n  FRAME ${f.url.replace(/\?.*/, '').split('/').pop()} (${f.elementCount})`);
-  console.log('    ' + f.elements.filter((e) => e.id).map((e) => e.id).join(', '));
+// Only on request: the mapping snapshot in knowledge/screens is a record of the
+// screen, and a real customer's document would overwrite it with their data.
+if (input.snapshot) {
+  const snap = await inspectPage(page);
+  const base = resolve(ROOT, 'knowledge/screens', 'transfer-lines');
+  writeFileSync(`${base}.json`, JSON.stringify(snap, null, 2), 'utf8');
+  writeFileSync(`${base}.txt`, digest(snap), 'utf8');
+  console.log(`\n  → ${base}.json`);
+
+  for (const f of snap.frames) {
+    if (!/Doc470/i.test(f.url || '') || /Doc470[VU]\.asp/i.test(f.url || '')) continue;
+    console.log(`\n  FRAME ${f.url.replace(/\?.*/, '').split('/').pop()} (${f.elementCount})`);
+    console.log('    ' + f.elements.filter((e) => e.id).map((e) => e.id).join(', '));
+  }
 }
 
 console.log('\n  עוצר כאן. לא נוספו שורות ושום דבר לא נקלט.\n');
