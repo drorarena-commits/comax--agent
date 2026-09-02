@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node tools/open-program.js \"יצוא לקוחות לאקסל\")",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

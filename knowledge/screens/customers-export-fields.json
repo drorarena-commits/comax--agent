@@ -1,0 +1,322 @@
+{
+  "capturedAt": "2026-09-01T15:57:27.947Z",
+  "url": "EXCEL/Lk/Lk_ExcelP.asp",
+  "frame": "FMiun",
+  "fields": [
+    {
+      "id": "SwKod",
+      "checked": true,
+      "label": "קוד"
+    },
+    {
+      "id": "SwNm",
+      "checked": true,
+      "label": "שם"
+    },
+    {
+      "id": "SwAddress",
+      "checked": true,
+      "label": "כתובת"
+    },
+    {
+      "id": "SwCity",
+      "checked": true,
+      "label": "ישוב"
+    },
+    {
+      "id": "SwMikod",
+      "checked": false,
+      "label": "מיקוד"
+    },
+    {
+      "id": "SwPostBox",
+      "checked": false,
+      "label": "תא דואר"
+    },
+    {
+      "id": "SwTel",
+      "checked": true,
+      "label": "טלפון"
+    },
+    {
+      "id": "SwPelefon",
+      "checked": true,
+      "label": "נייד"
+    },
+    {
+      "id": "SwFax",
+      "checked": false,
+      "label": "פקס"
+    },
+    {
+      "id": "SwEmail",
+      "checked": true,
+      "label": "Email"
+    },
+    {
+      "id": "SwIdx_Invoce_Email",
+      "checked": false,
+      "label": "למשלוח חשבונית Email"
+    },
+    {
+      "id": "SwStatusLk",
+      "checked": false,
+      "label": "סטטוס"
+    },
+    {
+      "id": "SwWebsite",
+      "checked": false,
+      "label": "אתר"
+    },
+    {
+      "id": "SwOsek",
+      "checked": false,
+      "label": "עוסק/ח\"פ"
+    },
+    {
+      "id": "SwID",
+      "checked": false,
+      "label": "תעודת זהות"
+    },
+    {
+      "id": "SwGrpKod",
+      "checked": true,
+      "label": "קוד קבוצה"
+    },
+    {
+      "id": "SwGrpNm",
+      "checked": true,
+      "label": "שם קבוצה"
+    },
+    {
+      "id": "SwSochen",
+      "checked": false,
+      "label": "קוד סוכן"
+    },
+    {
+      "id": "SwSochenNm",
+      "checked": false,
+      "label": "שם סוכן"
+    },
+    {
+      "id": "SwSochenGevya",
+      "checked": false,
+      "label": "סוכן גביה"
+    },
+    {
+      "id": "SwItra",
+      "checked": false,
+      "label": "יתרת חשבון"
+    },
+    {
+      "id": "SwPayCalc_Type",
+      "checked": false,
+      "label": "תנאי תשלום"
+    },
+    {
+      "id": "SwLastShk",
+      "checked": false,
+      "label": "צורת תשלום"
+    },
+    {
+      "id": "SwCameFrom",
+      "checked": false,
+      "label": "מקור הגעה"
+    },
+    {
+      "id": "SwMetapel",
+      "checked": true,
+      "label": "שם מטפל"
+    },
+    {
+      "id": "SwContactMan",
+      "checked": true,
+      "label": "שם אנשי קשר"
+    },
+    {
+      "id": "SwEmail_ContacMan",
+      "checked": false,
+      "label": "אנשי קשר Email"
+    },
+    {
+      "id": "SwDateB",
+      "checked": false,
+      "label": "ת. לידה"
+    },
+    {
+      "id": "SwScmMhr",
+      "checked": false,
+      "label": "סך מכירה"
+    },
+    {
+      "id": "SwMechiron",
+      "checked": false,
+      "label": "מחירון משויך"
+    },
+    {
+      "id": "SwDateHiuvHeshbonA",
+      "checked": false,
+      "label": "תוקף הרשאה לחיוב חשבון"
+    },
+    {
+      "id": "SwAncha",
+      "checked": false,
+      "label": "הנחה"
+    },
+    {
+      "id": "SwAnaf",
+      "checked": false,
+      "label": "קוד ענף/ סיווג"
+    },
+    {
+      "id": "SwAnafNm",
+      "checked": false,
+      "label": "שם ענף/ סיווג"
+    },
+    {
+      "id": "SwAnafTt",
+      "checked": false,
+      "label": "תת ענף/סיווג"
+    },
+    {
+      "id": "SwAnafTNm",
+      "checked": false,
+      "label": "שם תת ענף/ סיווג"
+    },
+    {
+      "id": "SwBank",
+      "checked": false,
+      "label": "פרטי בנק"
+    },
+    {
+      "id": "SwSpkMkz",
+      "checked": false,
+      "label": "קוד מקוצר"
+    },
+    {
+      "id": "SwAmara",
+      "checked": false,
+      "label": "המרה"
+    },
+    {
+      "id": "SwRem",
+      "checked": false,
+      "label": "הערה"
+    },
+    {
+      "id": "SwPelefon_ContacMan",
+      "checked": true,
+      "label": "נייד אנשי קשר"
+    },
+    {
+      "id": "SwNoDivorSMS",
+      "checked": false,
+      "label": "SMS חסום לשליחת"
+    },
+    {
+      "id": "SwNoDivor",
+      "checked": false,
+      "label": "חסום לשליחת דוא\"ל"
+    },
+    {
+      "id": "SwDateRishum",
+      "checked": false,
+      "label": "תאריך הקמת לקוח"
+    },
+    {
+      "id": "SwDateEdit",
+      "checked": false,
+      "label": "תאריך עדכון אחרון"
+    },
+    {
+      "id": "SwDateByLast",
+      "checked": false,
+      "label": "תאריך קניה אחרון"
+    },
+    {
+      "id": "SwBranch",
+      "checked": true,
+      "label": "סניף"
+    },
+    {
+      "id": "SwStatus",
+      "checked": false,
+      "label": "סטטוס הזמנה אחרונה"
+    },
+    {
+      "id": "SwClose",
+      "checked": false,
+      "label": "סטטוס אספקה"
+    },
+    {
+      "id": "SwDocType",
+      "checked": false,
+      "label": "מורשה ל"
+    },
+    {
+      "id": "SwKodValidKupa",
+      "checked": false,
+      "label": "קוד אימות בקופה"
+    },
+    {
+      "id": "SwIdxProjectManager",
+      "checked": false,
+      "label": "מנהל פרויקט מהלקוח"
+    },
+    {
+      "id": "SwMatach",
+      "checked": false,
+      "label": "ניהול מט\"ח"
+    },
+    {
+      "id": "SwMt_Matach",
+      "checked": false,
+      "label": "מט\"ח"
+    },
+    {
+      "id": "SwIdxAfreshShaar",
+      "checked": false,
+      "label": "ה. שער"
+    },
+    {
+      "id": "SwAczDis",
+      "checked": false,
+      "label": "הנחה %"
+    },
+    {
+      "id": "SwMustHovala",
+      "checked": false,
+      "label": "חייב בהובלה"
+    },
+    {
+      "id": "SwNmNitul",
+      "checked": false,
+      "label": "יחידת ניטול"
+    },
+    {
+      "id": "SwNoPrintMhr_670i",
+      "checked": false,
+      "label": "מחיר בת. משלוח"
+    },
+    {
+      "id": "SwDateStopSaleBuy",
+      "checked": false,
+      "label": "חסימת מכירה"
+    },
+    {
+      "id": "SwDateStop",
+      "checked": false,
+      "label": "תאריך חסימה"
+    },
+    {
+      "id": "SwScmAshrai",
+      "checked": false,
+      "label": "סכום אשראי"
+    },
+    {
+      "id": "SwKlali",
+      "checked": false,
+      "label": "לקוח כללי"
+    }
+  ]
+}

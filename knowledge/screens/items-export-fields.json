@@ -1,0 +1,492 @@
+{
+  "capturedAt": "2026-09-01T13:25:50.063Z",
+  "frame": "FMiun",
+  "url": "Excel/Prt/MiunSw.asp",
+  "fields": [
+    {
+      "id": "SwPrtC",
+      "checked": false,
+      "label": "קוד פנימי"
+    },
+    {
+      "id": "SwPrtKod",
+      "checked": true,
+      "label": "פריט"
+    },
+    {
+      "id": "SwPrtNm",
+      "checked": true,
+      "label": "שם פריט"
+    },
+    {
+      "id": "SwEngPrtNm",
+      "checked": false,
+      "label": "שם פריט באנגלית"
+    },
+    {
+      "id": "SwHalufiNm",
+      "checked": false,
+      "label": "שם חלופי"
+    },
+    {
+      "id": "SwHalufiKod",
+      "checked": false,
+      "label": "קוד חלופי"
+    },
+    {
+      "id": "SwMashlimNm",
+      "checked": false,
+      "label": "שם משלים"
+    },
+    {
+      "id": "SwMida",
+      "checked": false,
+      "label": "מידה"
+    },
+    {
+      "id": "SwBarkod",
+      "checked": false,
+      "label": "ברקוד"
+    },
+    {
+      "id": "SwDepKod",
+      "checked": false,
+      "label": "מחלקה"
+    },
+    {
+      "id": "SwDepNm",
+      "checked": false,
+      "label": "שם מחלקה"
+    },
+    {
+      "id": "SwGrpKod",
+      "checked": false,
+      "label": "קבוצה"
+    },
+    {
+      "id": "SwGrpNm",
+      "checked": false,
+      "label": "שם קבוצה"
+    },
+    {
+      "id": "SwTtGrp",
+      "checked": false,
+      "label": "קבוצת משנה"
+    },
+    {
+      "id": "SwTtGrpNm",
+      "checked": false,
+      "label": "שם קבוצת משנה"
+    },
+    {
+      "id": "SwSpkKod",
+      "checked": false,
+      "label": "ספק"
+    },
+    {
+      "id": "SwSpkNm",
+      "checked": false,
+      "label": "שם ספק"
+    },
+    {
+      "id": "SwSpkMakat",
+      "checked": false,
+      "label": "מק\"ט ספק"
+    },
+    {
+      "id": "SwIzran",
+      "checked": false,
+      "label": "יצרן"
+    },
+    {
+      "id": "SwIzranNm",
+      "checked": false,
+      "label": "שם יצרן"
+    },
+    {
+      "id": "SwDegem",
+      "checked": false,
+      "label": "דגם"
+    },
+    {
+      "id": "SwDegemNm",
+      "checked": false,
+      "label": "שם דגם"
+    },
+    {
+      "id": "SwColor",
+      "checked": false,
+      "label": "צבע"
+    },
+    {
+      "id": "SwColorNm",
+      "checked": false,
+      "label": "שם צבע"
+    },
+    {
+      "id": "SwSize",
+      "checked": false,
+      "label": "מידה"
+    },
+    {
+      "id": "SwSizeNm",
+      "checked": false,
+      "label": "שם מידה"
+    },
+    {
+      "id": "SwShonot",
+      "checked": false,
+      "label": "נוסף"
+    },
+    {
+      "id": "SwShonotNm",
+      "checked": false,
+      "label": "שם נוסף"
+    },
+    {
+      "id": "SwNosaf",
+      "checked": false,
+      "label": "שונות"
+    },
+    {
+      "id": "SwNosaf2",
+      "checked": false,
+      "label": "נוסף 2"
+    },
+    {
+      "id": "SwNosaf2Nm",
+      "checked": false,
+      "label": "שם נוסף 2"
+    },
+    {
+      "id": "SwNosaf3",
+      "checked": false,
+      "label": "נוסף 3"
+    },
+    {
+      "id": "SwNosaf3Nm",
+      "checked": false,
+      "label": "שם נוסף 3"
+    },
+    {
+      "id": "SwShakil",
+      "checked": false,
+      "label": "שקיל"
+    },
+    {
+      "id": "SwMadania",
+      "checked": false,
+      "label": "מעדניה"
+    },
+    {
+      "id": "SwAmr",
+      "checked": false,
+      "label": "המרה"
+    },
+    {
+      "id": "SwAmr_N",
+      "checked": false,
+      "label": "המרה נוספת"
+    },
+    {
+      "id": "SwMishkal",
+      "checked": false,
+      "label": "משקל"
+    },
+    {
+      "id": "SwDateOpen",
+      "checked": false,
+      "label": "תאריך הקמה"
+    },
+    {
+      "id": "SwOpenKod",
+      "checked": false,
+      "label": "מקים"
+    },
+    {
+      "id": "SwOpenNm",
+      "checked": false,
+      "label": "שם מקים"
+    },
+    {
+      "id": "SwUpdateNm",
+      "checked": false,
+      "label": "שם מעדכן אחרון"
+    },
+    {
+      "id": "SwMhrSell",
+      "checked": true,
+      "label": "מחיר מכירה"
+    },
+    {
+      "id": "SwMhrAlutSpk",
+      "checked": true,
+      "label": "מחיר עלות לפי ספק"
+    },
+    {
+      "id": "SwItratMlay",
+      "checked": false,
+      "label": "יתרת מלאי"
+    },
+    {
+      "id": "SwMchan",
+      "checked": false,
+      "label": "מכונה"
+    },
+    {
+      "id": "SwMchanNm",
+      "checked": false,
+      "label": "שם מכונה"
+    },
+    {
+      "id": "SwSugP",
+      "checked": false,
+      "label": "סוג פעילות"
+    },
+    {
+      "id": "SwSugPNm",
+      "checked": false,
+      "label": "שם סוג פעילות"
+    },
+    {
+      "id": "SwNotMlay",
+      "checked": false,
+      "label": "ללא ניהול מלאי"
+    },
+    {
+      "id": "SwSpk_PrtNm",
+      "checked": false,
+      "label": "שם פריט ספק"
+    },
+    {
+      "id": "SwPrt_Pikuah",
+      "checked": false,
+      "label": "פריט בפיקוח"
+    },
+    {
+      "id": "SwNefach",
+      "checked": false,
+      "label": "נפח"
+    },
+    {
+      "id": "SwDerog",
+      "checked": false,
+      "label": "דרוג"
+    },
+    {
+      "id": "SwPrtRemarkInsideUse",
+      "checked": false,
+      "label": "הערה פנימית"
+    },
+    {
+      "id": "SwPratim",
+      "checked": false,
+      "label": "הערה כללית"
+    },
+    {
+      "id": "SwPrtRemarkJump",
+      "checked": false,
+      "label": "הערה קופצת"
+    },
+    {
+      "id": "SwPrtRemarkWarranty",
+      "checked": false,
+      "label": "הערת אחריות"
+    },
+    {
+      "id": "SwPrtRemarkAmlaza",
+      "checked": false,
+      "label": "הערת ה.לרכש"
+    },
+    {
+      "id": "Sw_Chames",
+      "checked": false,
+      "label": "חמץ"
+    },
+    {
+      "id": "LimitAge",
+      "checked": false,
+      "label": "מוגבל גיל"
+    },
+    {
+      "id": "SwAlcohol",
+      "checked": false,
+      "label": "אלכוהול"
+    },
+    {
+      "id": "SwKodDepAl",
+      "checked": false,
+      "label": "קוד מחלקת על"
+    },
+    {
+      "id": "SwTeurDepAl",
+      "checked": false,
+      "label": "תאור מחלקת על"
+    },
+    {
+      "id": "SwVetrinary",
+      "checked": false,
+      "label": "אגרה וטרינרית"
+    },
+    {
+      "id": "SwMlay",
+      "checked": false,
+      "label": "מלאי"
+    },
+    {
+      "id": "SwHovala",
+      "checked": false,
+      "label": "הובלה"
+    },
+    {
+      "id": "SwNetoSpk",
+      "checked": false,
+      "label": "מחיר עלות נטו"
+    },
+    {
+      "id": "SwItraMlayComp",
+      "checked": false,
+      "label": "יתרת מלאי לחברות"
+    },
+    {
+      "id": "SwPikadonCmt",
+      "checked": false,
+      "label": "כמות פקדון"
+    },
+    {
+      "id": "SwPikadonAlut",
+      "checked": false,
+      "label": "עלות פקדון"
+    },
+    {
+      "id": "SwPrtMarlog",
+      "checked": false,
+      "label": "מרלוג"
+    },
+    {
+      "id": "Master",
+      "checked": false,
+      "label": "מסטר"
+    },
+    {
+      "id": "SwMaster",
+      "checked": false,
+      "label": "ברירת מחדל"
+    },
+    {
+      "id": "layer",
+      "checked": false,
+      "label": "שכבה"
+    },
+    {
+      "id": "Swlayer",
+      "checked": false,
+      "label": "ברירת מחדל"
+    },
+    {
+      "id": "Mishtach",
+      "checked": false,
+      "label": "משטח"
+    },
+    {
+      "id": "SwMishtach",
+      "checked": false,
+      "label": "ברירת מחדל"
+    },
+    {
+      "id": "SwGrpHetel",
+      "checked": false,
+      "label": "ק.הטלים"
+    },
+    {
+      "id": "SwPic",
+      "checked": false,
+      "label": "תמונה"
+    },
+    {
+      "id": "PackageWeight",
+      "checked": false,
+      "label": "משקל אריזה"
+    },
+    {
+      "id": "SwNotKfolotInKupa",
+      "checked": false,
+      "label": "ללא כפולות בקופה"
+    },
+    {
+      "id": "SwMustCmtKupa",
+      "checked": false,
+      "label": "חובת כמות בקופה"
+    },
+    {
+      "id": "SwVisualKupa",
+      "checked": false,
+      "label": "אישור ויזואלי בקופה"
+    },
+    {
+      "id": "WeightAvtachaKupa",
+      "checked": false,
+      "label": "משקל אבטחה בקופה"
+    },
+    {
+      "id": "SwBarzel",
+      "checked": false,
+      "label": "ברזל"
+    },
+    {
+      "id": "SwDate_Tokef",
+      "checked": false,
+      "label": "ימי תוקף"
+    },
+    {
+      "id": "SwMlayDays_Tokef",
+      "checked": false,
+      "label": "'ימים להת'/חס"
+    },
+    {
+      "id": "SwTokef_Hatrha",
+      "checked": false,
+      "label": "ימים להתראה"
+    },
+    {
+      "id": "SwTokef_Hasima",
+      "checked": false,
+      "label": "ימים לחסימה"
+    },
+    {
+      "id": "SwChkTz_ForSell",
+      "checked": false,
+      "label": "נמכר באילת לפי ת.ז"
+    },
+    {
+      "id": "SwView",
+      "checked": false,
+      "label": "נתוני אתר - לא להציג"
+    },
+    {
+      "id": "KinyanKod",
+      "checked": false,
+      "label": "קוד קניין"
+    },
+    {
+      "id": "Kinyan",
+      "checked": false,
+      "label": "שם קניין"
+    },
+    {
+      "id": "NewPrt",
+      "checked": false,
+      "label": "פריט חדש"
+    },
+    {
+      "id": "SwNoMustTzunaValue",
+      "checked": false,
+      "label": "(לא נדרש (ס.תזונתי"
+    },
+    {
+      "id": "SwSivugDep",
+      "checked": false,
+      "label": "סווג מחלקה"
+    }
+  ]
+}

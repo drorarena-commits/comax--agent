@@ -1,0 +1,24 @@
+{
+  "name": "comax-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Browser agent for the Comax ERP portal - human-paced, learned screen by screen",
+  "scripts": {
+    "open": "node tools/open.js",
+    "snapshot": "node tools/snapshot.js",
+    "run": "node tools/run.js",
+    "open-program": "node tools/open-program.js",
+    "options": "node tools/read-options.js",
+    "catalog": "node tools/catalog.js",
+    "close": "node tools/close-windows.js",
+    "check-login": "node tools/check-login.js",
+    "logoff": "node tools/logoff.js",
+    "merge": "node tools/merge-stock.js",
+    "full-stock": "node tools/full-stock.js",
+    "merge-full": "node tools/merge-full.js"
+  },
+  "dependencies": {
+    "playwright-core": "^1.49.0"
+  }
+}

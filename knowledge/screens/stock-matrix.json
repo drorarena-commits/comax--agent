@@ -1,0 +1,68 @@
+{
+  "capturedAt": "2026-09-01T18:20:00.000Z",
+  "screen": "יתרות מלאי במטריצת מחסנים",
+  "shortcut": "a158",
+  "shortcutLabel": "מטריצת מחסנים",
+  "frame": "f0",
+  "frameMatch": "/MlaiPrtStoreMatItra/i",
+  "url": "Max2000_NET_2022/Erp/Nituah/MlaiPrtStoreMatItraP.aspx",
+  "note": "השדות של התאריך והמחסנים חיים בלשונית 'שונות' בלבד. #Shonot מריץ ChangeMenu ואז chkdisplay(), ו-chkdisplay הוא זה שמחליט אם Store1..8 מוצגים — בלי ללחוץ על הלשונית קודם, השדות מוסתרים וכל ניסיון להקליד בהם נופל. #OK מסיים ב-top.S.endProgram, כלומר הדיאלוג סוגר את עצמו — כל אימות חייב לקרות לפניו.",
+  "tabs": [
+    { "id": "Print", "label": "תחומים", "note": "הלשונית הפעילה כשהתוכנית נפתחת" },
+    { "id": "MoreF", "label": "הרחבה" },
+    { "id": "Rikuz", "label": "ריכוז" },
+    { "id": "Shonot", "label": "שונות", "onclick": "ChangeMenu(...); chkdisplay();" }
+  ],
+  "fields": [
+    { "id": "TDate", "tab": "Shonot", "type": "text", "label": "נכון לתאריך", "format": "dd/mm/yyyy" },
+    {
+      "id": "Swdisplay",
+      "tab": "Shonot",
+      "type": "select",
+      "label": "תצוגה לפי",
+      "options": { "1": "בחירה", "2": "חיתוך", "3": "סוג מחסן" },
+      "note": "קובע איזו קבוצת שדות מחסנים מוצגת. 1 -> Store1..8, 2 -> StoreM/StoreA, 3 -> StoreType1..8"
+    },
+    {
+      "id": "Store1..Store8",
+      "tab": "Shonot",
+      "type": "text",
+      "label": "מחסנים",
+      "shownWhen": "Swdisplay=1",
+      "note": "שמונה משבצות בלבד. מעבר לשמונה מחסנים חייבים Swdisplay=2 (חיתוך)."
+    },
+    { "id": "StoreM / StoreA", "tab": "Shonot", "type": "text", "label": "טווח מחסנים", "shownWhen": "Swdisplay=2" },
+    { "id": "StoreType1..StoreType8", "tab": "Shonot", "type": "select", "label": "סוג מחסן", "shownWhen": "Swdisplay=3" },
+    {
+      "id": "SwSrak",
+      "tab": "Shonot",
+      "type": "select",
+      "label": "מחסני סרק",
+      "options": { "0": "כולל", "1": "ללא", "2": "רק" }
+    },
+    { "id": "Mlay", "tab": "Shonot", "type": "select", "label": "י. מלאי", "options": { "0": "", "1": "=", "2": "<>", "3": "<", "4": ">", "5": "=>", "6": "=<" } },
+    { "id": "MlayInStore", "tab": "Shonot", "type": "text", "label": "ערך ההשוואה של י. מלאי" },
+    { "id": "Mehirot", "tab": "Shonot", "type": "checkbox", "label": "מכירות" },
+    { "id": "OpenItra", "tab": "Shonot", "type": "checkbox", "label": "י.פתיחה" },
+    { "id": "Mhr1", "tab": "Shonot", "type": "text", "label": "מחירון מכירה", "example": "1 - מכירה ראשי" },
+    { "id": "SwPrt", "tab": "Shonot", "type": "select", "label": "תצוגת", "options": { "0": "קוד פריט", "1": "ברקוד", "2": "מק\"ט ספק", "3": "חלופי" } },
+    { "id": "SwMurhav", "tab": "Shonot", "type": "checkbox", "label": "מורחב" },
+    { "id": "Archive", "tab": "Shonot", "type": "select", "label": "ארכיון", "options": { "0": "כולל", "1": "ללא", "2": "רק" } },
+    { "id": "Zakyan", "tab": "Shonot", "type": "select", "label": "זכיינים", "options": { "0": "כולל", "1": "ללא", "2": "רק" } },
+    { "id": "Stop_Buy", "tab": "Shonot", "type": "select", "label": "חסומים לרכש", "options": { "0": "כולל", "1": "ללא", "2": "רק" } },
+    { "id": "Stop_Sell", "tab": "Shonot", "type": "select", "label": "חסומים למכירה", "options": { "0": "כולל", "1": "ללא", "2": "רק" } },
+    { "id": "SwExcel", "tab": "Shonot", "type": "checkbox", "label": "יצוא לאקסל" },
+    { "id": "PrtM / PrtA", "tab": "Print", "type": "text", "label": "טווח פריטים" },
+    { "id": "DepM / DepA", "tab": "Print", "type": "text", "label": "טווח מחלקות" },
+    { "id": "GrpM / GrpA", "tab": "Print", "type": "text", "label": "טווח קבוצות" },
+    { "id": "SpkM / SpkA", "tab": "Print", "type": "text", "label": "טווח ספקים" }
+  ],
+  "buttons": [
+    { "id": "OK", "tag": "img", "title": "אישור", "onclick": "OK_onclick()", "note": "מריץ את הדוח וסוגר את הדיאלוג" },
+    { "id": "Cancel", "tag": "img", "title": "ביטול", "onclick": "Cancel_onclick()" }
+  ],
+  "output": {
+    "note": "כש-SwExcel מסומן הדוח יורד כקובץ. ההרצה לקחה 151 שניות במדידה מ-01/09/2026. הקובץ הוא HTML בקידוד UTF-16LE עם סיומת .xls, ולעיתים מגיע ארוז ב-.zip.",
+    "columns": ["דגם", "גימור", "מחסן", "סה\"כ", "עמודה לכל מידה"]
+  }
+}

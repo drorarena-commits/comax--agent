@@ -1,0 +1,67 @@
+{
+  "portalUrl": "",
+  "loggedInMarker": {
+    "frame": "S",
+    "selector": "#Start"
+  },
+  "loginMarker": {
+    "urlContains": "LogInWeb.aspx"
+  },
+  "profileDir": ".chrome-profile",
+  "viewport": {
+    "width": 1536,
+    "height": 864
+  },
+  "locale": "he-IL",
+  "timezone": "Asia/Jerusalem",
+  "pace": {
+    "minGapMs": 2000,
+    "thinkMinMs": 2000,
+    "thinkMaxMs": 3500,
+    "typeMinMs": 60,
+    "typeMaxMs": 160,
+    "typePauseChars": " ,.\n",
+    "typePauseMinMs": 180,
+    "typePauseMaxMs": 420,
+    "hoverMinMs": 120,
+    "hoverMaxMs": 300,
+    "navTimeoutMs": 60000,
+    "actionTimeoutMs": 30000
+  },
+  "debugPort": 9222,
+  "loginUrl": "https://www.comax.co.il/COMAX_WEB/LogInComax/LogInWeb.aspx",
+  "baseUrl": "https://www.comax.co.il/COMAX_WEB/",
+  "app": {
+    "name": "Max2000",
+    "runPathFragment": "/Max2000/Max2000_run_G.asp",
+    "navFrame": "S",
+    "menuButton": "#Start",
+    "fullMenuButton": "#Menu",
+    "desktopButton": "#ShowDesktop",
+    "logoffButton": "#LOGOFF_Prog",
+    "companyYearButton": "#ch_comp_year"
+  },
+  "login": {
+    "orgField": "input[name=\"Lk\"]",
+    "userField": "input[name=\"User_Pass\"]",
+    "passField": "input[name=\"Password_Pass\"]",
+    "submitButton": "input[value=\"כניסה\"]",
+    "sessionPersists": false,
+    "busyRetries": 4,
+    "busyWaitMs": 45000
+  },
+  "reports": {
+    "stockMatrix": {
+      "warehouses": [
+        "1",
+        "15",
+        "3",
+        "13",
+        "16"
+      ],
+      "emptyWarehouses": "1",
+      "exportDir": "data/exports"
+    }
+  },
+  "suppressPrintDialog": true
+}
