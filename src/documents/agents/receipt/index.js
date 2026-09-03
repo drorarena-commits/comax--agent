@@ -29,41 +29,71 @@ export const profile = {
   name: 'receipt',
   label: 'קבלה',
   shortcut: 'a103', // knowledge/desktop-shortcuts.json — קבלות. NOT a146 (קבלות לעו"ש)
-  doc: null, // unknown. Read from the live URL, do not infer from Doc650/Doc652
-  path: null, // unknown
+  doc: null, // there is no Doc number — see `path`
+  path: 'Kupa/Kab/Kab', // ← NOT Erp/Mehirot. Read live 03/09/2026
   movesStock: false, // moves money — which is irreversible in its own way
   collectsPayment: true, // the only other agent with this is invoice-receipt
+  series: '70100xx', // 7010013 was the latest on 04/08/2026
 
-  // Nothing has been opened. `mapped: true` is a statement that the flow ran end
-  // to end on a real document, not that a screen was photographed.
-  mapped: { list: false, header: false, lines: false },
+  // The list was opened and read live on 03/09/2026. Nothing past it has been
+  // touched. `mapped: true` is a statement that a screen was driven, not that a
+  // neighbour's shape was assumed.
+  mapped: { list: true, header: false, lines: false },
 
-  // Left null on purpose. A plausible-looking `/Doc\d+V\.aspx?/` here would be a
-  // guess wearing the costume of a fact, and `assertMapped` throws before any of
-  // this is dereferenced anyway.
-  frames: null,
+  frames: {
+    // No `Doc\d+` anywhere in the URL — a `/Doc\d+V\.aspx?/` pattern, which every
+    // other agent here uses, would never have matched this screen.
+    list: /KabalaV\.aspx?/i,
+    header: null, // unknown
+    linesGrid: null, // unknown
+    lineForm: null, // unknown
+  },
+
+  /** Read live off `KabalaV.asp` on 03/09/2026. */
+  list: {
+    new: '#newRec', edit: '#editRec', del: '#delRec', copy: '#doCopy',
+    // The button that proves the shape of this document: a receipt is allocated
+    // against open invoices, it does not carry items.
+    allocateToInvoices: '#ShiuhHesh', // שיוך לחשבוניות
+    findDeposits: '#AfKadot', // איתור הפקדות
+    movements: '#PirutHtnu', // פרוט תנועות
+    sourceDoc: '#doMakorDoc', // מסמך מקור
+    signDoc: '#PDF_DOC', // חתימת מסמך
+    // Filters. Note what is absent: there is no item filter, because there are
+    // no items — `Doc652V` has `#wPrt` and this screen has nothing like it.
+    findCustomer: '#wFindLkNm', findDocNo: '#wFindDocNo', findAmount: '#FindScm',
+    dateFrom: '#DateM', dateTo: '#DateA', find: '#Find',
+    exit: '#DoExit',
+  },
+
+  /** Grid columns, right to left as Comax paints them. */
+  columns: ['קבלה', 'תאריך', 'לקוח', 'שם לקוח', 'אסמכתא', 'סכום', 'הופקד'],
+
   header: null,
   line: null,
   totals: null,
   finalizeLabel: null,
   printCopies: null, // ⚠️ must not be copied from a neighbour — Doc650 rejects 0, Doc470 requires 0
 };
-
 /** What is missing, phrased for a person, with the command that fixes it. */
 const notMapped = (what) => new Error(
   `קבלה: ${what}\n` +
-  `  אף מסך של המסמך הזה לא נפתח עדיין — לא רשימה, לא כותרת, לא שורות.\n` +
-  `  למפות: npm run open (טרמינל נפרד) ואז npm run open-program -- ${profile.shortcut}\n` +
-  `         npm run snapshot -- receipt-list\n` +
+  `  הרשימה מופתה חי (KabalaV.asp, 03/09/2026). הכותרת והשורות לא נפתחו מעולם.
+` +
+  `  להמשיך: npm run open (טרמינל נפרד) ואז npm run open-program -- ${profile.shortcut}
+` +
+  `  ⚠️ #newRec יוצר קבלה אמיתית.
+` +
   `  הפרטים: src/documents/agents/receipt/AGENT.md`,
 );
 
 /**
- * Refuses. The list screen has never been opened, so there is nothing to press
- * `#newRec` on, and `#newRec` on a receipts list creates a real receipt.
+ * Refuses. The list is mapped, so `#newRec` can now be found and pressed — and
+ * that is exactly why this stays shut: it would create a real receipt on a
+ * header screen nobody has ever seen.
  */
 export async function create() {
-  throw notMapped('אני לא פותח מסמך על מסך שלא ראיתי.');
+  throw notMapped('אני לא פותח קבלה — ראיתי את הרשימה בלבד, לא את הכותרת.');
 }
 
 /**
