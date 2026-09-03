@@ -83,8 +83,14 @@ export async function showDesktop({ page, human, logger, cfg }) {
 /**
  * Opens a program from the desktop shortcut strip and waits for it to render.
  * Returns the frames that came alive, so a task can pick its working frame.
+ *
+ * `program` is an optional Max2000 path (e.g. `Kupa/Kab/Osh/Kabala_OshV.aspx`)
+ * to fall back to when the icon is not on the desktop. Comax rearranges the
+ * desktop without warning — `a146` was there at 13:26 on 03/09/2026 and gone by
+ * 14:44, when the view switched to categories — and a caller that knows the
+ * path should not have to wait out `actionTimeoutMs` to discover that.
  */
-export async function openProgram({ page, human, logger, cfg }, nameOrId, { expect = null } = {}) {
+export async function openProgram({ page, human, logger, cfg }, nameOrId, { expect = null, program = null } = {}) {
   const sc = findShortcut(nameOrId);
   const nav = navFrame(page, cfg);
   const wanted = expect ?? (sc.urlPattern ? new RegExp(sc.urlPattern, 'i') : null);
@@ -97,8 +103,19 @@ export async function openProgram({ page, human, logger, cfg }, nameOrId, { expe
 
   // Prefer the id when we have one — it survives two shortcuts sharing a label.
   const selector = sc.id ? `#${sc.id}` : sc.selector;
-  // Desktop icons select on a single click; only a double-click launches them.
-  await human.doubleClick(selector, { scope: nav, label: `${sc.label} (${sc.id})` });
+
+  // `count()` asks the DOM as it stands rather than waiting for the element to
+  // appear, so an icon Comax has taken off the desktop costs nothing to rule
+  // out. Without a `program` to fall back to there is nothing better to do than
+  // wait for it, which is exactly what every caller did before.
+  const onDesktop = !program || (await nav.locator(selector).count()) > 0;
+  if (onDesktop) {
+    // Desktop icons select on a single click; only a double-click launches them.
+    await human.doubleClick(selector, { scope: nav, label: `${sc.label} (${sc.id})` });
+  } else {
+    logger?.step('program', `${sc.label} (${sc.id}) לא בשולחן — פותח לפי נתיב`);
+    await nav.evaluate((p) => top.S.runProgram(p), program);
+  }
   await human.settle(`program "${sc.label}" loading`);
 
   // Max2000 programs can take a few seconds to paint into their frame. When the

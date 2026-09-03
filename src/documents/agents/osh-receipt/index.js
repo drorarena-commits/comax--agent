@@ -32,8 +32,10 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ROOT } from '../../../config.js';
-import { openProgram, fillLookup, dismissPopups, framePath } from '../../../navigate.js';
+import { fillLookup, dismissPopups, framePath } from '../../../navigate.js';
+import * as engine from '../../engine.js';
 import { checkDuplicate, duplicateError } from '../../duplicate-check.js';
+import { checkInvoicePresence, noInvoiceError } from '../../invoice-presence-check.js';
 
 /**
  * Find an open screen by its pattern.
@@ -282,7 +284,14 @@ export const profile = {
    * 1. **Both screens open by themselves after filing**, orders on top of
    *    invoices. Dror zeroes the orders (`#ZeroSh`) and confirms.
    * 2. ⚠️ **Comax pre-fills nothing here.** Every `#I0`…`#I6` came back empty,
-   *    where a103 arrives with the first row already filled in.
+   *    where a103 arrives with the first row already filled in. This is also
+   *    what makes a filled `#I<n>` on a freshly opened screen *proof* that an
+   *    allocation reached the server rather than merely leaving the screen —
+   *    the check `tools/_smoke/shiuh-verify.mjs` relies on.
+   *
+   * ⚠️ Note the roots: the shell is `ShiuhIdxV.aspx` under NET_2022 while its
+   * own grid is `ShiuhIdx_Fr.asp` — **no `x`** — on the old Max2000. A pattern
+   * that insists on the `x` finds the shell and silently misses the grid.
    *
    * The document is identified to both screens as
    * `NmDB=Kabala_Osh&swHova=H&DocType=681&Doc=<number>`.
@@ -291,7 +300,18 @@ export const profile = {
     shell: /ShiuhIdxV\.aspx?/i,
     grid: /ShiuhIdx_Fr\.aspx?/i,
     rows: 'input[id^="I"]', // #I0, #I1 … the שיוך column
-    rowLabels: 'span[id^="itr"]', // #itr0 … the document description; ends ח or ז
+    /**
+     * The יתרה לשיוך amount — **and the control that fills the row**.
+     *
+     * Read off the DOM on 03/09/2026 (6810059):
+     *   <span id="itr0" onclick="onItra('6,136.00','I0',1)">6,136.00 ח</span>
+     *
+     * Clicking it runs `onItra`, which writes the amount into `#I0`; `#I0`'s own
+     * `onblur="parent.setItra(scmShiuh())"` then refreshes the balance block, so
+     * focus has to leave the box before שויך / יתרה לשיוך are worth reading.
+     * You never type the amount — that is the whole mechanic.
+     */
+    rowLabels: 'span[id^="itr"]',
     ok: '#OK',
     cancel: '#Cancel',
     zero: '#ZeroSh',
@@ -380,43 +400,35 @@ export function resolveBank(value) {
 const REQUIRED = ['customer', 'amount', 'valueDate', 'bank', 'branch', 'account'];
 
 /**
- * Gets the list screen open, by whichever route works.
+ * Gets the list screen open.
  *
- * The desktop icon first, so the run reads like every other agent's — then
- * `top.S.runProgram`, because the icon disappeared once already (see
- * `profile.program`). Falling back silently would hide a desktop that has been
- * rearranged, so the route taken is logged either way.
+ * Choosing between the icon and `top.S.runProgram` is no longer this agent's
+ * job — `openProgram` skips an icon that is not in the DOM and takes
+ * `profile.program` instead, for whichever agent declares one. What stays here
+ * is the short-circuit: reopening the program while the list is already up
+ * would reset a screen an earlier step in the same run is still working in.
  */
 export async function openList(ctx) {
-  const open = () => frameOf(ctx, profile.frames.list);
-  if (open()) return open();
-
-  await openProgram(ctx, profile.shortcut, { expect: profile.frames.list }).catch((e) => {
-    ctx.logger.step('osh', `האייקון ${profile.shortcut} לא נפתח (${e.message.split('\n')[0]}) — עובר ל-runProgram`);
-  });
-  if (open()) return open();
-
-  const nav = ctx.page.frames().find((f) => (f.name() || '') === 'S');
-  if (!nav) throw new Error('קבלה לעו"ש: לא נמצא frame הניווט "S" — כנראה לא מחוברים.');
-  await nav.evaluate((p) => top.S.runProgram(p), profile.program);
-  await ctx.human.settle('program opened by path');
-  await ctx.human.think('program loading');
-
-  const frame = open();
-  if (!frame) throw new Error(`קבלה לעו"ש: מסך הרשימה לא נפתח — לא דרך ${profile.shortcut} ולא דרך ${profile.program}.`);
-  ctx.logger.step('osh', `הרשימה נפתחה דרך runProgram(${profile.program})`);
-  return frame;
+  const open = frameOf(ctx, profile.frames.list);
+  if (open) return open;
+  return engine.openList(ctx, profile);
 }
 
 /**
  * Opens a receipt and fills the header. Does **not** file it — `#OK` here opens
  * the filing dialog, and that belongs to `finalize`.
  *
- * Two gates run before a single character is typed:
+ * Three gates run before a single character is typed:
  *
  *   1. **Required input.** A receipt missing its source account is a receipt
  *      that records money from nowhere.
- *   2. ⚠️ **The duplicate check.** The customer's last 5 receipts are read off
+ *   2. ⚠️ **The invoice-presence check.** Before this document is even opened,
+ *      the customer's code is checked against a157 (tax invoices). Zero
+ *      invoices ever is the signature of picking the wrong one out of two
+ *      similar names — Dror's rule (03/09/2026). Runs first, because it opens
+ *      a *different* program and would otherwise stack a window on top of
+ *      this one.
+ *   3. ⚠️ **The duplicate check.** The customer's last 5 receipts are read off
  *      the list, and an existing one with the same amount *and* date stops this
  *      before `#newRec`. Dror's rule (03/09/2026), and the day it was written
  *      customer 112001 already had three ₪1.00 receipts dated 03/09 — it would
@@ -434,6 +446,10 @@ export async function create(ctx, input = {}) {
     );
   }
   const bank = resolveBank(input.bank);
+
+  const invoiceCheck = await checkInvoicePresence(ctx, input.customer);
+  logger.save('invoice-check.json', { any: invoiceCheck.any, rows: invoiceCheck.rows.map((r) => r.text) });
+  if (!invoiceCheck.any && !input.allowNoInvoice) throw noInvoiceError(profile.label, input.customer);
 
   const listFrame = await openList(ctx);
 

@@ -55,10 +55,18 @@ const isScreen = (re, frame) => re.test(framePath(frame.url()));
  */
 export const linesFrame = (ctx, profile) => frameFor(ctx.page, profile.frames.linesGrid);
 
-/** Open the document's own program and return its list frame. */
+/**
+ * Open the document's own program and return its list frame.
+ *
+ * A profile that declares `program` gets the path as a fallback for a desktop
+ * that no longer carries its icon; one that does not behaves exactly as before.
+ */
 export async function openList(ctx, profile) {
   assertMapped(profile, 'list');
-  const { frame } = await openProgram(ctx, profile.shortcut, { expect: profile.frames.list });
+  const { frame } = await openProgram(ctx, profile.shortcut, {
+    expect: profile.frames.list,
+    program: profile.program ?? null,
+  });
   if (!frame) throw new Error(`${profile.label}: מסך הרשימה לא נפתח.`);
   return frame;
 }

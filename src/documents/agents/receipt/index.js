@@ -319,6 +319,12 @@ const notDriven = (what) => new Error(
  *
  * The next real receipt is what turns this on, and it should be driven with a
  * human watching each step — the same way 6800005 was.
+ *
+ * ⚠️ When it does: wire in `checkInvoicePresence` from
+ * `../../invoice-presence-check.js`, before `openList`, exactly as
+ * `osh-receipt/index.js` does it (03/09/2026) — the same wrong-customer
+ * protection applies here, and it is not wired in yet only because there was
+ * nothing here for it to guard.
  */
 export async function create() {
   throw notDriven('אני לא פותח קבלה — הקוד הזה מעולם לא הריץ אחת בעצמו.');

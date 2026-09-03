@@ -13,6 +13,7 @@ import { readdirSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { getBrowser } from '../src/browser.js';
+import { logoff } from '../src/session.js';
 import { RunLogger } from '../src/logger.js';
 import { ROOT } from '../src/config.js';
 
@@ -67,9 +68,17 @@ try {
   await logger.shot(session.page, 'error').catch(() => {});
   console.error(`\n${e.stack}`);
 } finally {
-  // Leave a window we attached to alone; only close one we launched ourselves.
-  if (session.owned) await session.context.close().catch(() => {});
-  else await session.browser.close().catch(() => {});
+  // A window we launched dies with this process, and Comax holds the seat for
+  // about three minutes unless CloseSession.ashx actually fires — so release it
+  // here, while the page is still alive to send it. A window we attached to
+  // belongs to `npm run open`; logging that one off would pull the seat out
+  // from under whoever is working in it.
+  if (session.owned) {
+    await logoff({ ...session, logger }).catch((e) => logger.step('session', `שחרור המושב נכשל: ${e.message}`));
+    await session.context.close().catch(() => {});
+  } else {
+    await session.browser.close().catch(() => {});
+  }
   const dir = logger.done(status);
   console.log(`\nלוג והרצה: ${dir}`);
 }
