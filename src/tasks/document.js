@@ -14,7 +14,7 @@ import * as registry from '../documents/registry.js';
 
 export const meta = {
   name: 'document',
-  description: 'סוכני המסמכים — חשבונית, הצעה, תעודת העברה, דרך סוכן־על אחד',
+  description: 'סוכני המסמכים — חשבונית, הצעה, תעודת העברה, קבלה, דרך סוכן־על אחד',
   writes: true,
   input: {
     list: 'boolean — רק להציג את הסוכנים ומצב המיפוי שלהם, בלי להתחבר',

@@ -15,12 +15,14 @@
  *
  * It does not know how any individual document behaves. That knowledge belongs
  * to the agent — a tax invoice moves stock the instant it is filed, a quote can
- * be abandoned, a transfer has no customer at all — and pulling it up to here
- * is what would turn four specialists back into one mediocre generalist.
+ * be abandoned, a transfer has no customer at all, a receipt has no items — and
+ * pulling it up to here is what would turn five specialists back into one
+ * mediocre generalist.
  */
 import * as invoice from './agents/invoice/index.js';
 import * as invoiceReceipt from './agents/invoice-receipt/index.js';
 import * as quote from './agents/quote/index.js';
+import * as receipt from './agents/receipt/index.js';
 import * as transfer from './agents/transfer/index.js';
 
 /** Every document agent, keyed by its short name. */
@@ -28,6 +30,7 @@ const AGENTS = {
   [invoice.profile.name]: invoice,
   [invoiceReceipt.profile.name]: invoiceReceipt,
   [quote.profile.name]: quote,
+  [receipt.profile.name]: receipt,
   [transfer.profile.name]: transfer,
 };
 
@@ -38,6 +41,8 @@ const ALIASES = {
   'tax-invoice': 'invoice',
   'חשבונית מס/קבלה': 'invoice-receipt',
   'חשבונית קבלה': 'invoice-receipt',
+  'קבלה': 'receipt',
+  'קבלות': 'receipt',
   'הצעה': 'quote',
   'הצעת מחיר': 'quote',
   'תעודת העברה': 'transfer',
