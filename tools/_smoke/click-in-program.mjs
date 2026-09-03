@@ -23,6 +23,13 @@ const { page, human } = s;
 // The busiest frame whose name looks like a program slot (f0, f1, ...).
 const active = await activeFrames(page);
 const prog = active.find((f) => /^f\d+$/.test(f.name)) ?? active[0];
+// A window that is open but has no program in it used to die here on
+// `prog.name` with a TypeError, which reads like a bug in the tool rather than
+// like "you forgot to open the program" — which is what it always is.
+if (!prog) {
+  console.log('אין תוכנית פתוחה בחלון. תריץ קודם:  npm run open-program -- <קיצור>');
+  process.exit(1);
+}
 console.log(`frame התוכנית: ${prog.name} (${prog.elements} אלמנטים)\n`);
 const frame = page.frames().find((fr) => (fr.name() || '(anon)') === prog.name);
 
