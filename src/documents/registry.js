@@ -21,6 +21,7 @@
  */
 import * as invoice from './agents/invoice/index.js';
 import * as invoiceReceipt from './agents/invoice-receipt/index.js';
+import * as oshReceipt from './agents/osh-receipt/index.js';
 import * as quote from './agents/quote/index.js';
 import * as receipt from './agents/receipt/index.js';
 import * as transfer from './agents/transfer/index.js';
@@ -29,6 +30,7 @@ import * as transfer from './agents/transfer/index.js';
 const AGENTS = {
   [invoice.profile.name]: invoice,
   [invoiceReceipt.profile.name]: invoiceReceipt,
+  [oshReceipt.profile.name]: oshReceipt,
   [quote.profile.name]: quote,
   [receipt.profile.name]: receipt,
   [transfer.profile.name]: transfer,
@@ -43,6 +45,14 @@ const ALIASES = {
   'חשבונית קבלה': 'invoice-receipt',
   'קבלה': 'receipt',
   'קבלות': 'receipt',
+  // a146 — a different program from קבלה, in a different application.
+  // Kept off the bare 'קבלה' keys on purpose: guessing between the two
+  // picks the wrong money channel.
+  'קבלה לעו"ש': 'osh-receipt',
+  'קבלות לעו"ש': 'osh-receipt',
+  'עו"ש': 'osh-receipt',
+  'העברה בנקאית': 'osh-receipt',
+  'קבלת העברה': 'osh-receipt',
   'הצעה': 'quote',
   'הצעת מחיר': 'quote',
   'תעודת העברה': 'transfer',
