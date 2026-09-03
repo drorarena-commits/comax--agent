@@ -56,12 +56,25 @@ export function list() {
     label: a.profile.label,
     shortcut: a.profile.shortcut,
     movesStock: !!a.profile.movesStock,
-    ready: isReady(a),
+    ready: isReady(a) && a.profile.driven !== false,
+    driven: a.profile.driven !== false,
     mapped: a.profile.mapped,
   }));
 }
 
-const isReady = (agent) => Object.values(agent.profile.mapped ?? {}).every(Boolean);
+/**
+ * A document is ready when every screen it HAS is mapped.
+ *
+ * `hasLines: false` is not the same as an unmapped lines screen: a receipt has
+ * no lines screen at all, and reporting "חסר מיפוי: lines" about a screen that
+ * does not exist sends whoever reads it looking for something to map.
+ *
+ * Mapped is not the same as driven, either. An agent may declare `driven: false`
+ * — every screen photographed, but its own code has never run the flow — and
+ * `list()` reports that separately so "מוכן" never means "mapped, untried".
+ */
+const stages = (agent) => ['list', 'header', ...(agent.profile.hasLines === false ? [] : ['lines'])];
+const isReady = (agent) => stages(agent).every((k) => agent.profile.mapped?.[k]);
 
 /** The specialist for a document. Throws with the full menu on an unknown name. */
 export function get(nameOrLabel) {
@@ -82,7 +95,8 @@ export function get(nameOrLabel) {
  */
 export function assertReady(agent, { needLines = true } = {}) {
   const m = agent.profile.mapped ?? {};
-  const missing = ['list', 'header', ...(needLines ? ['lines'] : [])].filter((s) => !m[s]);
+  const wants = needLines && agent.profile.hasLines !== false ? ['list', 'header', 'lines'] : ['list', 'header'];
+  const missing = wants.filter((s) => !m[s]);
   if (!missing.length) return;
   throw new Error(
     `${agent.profile.label}: המסכים ${missing.join(', ')} לא מופו — עוצר לפני הקליק הראשון.\n` +

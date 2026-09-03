@@ -18,6 +18,7 @@ export const meta = {
   writes: true,
   input: {
     list: 'boolean — רק להציג את הסוכנים ומצב המיפוי שלהם, בלי להתחבר',
+    payments: 'array, קבלה בלבד — [{ method, amount }]. עוד לא מומש',
     document: 'string — שם המסמך או התווית בעברית. למשל "חשבונית מס"',
     customer: 'string — קוד או שם לקוח (מסמכי מכירה בלבד)',
     storeFrom: 'string — ממחסן. תעודת העברה בלבד, ואין לה לקוח',
@@ -45,7 +46,10 @@ export async function run(ctx) {
       console.log(
         `    ${a.name.padEnd(16)} ${a.label.padEnd(18)} ${a.shortcut.padEnd(6)} ` +
         `${a.movesStock ? 'מזיז מלאי' : '         '}  ` +
-        `${a.ready ? '✅ מוכן' : `⚠️  חסר מיפוי: ${missing.join(', ')}`}`,
+        // "ממופה, הקוד לא הורץ" is its own state: every screen is known, but this
+        // agent's code has never driven the flow. Collapsing it into "מוכן" is
+        // how an untried path gets pointed at a live ledger.
+        `${!a.driven ? '⚠️  ממופה, הקוד לא הורץ' : a.ready ? '✅ מוכן' : `⚠️  חסר מיפוי: ${missing.join(', ')}`}`,
       );
     }
     console.log('');
