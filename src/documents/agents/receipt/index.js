@@ -53,7 +53,12 @@ export const profile = {
   },
   movesStock: false, // moves money — which is irreversible in its own way
   collectsPayment: true, // the only other agent with this is invoice-receipt
-  series: '70100xx', // 7010013 was the latest on 04/08/2026
+
+  // Two numbering series, like Doc470. The list holds `70100xx` (7010013 was
+  // the latest, 04/08/2026) but a new receipt is offered `68000xx` — the ADD
+  // form showed "(6800005)". Likely POS-generated vs hand-written: 7010013's
+  // פרטים field read "קבלה מקופה". Not confirmed — no receipt has been filed.
+  series: { onTheList: '70100xx', offeredOnAdd: '68000xx' },
 
   // Read live on 03/09/2026 — the list opened, and receipt 7010013 opened in
   // UPDATE mode and was backed out with `#Cancel`. Neither screen was *driven*,
@@ -91,14 +96,21 @@ export const profile = {
   columns: ['קבלה', 'תאריך', 'לקוח', 'שם לקוח', 'אסמכתא', 'סכום', 'הופקד'],
 
   /**
-   * `KabalaNU.asp` — read on 7010013 in UPDATE mode, never driven.
+   * `KabalaNU.asp` — read in BOTH modes on 03/09/2026 and backed out of both:
+   * UPDATE on 7010013, and ADD (title "הוספת // קבלה", orange; UPDATE is green).
+   * Same URL for both; `DocMode` in the query string is what differs.
    *
    * Deliberately NOT named `header` like the other agents: this screen is the
    * whole document, not a step before the lines, so a caller that treats it like
    * `Doc650U` will press `#OK` expecting to advance and file instead.
    */
   headerScreen: {
-    docNo: '#DocNo', // ⚠️ #DocNo, not #DocId — the opposite of Doc652
+    // ⚠️ `#DocNo`, not `#DocId` — the opposite of Doc652. In ADD the field is
+    // EMPTY and its label carries the next number in parentheses, e.g.
+    // "(6800005)". The `DocNo=` in the query string is the row that was
+    // selected on the list, NOT the number this document will get — reading it
+    // from the URL gives the wrong receipt.
+    docNo: '#DocNo',
     date: '#DateDoc', time: '#DocTime',
     customer: '#IdxLk',
     details: '#Pratim', // "קבלה מקופה" on 7010013
@@ -108,16 +120,39 @@ export const profile = {
     currency: '#Mt', rate: '#tShaar', currencyDate: '#DateMt',
     costCode: '#Svg', costCode2: '#Svg2', // קוד תמחירי 1 / 2
 
-    // סוג תשלום — three radios with values "0" / "1" / "2". Which value is cash,
-    // which cheque and which card was NOT determined: the dump gives the values,
-    // not which one was checked. Read it before writing it.
-    paymentTypeRadios: 'input[type=radio]',
+    // סוג תשלום — three radios named `Sug`, `Sug_onclick(0|1|2)`.
+    //
+    // The mapping is proven, not guessed. In UPDATE mode Comax disables the
+    // radios that are *not* selected, so on 7010013 — a receipt paid by credit
+    // card — values 0 and 1 came back `disabled: true` and value 2 did not.
+    // The screenshot agrees: כרטיס אשראי is the filled one.
+    paymentTypeRadios: 'input[name="Sug"]',
+    paymentTypes: { מזומן: '0', שיקים: '1', אשראי: '2' },
+
+    // ⚠️ In ADD the default is **2 — כרטיס אשראי**, with the credit block live.
+    // Same trap as Doc652, whose `#numScr` defaults to אשראי: whoever files
+    // without touching this field charges a card.
+    paymentTypeDefault: '2',
 
     // Credit block. Amounts and instalments are safe to read; the four in
     // NEVER_FILL must not be written by this agent under any circumstances.
     cardIssuer: '#AshraiType', dealType: '#IskaType',
-    cardAmount: '#ScmAshrai', instalments: '#TashNum',
-    firstInstalment: '#ScmTash1', otherInstalments: '#ScmTash',
+    cardAmount: '#ScmAshrai',
+    // These three exist only once a credit deal is on the document: they were
+    // present in UPDATE on 7010013 and absent from the blank ADD form. Their
+    // absence is the form being empty, not a failed read.
+    instalments: '#TashNum', firstInstalment: '#ScmTash1', otherInstalments: '#ScmTash',
+
+    // ADD-only, and none of them were in UPDATE.
+    dateCalendar: '#CdrDateDoc',
+    newCustomer: '#LkNew', // opens a customer card
+    hasum: '#SwHasum', // checkbox by the customer row — purpose unknown
+    // ⚠️ `#chg` is NOT a picker. MAP.md, correction #1: on Comax forms it
+    // switches the *customer type*. The real pickers are `#CcomboBut<field>` —
+    // `#CcomboButIdxLk`, `#CcomboButAshraiType`, `#CcomboButIskaType`,
+    // `#CcomboButSochen`, `#CcomboButSochenGevya`, `#CcomboButSvg`,
+    // `#CcomboButSvg2`, `#CcomboButMt`.
+    pickerPrefix: '#CcomboBut',
 
     kupa: '#getKupa', // חשבון קופה
     creditDetail: '#goAshrai', // פרוט אשראי
@@ -139,21 +174,22 @@ export const profile = {
 /** What is missing, phrased for a person, with the command that fixes it. */
 const notMapped = (what) => new Error(
   `קבלה: ${what}\n` +
-  '  נקרא חי 03/09/2026: הרשימה (KabalaV.asp) והכותרת (KabalaNU.asp, מצב UPDATE).\n' +
-  '  לא הורץ: הכותרת במצב ADD, מסכי השיקים/האשראי, והקליטה עצמה.\n' +
-  '  ⚠️ בכותרת יש שדות כרטיס אשראי ו-CVV — הסוכן לא ממלא אותם לעולם.\n' +
+  '  נקרא חי 03/09/2026: הרשימה, והכותרת בשני המצבים (UPDATE ו-ADD).\n' +
+  '  לא הורץ: מילוי שדה אחד, מסכי השיקים/האשראי/הקופה, והקליטה עצמה.\n' +
+  '  ⚠️ ברירת המחדל בכותרת חדשה היא כרטיס אשראי, ויש בה שדות כרטיס ו-CVV\n' +
+  '     שהסוכן לא ממלא לעולם.\n' +
   '  הפרטים: src/documents/agents/receipt/AGENT.md',
 );
 
 /**
  * Refuses.
  *
- * `#newRec` could now be found and pressed — the list is mapped — and that is
- * exactly why this stays shut. The ADD-mode header has never been seen, and on
- * this document `#OK` very probably files rather than advances.
+ * Both screens are now mapped well enough to drive — which is exactly why this
+ * stays shut. Not one field has ever been typed into, `#OK` is unproven and
+ * probably files, and the form opens defaulted to charging a credit card.
  */
 export async function create() {
-  throw notMapped('אני לא פותח קבלה — ראיתי כותרת של מסמך קיים, לא של מסמך חדש.');
+  throw notMapped('אני לא פותח קבלה — מיפיתי את המסך, מעולם לא מילאתי בו שדה.');
 }
 
 /**
