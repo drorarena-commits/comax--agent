@@ -229,21 +229,59 @@ export const profile = {
    * Comax's pre-fill is a suggestion, not an instruction.
    */
   allocation: {
-    rows: 'input[id^="I"]', // #I0, #I1 … one per open invoice, value = amount allocated
+    shell: /ShiuhIdxV\.aspx?/i, // the buttons and the balance block
+    grid: /ShiuhIdx_Fr\.aspx?/i, // one row per open invoice
+
+    // `#I0`, `#I1` … the **שיוך** column: what this receipt pays against that
+    // document. The right-hand **יתרה לשיוך** column holds the invoice's own
+    // open balance.
+    rows: 'input[id^="I"]',
+
+    // ⚠️ You do not type into the שיוך box. **Click the amount itself in the
+    // יתרה לשיוך column** and it jumps across into שיוך (Dror, 03/09/2026).
+    // Typing works too, but clicking is the route Comax expects and the one
+    // that fills the exact remaining balance.
+
+    // The completeness check, read off the shell: סכום קבלה / שויך / יתרה
+    // לשיוך. Fully allocated means **יתרה לשיוך = 0.00** — worth reading rather
+    // than trusting the rows to add up.
+    totals: { receipt: 'סכום קבלה', allocated: 'שוייך', left: 'יתרה לשיוך' },
+
     ok: '#OK', cancel: '#Cancel',
     zero: '#ZeroSh', // איפוס שיוך — leaves the receipt as an unallocated credit
     balance: '#Izun', // ביצוע איזון — untested across all rows. Do not press.
   },
+
+  /**
+   * ⚠️ A closed allocation screen is never a lost cause.
+   *
+   * On the receipts list: filter to the receipt, select its row, and press
+   * **"לחשבוניות"** (`#ShiuhHesh`). The same screen opens on the existing
+   * document, showing what is already allocated. Proven on 6800007.
+   *
+   * It is also the read-only way to answer "was this receipt allocated?" — the
+   * list grid does not carry that column.
+   */
+  allocateLater: '#ShiuhHesh',
 
   // This document has no lines screen at all, which is different from having one
   // that is not mapped yet. The registry reads it so the agent listing stops
   // reporting "חסר מיפוי: lines" about a screen that does not exist.
   hasLines: false,
 
-  // Every screen is mapped, and the flow ran end to end on 6800005 — but Dror
-  // drove every click and this code drove none of them. Until it files a receipt
-  // itself, "mapped" and "working" are different claims, and `create` refuses.
+  /**
+   * The flow has now been driven by code — `tools/_smoke/receipt-drive.mjs`
+   * filed **6800007** on 03/09/2026 using these very selectors, allocated it,
+   * and verified it through `#wFindDocNo`. So the profile below is proven, not
+   * observed.
+   *
+   * `driven` still says false because it is about THIS module's own API:
+   * `create` and `finalize` are still the refusals further down, and the working
+   * flow lives in the smoke tool. Wiring the two together is the remaining work,
+   * and until it is done "the agent can file a receipt" would be a false claim.
+   */
   driven: false,
+  drivenBy: 'tools/_smoke/receipt-drive.mjs', // filed 6800005 (by hand) and 6800007 (by code)
 
   header: null, // the engine's header contract does not fit — see headerScreen
   line: null,
