@@ -13,6 +13,7 @@
     "open-program": "node tools/open-program.js",
     "options": "node tools/read-options.js",
     "catalog": "node tools/catalog.js",
+    "catalog-csv": "node tools/catalog-from-csv.cjs",
     "close": "node tools/close-windows.js",
     "check-login": "node tools/check-login.js",
     "logoff": "node tools/logoff.js",
