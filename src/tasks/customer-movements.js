@@ -30,6 +30,7 @@ import { resolve } from 'node:path';
 import { ROOT } from '../config.js';
 import { ensureLoggedIn } from '../session.js';
 import { openProgram, closePrograms } from '../navigate.js';
+import { itemLabel, catalogWarning, catalogState } from '../catalog/enrich.js';
 
 export const meta = {
   name: 'customer-movements',
@@ -183,7 +184,12 @@ export function aggregate(lines) {
     if ((l.qty ?? 0) < 0) e.returns += 1;
     // השם ברשת נחתך; שומרים את הארוך ביותר שראינו.
     if ((l.name ?? '').length > (e.name ?? '').length) e.name = l.name;
-    e.docs.push({ doc: l.doc, date: l.date, qty: l.qty, price: l.price, discount: l.discount, total: l.total, note: l.note });
+    // `price` בדוח הוא **מחיר המחירון**, ו-`total` הוא אחרי הנחה. מה שדרור
+    // צריך לראות הוא מה שהלקוח שילם בפועל — וזה היחס ביניהם, לא העמודה.
+    // כובע ים: 100 × 149 = 14,900 אבל הסכום 9,576.80, כלומר 95.77 ליחידה.
+    const paid = l.qty ? Math.round((l.total / l.qty) * 100) / 100 : null;
+    e.docs.push({ doc: l.doc, date: l.date, qty: l.qty, price: l.price, discount: l.discount, total: l.total, paid, note: l.note });
+    e.total = (e.total ?? 0) + (l.total ?? 0);
     if (l.price != null) e.prices.push(l.price);
   }
 
@@ -191,8 +197,17 @@ export function aggregate(lines) {
     .map((e) => {
       const sorted = [...e.docs].sort((a, b) => sortableDate(a.date).localeCompare(sortableDate(b.date)));
       const last = sorted[sorted.length - 1];
+      // ממוצע משוקלל ולא ממוצע של מחירים: פריט שנקנה 6 יחידות בהנחה אחת
+      // ו-3 באחרת צריך לשקף את מה ששולם, לא את אמצע שתי ההנחות.
+      const paidAvg = e.qty ? Math.round((e.total / e.qty) * 100) / 100 : null;
+      const { label: altCode, enriched } = itemLabel(e.barcode);
       return {
         ...e,
+        altCode,
+        enriched,
+        total: Math.round((e.total ?? 0) * 100) / 100,
+        paidAvg,
+        lastPaid: last?.paid ?? null,
         qty: Math.round(e.qty * 1000) / 1000,
         netZero: Math.abs(e.qty) < 1e-9,
         docs: sorted,
@@ -311,10 +326,33 @@ export async function run({ page, human, logger, input, cfg }) {
   if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
   const stamp = new Date().toISOString().slice(0, 10);
   const csvPath = resolve(outDir, `תנועות-${customer}-${stamp}.csv`);
-  const header = ['ברקוד', 'שם פריט', 'תאריך', 'מסמך', 'כמות', 'מחיר', '% הנחה', 'סכום', 'פרטים ממסמך'];
-  const body = picked.map((l) => [l.barcode, l.name, l.date, l.doc, l.qty, l.price, l.discount, l.total, l.note]);
+  // 'מחיר' הוא המחירון ו-'שולם ליחידה' הוא מה שהלקוח באמת שילם — ההפרש הוא
+  // ההנחה, וזה מה שמסתכם לסך הדוח.
+  const header = ['מק"ט', 'ברקוד', 'שם פריט', 'תאריך', 'מסמך', 'כמות', 'מחירון', '% הנחה', 'שולם ליחידה', 'סכום', 'פרטים ממסמך'];
+  const body = picked.map((l) => [
+    itemLabel(l.barcode).label,
+    l.barcode,
+    l.name,
+    l.date,
+    l.doc,
+    l.qty,
+    l.price,
+    l.discount,
+    l.qty ? Math.round((l.total / l.qty) * 100) / 100 : null,
+    l.total,
+    l.note,
+  ]);
   writeFileSync(csvPath, '﻿' + [header, ...body].map((r) => r.map(csvCell).join(',')).join('\n'), 'utf8');
   logger.step('export', csvPath);
+
+  // כלל 5: בלי הקטלוג הדוח מציג ברקודים. אומרים את זה בקול ולא בשקט.
+  const catWarn = catalogWarning();
+  if (catWarn) {
+    logger.step('warn', 'הקטלוג לא נטען — הפריטים מוצגים לפי ברקוד');
+    console.log(`
+${catWarn}
+`);
+  }
 
   await closePrograms({ page, human, logger, cfg }).catch(() => {});
 
@@ -326,6 +364,7 @@ export async function run({ page, human, logger, input, cfg }) {
     itemCount: items.length,
     totals,
     csv: csvPath,
+    catalog: catalogState(),
     items,
     ...(input.raw ? { lines: picked } : {}),
   };

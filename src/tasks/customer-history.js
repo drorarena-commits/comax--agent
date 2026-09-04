@@ -20,12 +20,10 @@
  * is aimed at is a `U.asp` header. The way out of a document is `#DoExit` on the
  * lines screen followed by `#Cancel` on the header, never `#OK`.
  */
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { ROOT } from '../config.js';
 import { ensureLoggedIn } from '../session.js';
 import { openProgram, closePrograms, dismissPopups } from '../navigate.js';
 import { readTotals, vatRegime } from '../document-totals.js';
+import { itemIndex, catalogWarning, catalogState } from '../catalog/enrich.js';
 
 export const meta = {
   name: 'customer-history',
@@ -64,56 +62,8 @@ const clean = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
 
 /* ---------------------------------------------------------------- catalog -- */
 
-let catalog = null;
-/**
- * מצב הקטלוג, לדיווח. `null` = עוד לא נטען.
- *
- * כלל 5 אומר שפריטים מוצגים לדרור לפי מק"ט חלופי או דגם+צבע, **לעולם לא
- * ברקוד**. ההעשרה כאן היא מה שמקיים את זה — וכשהקובץ חסר היא נכשלה **בשקט**
- * והדוח הדפיס ברקודים, כלומר בדיוק מה שהכלל אוסר, בלי שום סימן.
- *
- * `data/` לא נשמר ב-git, אז במחשב שלא בנה את הקטלוג הוא פשוט לא קיים. זה לא
- * מקרה קצה נדיר — זה מה שקורה בכל מחשב חדש.
- */
-let catalogState = null;
-
-/** barcode/code → catalog record, for showing מק"ט חלופי instead of a code. */
-function itemsByCode() {
-  if (catalog) return catalog;
-  const file = resolve(ROOT, 'data/catalog/items.json');
-  catalog = new Map();
-  if (!existsSync(file)) {
-    catalogState = { ok: false, reason: 'הקובץ data/catalog/items.json לא קיים' };
-    return catalog;
-  }
-  try {
-    for (const r of JSON.parse(readFileSync(file, 'utf8')).records) {
-      catalog.set(String(r.code), r);
-      if (r.barcode) catalog.set(String(r.barcode), r);
-    }
-  } catch (e) {
-    catalogState = { ok: false, reason: `data/catalog/items.json לא נקרא: ${e.message}` };
-    return catalog;
-  }
-  catalogState = catalog.size
-    ? { ok: true, size: catalog.size }
-    : { ok: false, reason: 'data/catalog/items.json ריק' };
-  return catalog;
-}
-
-/**
- * האזהרה שמלווה דוח שהודפס בלי קטלוג.
- *
- * רועשת בכוונה: דוח שמפר את כלל 5 בשקט גרוע מדוח שאומר שחסר לו מידע.
- */
-function catalogWarning() {
-  if (!catalogState || catalogState.ok) return null;
-  return (
-    `⚠️  הקטלוג לא נטען — ${catalogState.reason}.\n` +
-    '    הפריטים למטה מוצגים לפי ברקוד ולא לפי מק"ט חלופי, בניגוד לכלל 5.\n' +
-    '    להעתיק את data/catalog/items.json ממחשב שכבר בנה אותו, או להריץ ייצוא ובנייה מחדש.'
-  );
-}
+// ההעשרה עברה ל-src/catalog/enrich.js — כלל 5 במקום אחד, משותף עם
+// customer-movements. היה כאן עותק פרטי, והדוח השני לא העשיר בכלל.
 
 /** Does this line match what the caller asked about? Code, alt code, or name. */
 function lineMatches(line, needle) {
@@ -339,7 +289,7 @@ export async function run(ctx) {
 
   /* ---- report ---------------------------------------------------------- */
 
-  const cat = itemsByCode();
+  const cat = itemIndex();
   const num = (s) => Number(String(s ?? '').replace(/,/g, '')) || 0;
 
   /**
@@ -400,10 +350,10 @@ export async function run(ctx) {
 
   // כלל 5: פריטים מוצגים לפי מק"ט חלופי, לעולם לא ברקוד. אם הקטלוג לא נטען,
   // הדוח מפר את הכלל — ואומר את זה בקול, במקום להדפיס ברקודים בשקט.
-  itemsByCode();
+  itemIndex();
   const catWarn = catalogWarning();
   if (catWarn) {
-    logger.step('warn', `הקטלוג לא נטען — הפריטים מוצגים לפי ברקוד (${catalogState.reason})`);
+    logger.step('warn', `הקטלוג לא נטען — הפריטים מוצגים לפי ברקוד (${catalogState().reason})`);
     console.log(`\n${catWarn}`);
   }
   for (const p of found) {
