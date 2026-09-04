@@ -42,6 +42,22 @@ export const profile = {
   shortcut: 'a157',
   doc: 'Doc650',
   path: 'Erp/Mehirot/Doc650/Inv_Mlay',
+
+  /**
+   * How Comax itself launches this program, and why the path is written down.
+   *
+   * `a157` was on the desktop on 02/09/2026 and **gone** by 04/09/2026 — the
+   * same disappearance `a146` suffered a day earlier, when the desktop switched
+   * to a category view. `openProgram` falls back to `top.S.runProgram(program)`
+   * when the icon is not in the DOM, and `engine.openList` already forwards
+   * `profile.program`; without this line every invoice flow dies on 30s of
+   * "waiting for locator('#a157')" with nothing saying the icon is simply gone.
+   *
+   * Note the `.asp`, not `.aspx`: that is what `runProgram` takes, even though
+   * the frame it produces is `Doc650V.aspx`.
+   */
+  program: 'Erp/Mehirot/Doc650/Inv_Mlay/Doc650V.asp',
+
   movesStock: true,
   discountColumn: 'הנחה %', // with the space — Doc652 has none
   hasItemFilter: false, // no #wPrt, unlike Doc652V and Doc612V

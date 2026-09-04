@@ -12,11 +12,16 @@
  * SAFETY — read this before changing anything here:
  * The recipient field arrives **pre-filled with the customer's own address**,
  * pulled from their card (`erez@kmc.co.il` on the first run). One stray click
- * mails a live quote to a real customer, and that cannot be taken back. So this
- * task refuses to send unless `to` was passed explicitly, and it verifies the
- * field actually holds that address immediately before clicking send.
+ * mails a live document to a real customer, and that cannot be taken back.
+ *
+ * That guard now lives in `src/documents/recipient.js` (כלל 14) rather than
+ * here, because it is not specific to quotes: every document type opens the
+ * same `Erp/Divor_Doc.asp` envelope with the customer's address already in it.
+ * An invoice Dror asked for **himself** came up pre-filled with the customer's
+ * address on 04/09/2026. Any new send flow must import the same three helpers.
  */
 import { openProgram, closePrograms } from '../navigate.js';
+import { requireRecipient, takeOverRecipient, assertRecipient } from '../documents/recipient.js';
 
 export const meta = {
   name: 'quote-email',
@@ -33,19 +38,12 @@ export const meta = {
   },
 };
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function run(ctx) {
   const { page, human, logger, input, dryRun } = ctx;
 
   if (!input.docNo) throw new Error('חסר docNo — איזו הצעה לשלוח?');
-  if (!input.to) {
-    throw new Error(
-      'חסר to — כתובת הנמען חייבת להיות מפורשת.\n' +
-      'קומקס ממלא אוטומטית את כתובת הלקוח, ושליחה בטעות ללקוח אינה הפיכה.',
-    );
-  }
-  if (!EMAIL_RE.test(input.to)) throw new Error(`"${input.to}" אינה כתובת דוא"ל תקינה.`);
+  const to = requireRecipient(input.to, { what: 'הצעת המחיר' });
 
   const { frame: list } = await openProgram(ctx, 'a164', { expect: /Doc612V\.asp/i });
 
@@ -73,12 +71,7 @@ export async function run(ctx) {
   const dlg = page.frames().find((f) => /Divor_Doc\.asp/i.test(f.url()));
   if (!dlg) throw new Error('חלון שליחת הדוא"ל לא נפתח.');
 
-  const original = await dlg.locator('#Email').inputValue().catch(() => '');
-  if (original && original.toLowerCase() !== input.to.toLowerCase()) {
-    logger.step('warn', `קומקס מילא את כתובת הלקוח: ${original} — מחליף ל-${input.to}`);
-  }
-
-  await human.type('#Email', input.to, { scope: dlg, label: 'מקבל דוא"ל' });
+  const { prefilled: original } = await takeOverRecipient({ frame: dlg, human, logger, to });
   if (input.toName) await human.type('#SentToEmail_Add', input.toName, { scope: dlg, label: 'שם הנמען' });
   if (input.subject) await human.type('#Subject', input.subject, { scope: dlg, label: 'נושא' });
   if (input.remark) await human.type('#Remark', input.remark, { scope: dlg, label: 'הערה' });
@@ -97,7 +90,7 @@ export async function run(ctx) {
   console.log(`    מאת:   ${mail.from}`);
   console.log(`    נושא:  ${mail.subject}`);
   if (mail.remark) console.log(`    הערה:  ${mail.remark}`);
-  if (original && original.toLowerCase() !== input.to.toLowerCase()) {
+  if (original && original.toLowerCase() !== to.toLowerCase()) {
     console.log(`\n    (קומקס הציע לשלוח ל-${original} — כתובת הלקוח)`);
   }
 
@@ -109,10 +102,7 @@ export async function run(ctx) {
 
   // Last check against the live field: everything above could have been
   // repopulated by the page between filling and clicking.
-  const finalTo = await dlg.locator('#Email').inputValue();
-  if (finalTo.trim().toLowerCase() !== input.to.trim().toLowerCase()) {
-    throw new Error(`שדה הנמען מכיל "${finalTo}" ולא "${input.to}" — לא שולח.`);
-  }
+  const finalTo = await assertRecipient(dlg, to);
 
   await human.click('#OK', { scope: dlg, label: 'שליחה' });
   await human.settle('sending');

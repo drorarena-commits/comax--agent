@@ -16,14 +16,30 @@ import { attachBrowser } from '../../src/browser.js';
 import { RunLogger } from '../../src/logger.js';
 import { openProgram } from '../../src/navigate.js';
 import { loadConfig } from '../../src/config.js';
+import { acquire, busyMessage } from '../../src/lock.js';
+import { touch } from '../../src/activity.js';
 import { profile } from '../../src/documents/agents/invoice/index.js';
+import { requireRecipient, takeOverRecipient, assertRecipient } from '../../src/documents/recipient.js';
 
-const [DOC, TO] = process.argv.slice(2);
+const [DOC, RAW_TO] = process.argv.slice(2);
 const SEND = process.argv.includes('--send');
-if (!DOC || !TO || !/@/.test(TO)) {
+if (!DOC || !RAW_TO) {
   console.log('שימוש: node tools/_smoke/invoice-restore.mjs <docNo> <email> [--send]');
   process.exit(1);
 }
+// כלל 14 — נמען מפורש ותקין, לפני שנוגעים בקומקס.
+const TO = requireRecipient(RAW_TO, { what: `חשבונית ${DOC}` });
+
+// אותה נעילה ש-run.js לוקח, ומאותה סיבה: לקומקס יש מושב אחד, ו-`idle-logoff`
+// רץ כל 5 דקות ומשחרר אותו. בלי הנעילה הוא יכול לנתק את הסשן באמצע הזרימה —
+// כלומר בין הרגע שהמעטפה נפתחה לרגע שקוראים ממנה את הנמען.
+const lock = await acquire('invoice-restore', { waitMs: 10_000 });
+if (!lock.ok) {
+  console.error(`\n${busyMessage(lock.holder)}\n`);
+  process.exit(1);
+}
+touch('invoice-restore');
+process.on('exit', () => { touch('invoice-restore'); lock.release(); });
 
 // Max2000 puts the parent frame's name in the query string, so matching a whole
 // URL on "Doc650_ShihzurP" also catches Doc650_HtmlP_T13. Always match the path.
@@ -39,7 +55,12 @@ const { page, human } = ctx;
 let list = byPath(page, /Doc650V\.aspx?$/i);
 if (!list) {
   logger.step('flow', 'פותח את a157');
-  const r = await openProgram(ctx, profile.shortcut, { expect: profile.frames.list });
+  // `program` הוא הנתיב החלופי לאייקון שקומקס הוריד מהשולחן. `a157` נעלם
+  // ב-04/09/2026, ובלי הנתיב הכלי מת על 30 שניות המתנה ל-`#a157` שלא קיים.
+  const r = await openProgram(ctx, profile.shortcut, {
+    expect: profile.frames.list,
+    program: profile.program ?? null,
+  });
   list = r.frame ?? byPath(page, /Doc650V\.aspx?$/i);
 }
 if (!list) { console.log('לא הצלחתי לפתוח את רשימת החשבוניות.'); process.exit(1); }
@@ -83,9 +104,7 @@ await human.think('mail form');
 const mail = byPath(page, /Divor_Doc\.asp$/i);
 if (!mail) { console.log('מסך המייל לא נפתח.'); process.exit(1); }
 
-const before = await mail.evaluate(() => document.querySelector('#Email')?.value);
-await mail.locator('#Email').fill('');
-await human.type('#Email', TO, { scope: mail, label: 'מקבל דוא"ל' });
+const { prefilled: before } = await takeOverRecipient({ frame: mail, human, logger, to: TO });
 
 const state = await mail.evaluate(() => ({
   to: document.querySelector('#Email')?.value,
@@ -97,7 +116,8 @@ console.log(`\n  נמען שקומקס מילא: ${JSON.stringify(before)}   ←
 console.log(`  נמען אחרי החלפה : ${JSON.stringify(state.to)}`);
 console.log(`  שולח            : ${JSON.stringify(state.from)}`);
 console.log(`  נושא            : ${JSON.stringify(state.subject)}`);
-if (state.to !== TO) { console.log('\n  ⛔ הכתובת לא נתפסה — לא שולח.\n'); process.exit(1); }
+// אותה בדיקה בדיוק כמו לפני השליחה — סמנטיקה אחת, גם במסלול היבש.
+await assertRecipient(mail, TO);
 await logger.shot(page, 'mail-ready');
 
 if (!SEND) {
@@ -107,7 +127,10 @@ if (!SEND) {
   process.exit(0);
 }
 
-await human.click('#OK', { scope: mail, label: 'שליחה (וי ירוק)' });
+// כלל 14: הבדיקה על השדה החי, צמוד לקליק. הדף יכול להיטען מחדש בין ההקלדה
+// לשליחה ולהחזיר את כתובת הלקוח — לכן לא מסתמכים על מה שנקרא קודם.
+const finalTo = await assertRecipient(mail, TO);
+await human.click('#OK', { scope: mail, label: `שליחה ל-${finalTo}` });
 await human.settle('sent');
 await human.think('server response');
 
