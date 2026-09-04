@@ -6,6 +6,8 @@
   "description": "Browser agent for the Comax ERP portal - human-paced, learned screen by screen",
   "scripts": {
     "open": "node tools/open.js",
+    "ensure": "node tools/ensure-comax.js",
+    "idle-logoff": "node tools/idle-logoff.js",
     "snapshot": "node tools/snapshot.js",
     "run": "node tools/run.js",
     "open-program": "node tools/open-program.js",

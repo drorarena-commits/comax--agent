@@ -44,10 +44,17 @@ export const meta = {
  * hint for `openProgram`; the real prefix is read back off the frame URL, so a
  * program that moves does not silently open the wrong screen.
  */
+/**
+ * `program` הוא נתיב הנפילה אחורה כשהאייקון לא בשולחן העבודה.
+ *
+ * קומקס מסדר מחדש את השולחן בלי להודיע. נמדד 04/09/2026: מתוך 51 אייקונים,
+ * `a157` פשוט **לא קיים** יותר — בזמן ש-`a132`, `a164` ו-`a224` כן. בלי הנתיב
+ * הזה `openProgram` היה מחכה 30 שניות לאייקון שלא יגיע ואז נופל.
+ */
 const PROGRAMS = [
-  { id: 'a157', label: 'חשבונית מס', doc: 'Doc650' },
-  { id: 'a132', label: 'חשבונית מס/קבלה', doc: 'Doc652' },
-  { id: 'a164', label: 'הצעת מחיר', doc: 'Doc612' },
+  { id: 'a157', label: 'חשבונית מס', doc: 'Doc650', program: 'Erp/Mehirot/Doc650/Inv_Mlay/Doc650V.asp' },
+  { id: 'a132', label: 'חשבונית מס/קבלה', doc: 'Doc652', program: 'Erp/Mehirot/Doc650/InvKab_Mlay/Doc652V.asp' },
+  { id: 'a164', label: 'הצעת מחיר', doc: 'Doc612', program: 'Erp/Mehirot/Doc612/AzaaMhr/Doc612V.asp' },
 ];
 
 /** Header labels that carry the document number, across the three programs. */
@@ -58,18 +65,54 @@ const clean = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
 /* ---------------------------------------------------------------- catalog -- */
 
 let catalog = null;
+/**
+ * מצב הקטלוג, לדיווח. `null` = עוד לא נטען.
+ *
+ * כלל 5 אומר שפריטים מוצגים לדרור לפי מק"ט חלופי או דגם+צבע, **לעולם לא
+ * ברקוד**. ההעשרה כאן היא מה שמקיים את זה — וכשהקובץ חסר היא נכשלה **בשקט**
+ * והדוח הדפיס ברקודים, כלומר בדיוק מה שהכלל אוסר, בלי שום סימן.
+ *
+ * `data/` לא נשמר ב-git, אז במחשב שלא בנה את הקטלוג הוא פשוט לא קיים. זה לא
+ * מקרה קצה נדיר — זה מה שקורה בכל מחשב חדש.
+ */
+let catalogState = null;
+
 /** barcode/code → catalog record, for showing מק"ט חלופי instead of a code. */
 function itemsByCode() {
   if (catalog) return catalog;
   const file = resolve(ROOT, 'data/catalog/items.json');
   catalog = new Map();
-  if (existsSync(file)) {
+  if (!existsSync(file)) {
+    catalogState = { ok: false, reason: 'הקובץ data/catalog/items.json לא קיים' };
+    return catalog;
+  }
+  try {
     for (const r of JSON.parse(readFileSync(file, 'utf8')).records) {
       catalog.set(String(r.code), r);
       if (r.barcode) catalog.set(String(r.barcode), r);
     }
+  } catch (e) {
+    catalogState = { ok: false, reason: `data/catalog/items.json לא נקרא: ${e.message}` };
+    return catalog;
   }
+  catalogState = catalog.size
+    ? { ok: true, size: catalog.size }
+    : { ok: false, reason: 'data/catalog/items.json ריק' };
   return catalog;
+}
+
+/**
+ * האזהרה שמלווה דוח שהודפס בלי קטלוג.
+ *
+ * רועשת בכוונה: דוח שמפר את כלל 5 בשקט גרוע מדוח שאומר שחסר לו מידע.
+ */
+function catalogWarning() {
+  if (!catalogState || catalogState.ok) return null;
+  return (
+    `⚠️  הקטלוג לא נטען — ${catalogState.reason}.\n` +
+    '    הפריטים למטה מוצגים לפי ברקוד ולא לפי מק"ט חלופי, בניגוד לכלל 5.\n' +
+    '    להעתיק את data/catalog/items.json ממחשב שכבר בנה אותו, או להריץ ייצוא ובנייה מחדש.'
+  );
 }
 
 /** Does this line match what the caller asked about? Code, alt code, or name. */
@@ -266,7 +309,10 @@ export async function run(ctx) {
     // once failed a run with "iframe intercepts pointer events".
     await closePrograms(ctx).catch(() => {});
 
-    const { frame: list } = await openProgram(ctx, prog.id, { expect: new RegExp(`${prog.doc}V\\.asp`, 'i') });
+    const { frame: list } = await openProgram(ctx, prog.id, {
+      expect: new RegExp(`${prog.doc}V\\.asp`, 'i'),
+      program: prog.program,
+    });
     const prefix = (/\/(Doc\d+)V\.asp/i.exec(list.url()) ?? [])[1];
     if (!prefix) throw new Error(`${prog.label}: לא זיהיתי את קידומת המסמך מתוך ${list.url()}`);
     if (prefix !== prog.doc) logger.step('warn', `${prog.label}: ציפיתי ל-${prog.doc} וקיבלתי ${prefix}`);
@@ -351,6 +397,15 @@ export async function run(ctx) {
   };
 
   console.log(`\n════ היסטוריית רכש — ${input.customer} ════`);
+
+  // כלל 5: פריטים מוצגים לפי מק"ט חלופי, לעולם לא ברקוד. אם הקטלוג לא נטען,
+  // הדוח מפר את הכלל — ואומר את זה בקול, במקום להדפיס ברקודים בשקט.
+  itemsByCode();
+  const catWarn = catalogWarning();
+  if (catWarn) {
+    logger.step('warn', `הקטלוג לא נטען — הפריטים מוצגים לפי ברקוד (${catalogState.reason})`);
+    console.log(`\n${catWarn}`);
+  }
   for (const p of found) {
     console.log(`\n── ${p.program} (${p.id})`);
     if (!p.docs.length) { console.log('   אין מסמכים'); continue; }

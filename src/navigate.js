@@ -106,15 +106,25 @@ export async function openProgram({ page, human, logger, cfg }, nameOrId, { expe
 
   // `count()` asks the DOM as it stands rather than waiting for the element to
   // appear, so an icon Comax has taken off the desktop costs nothing to rule
-  // out. Without a `program` to fall back to there is nothing better to do than
-  // wait for it, which is exactly what every caller did before.
-  const onDesktop = !program || (await nav.locator(selector).count()) > 0;
+  // out. This check now runs even without a `program` fallback: previously it
+  // was skipped, and a caller with no path double-clicked a missing icon and
+  // waited out the full actionTimeoutMs before failing with a bare Playwright
+  // timeout. Measured 04/09/2026 — `a157` is gone from a 51-icon desktop, and
+  // `customer-history` died on 30s of "waiting for locator('#a157')" with
+  // nothing saying the icon simply is not there any more.
+  const onDesktop = (await nav.locator(selector).count()) > 0;
   if (onDesktop) {
     // Desktop icons select on a single click; only a double-click launches them.
     await human.doubleClick(selector, { scope: nav, label: `${sc.label} (${sc.id})` });
-  } else {
+  } else if (program) {
     logger?.step('program', `${sc.label} (${sc.id}) לא בשולחן — פותח לפי נתיב`);
     await nav.evaluate((p) => top.S.runProgram(p), program);
+  } else {
+    throw new Error(
+      `"${sc.label}" (${sc.id}) לא נמצא בשולחן העבודה, ואין נתיב חלופי.\n` +
+        'קומקס מסדר מחדש את השולחן בלי להודיע. הוסף `program` לקריאה ל-openProgram,\n' +
+        'או הרץ `node tools/_smoke/desktop-probe.mjs` כדי לראות אילו אייקונים כן קיימים.',
+    );
   }
   await human.settle(`program "${sc.label}" loading`);
 
