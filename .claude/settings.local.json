@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(node tools/open-program.js \"יצוא לקוחות לאקסל\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(npm run *)",
+      "Bash(node tools/open-program.js a146 'Kupa/Kab/Osh/Kabala_OshV.aspx')",
+      "Bash(node tools/_smoke/receipt-allocate.mjs)",
+      "Bash(node \"C:/Users/user/AppData/Local/Temp/claude/C--AGENT-COMAX-CLOAD/390be515-0a48-4d46-bbbd-003dd8048241/scratchpad/pick-itra.mjs\")",
+      "Bash(node tools/_smoke/shiuh-pick.mjs)",
+      "Bash(node tools/_smoke/receipt-allocate.mjs --ok)",
+      "Bash(node tools/_smoke/shiuh-verify.mjs 6810059)",
+      "Bash(node --check src/documents/agents/osh-receipt/index.js)",
+      "Bash(node -e \"import\\('./src/documents/registry.js'\\).then\\(m=>console.log\\('registry ok:', m.list\\(\\).map\\(a=>a.name\\).join\\(', '\\)\\)\\).catch\\(e=>{console.error\\('FAIL',e.message\\);process.exit\\(1\\)}\\)\")"
     ]
   }
 }
