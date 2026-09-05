@@ -155,6 +155,39 @@ function sameValue(want, got) {
  * a miss files a document with the wrong number on it. Rule 9 — "not known is a
  * refusal, not a guess".
  */
+/**
+ * מה האלמנט הזה בכלל, כשהשער נופל עליו.
+ *
+ * "ביקשנו X ובשדה ריק" לא אומר למי שקורא אם השדה קיים, אם הוא מוסתר, אם הוא
+ * לקריאה בלבד, אם יש שניים כאלה, או אם הוא בכלל לא input. נמדד 05/09/2026 על
+ * `#Remark` בשורת הצעת המחיר: השדה נקרא בהצלחה, מחזיר ריק, והשאלה מי הוא נשארה
+ * פתוחה כי ההודעה לא תיארה אותו. מתואר רק בכישלון — בזרימה תקינה זה עלות מיותרת.
+ */
+async function describeField(frame, selector) {
+  try {
+    return await frame.evaluate((sel) => {
+      const all = [...document.querySelectorAll(sel)];
+      return {
+        כמה: all.length,
+        אלמנטים: all.slice(0, 3).map((el) => ({
+          tag: el.tagName,
+          type: el.getAttribute('type'),
+          name: el.getAttribute('name'),
+          maxLength: el.maxLength > 0 ? el.maxLength : null,
+          readOnly: el.readOnly ?? null,
+          disabled: el.disabled ?? null,
+          מוסתר: el.offsetParent === null,
+          value: 'value' in el ? el.value : null,
+          onchange: el.getAttribute('onchange'),
+          onblur: el.getAttribute('onblur'),
+        })),
+        frame: location.pathname.split('/').pop(),
+      };
+    }, selector);
+  } catch (e) {
+    return { שגיאה: e.message.split('\n')[0] };
+  }
+}
 export async function assertFields(frame, wanted, what) {
   const checked = {};
   const mismatches = [];
@@ -186,7 +219,24 @@ export async function assertFields(frame, wanted, what) {
     if (unreadable) {
       unreadableFields.push(`${selector}: לא ניתן לקרוא את השדה — ${unreadable}`);
     } else if (!sameValue(want, got)) {
-      mismatches.push(`${selector}: ביקשנו ${JSON.stringify(String(want))} ובשדה ${JSON.stringify(got)}`);
+      const desc = await describeField(frame, selector);
+      // ומי עוד מחזיק את הסלקטור הזה? אם אותו מסך פתוח פעמיים, כתבנו לעותק
+      // אחד וקומקס מציג את השני — וזה נראה בדיוק כמו ערך שנעלם.
+      const everywhere = [];
+      for (const f of frame.page().frames()) {
+        const v = await f
+          .evaluate((sel) => {
+            const all = [...document.querySelectorAll(sel)];
+            return all.length ? { כמה: all.length, ערכים: all.map((e) => e.value) } : null;
+          }, selector)
+          .catch(() => null);
+        if (v) everywhere.push({ frame: f.url().split('/').pop().split('?')[0], ...v });
+      }
+      mismatches.push(
+        `${selector}: ביקשנו ${JSON.stringify(String(want))} ובשדה ${JSON.stringify(got)}` +
+          `\n      ${JSON.stringify(desc)}` +
+          `\n      בכל ה-frames: ${JSON.stringify(everywhere)}`,
+      );
     }
   }
 
@@ -303,7 +353,35 @@ export async function addLine(ctx, profile, item, { index, last }) {
   await human.type(L.qty, String(item.qty ?? 1), { scope: frame, label: 'כמות' });
   if (item.price != null) await human.type(L.price, String(item.price), { scope: frame, label: 'מחיר' });
   if (item.discount != null) await human.type(L.discount, String(item.discount), { scope: frame, label: '% הנחה' });
-  if (item.remark && L.remark) await human.type(L.remark, item.remark, { scope: frame, label: 'הערה' });
+  // ⚠️ `#Remark` בולע את הכתיבה הראשונה.
+  //
+  // נמדד 05/09/2026 על `Doc612LinesU`: הוא `<textarea>` יחיד בכל הדף, גלוי,
+  // לא disabled ולא readOnly, maxlength 500 — ובכל זאת הכתיבה הראשונה אליו לא
+  // נשארת. לא בהקלדה תו-תו, לא ב-`insertText`, ולא ב-`fill` ברמת ה-DOM שאינה
+  // תלויה במיקוד. המתנה של שנייה וחצי לא עוזרת. **כתיבה שנייה נתפסת מיד:**
+  //
+  //   לפני כתיבה .......... ""
+  //   מיד אחרי fill ....... ""
+  //   אחרי 1.5 שניות ...... ""
+  //   אחרי כתיבה שנייה .... "בדיקת מיפוי"
+  //
+  // ככל הנראה הטופס מאתחל את השדה אחרי חיפוש הפריט. הסיבה המדויקת לא ידועה,
+  // ולכן זו לא "כתיבה כפולה ליתר ביטחון" אלא לולאה שקוראת ומפסיקה כשנתפס —
+  // אם קומקס יתקן את זה, הלולאה תסתיים אחרי סיבוב אחד מעצמה.
+  //
+  // זה גם מסביר למה הערות שורה נעלמו עד היום בלי שאיש ידע: הקוד הישן הקליד
+  // פעם אחת וקרא בחזרה רק כדי להדפיס ללוג.
+  if (item.remark && L.remark) {
+    const field = frame.locator(L.remark);
+    const wanted = String(item.remark);
+    let landed = false;
+    for (let attempt = 1; attempt <= 3 && !landed; attempt++) {
+      await field.fill(wanted);
+      landed = (await field.inputValue().catch(() => null)) === wanted;
+      if (!landed) logger.step('הערה', `הכתיבה ה-${attempt} לא נתפסה — כותב שוב`);
+    }
+    logger.step('הערה', landed ? `נכתבה: ${wanted}` : 'לא נתפסה — השער יעצור');
+  }
 
   // Same gate as the header, before the line is committed. A quantity or a
   // price that did not land is money on a real document.
