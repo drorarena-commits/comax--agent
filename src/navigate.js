@@ -97,36 +97,8 @@ export async function openProgram({ page, human, logger, cfg }, nameOrId, { expe
 
   const before = new Set((await activeFrames(page)).map((f) => f.name + f.url));
 
-  // An open program covers the desktop, and a double-click aimed at an icon
-  // underneath simply never lands. Raise the desktop first, every time.
-  await showDesktop({ page, human, logger, cfg });
-
   // Prefer the id when we have one — it survives two shortcuts sharing a label.
   const selector = sc.id ? `#${sc.id}` : sc.selector;
-
-  // `count()` asks the DOM as it stands rather than waiting for the element to
-  // appear, so an icon Comax has taken off the desktop costs nothing to rule
-  // out. This check now runs even without a `program` fallback: previously it
-  // was skipped, and a caller with no path double-clicked a missing icon and
-  // waited out the full actionTimeoutMs before failing with a bare Playwright
-  // timeout. Measured 04/09/2026 — `a157` is gone from a 51-icon desktop, and
-  // `customer-history` died on 30s of "waiting for locator('#a157')" with
-  // nothing saying the icon simply is not there any more.
-  const onDesktop = (await nav.locator(selector).count()) > 0;
-  if (onDesktop) {
-    // Desktop icons select on a single click; only a double-click launches them.
-    await human.doubleClick(selector, { scope: nav, label: `${sc.label} (${sc.id})` });
-  } else if (program) {
-    logger?.step('program', `${sc.label} (${sc.id}) לא בשולחן — פותח לפי נתיב`);
-    await nav.evaluate((p) => top.S.runProgram(p), program);
-  } else {
-    throw new Error(
-      `"${sc.label}" (${sc.id}) לא נמצא בשולחן העבודה, ואין נתיב חלופי.\n` +
-        'קומקס מסדר מחדש את השולחן בלי להודיע. הוסף `program` לקריאה ל-openProgram,\n' +
-        'או הרץ `node tools/_smoke/desktop-probe.mjs` כדי לראות אילו אייקונים כן קיימים.',
-    );
-  }
-  await human.settle(`program "${sc.label}" loading`);
 
   // Max2000 programs can take a few seconds to paint into their frame. When the
   // program was already open, nothing new appears — so a URL match counts as
@@ -135,10 +107,66 @@ export async function openProgram({ page, human, logger, cfg }, nameOrId, { expe
     frames.some((f) => !before.has(f.name + f.url)) ||
     (wanted && frames.some((f) => wanted.test(f.url)));
 
-  let after = await activeFrames(page);
-  for (let i = 0; i < 4 && !settled(after); i++) {
-    await human.think(`waiting for "${sc.label}"`);
-    after = await activeFrames(page);
+  const waitForProgram = async () => {
+    await human.settle(`program "${sc.label}" loading`);
+    let frames = await activeFrames(page);
+    for (let i = 0; i < 4 && !settled(frames); i++) {
+      await human.think(`waiting for "${sc.label}"`);
+      frames = await activeFrames(page);
+    }
+    return frames;
+  };
+
+  /**
+   * The fast path: when the caller knows the program's own path, ask Max2000
+   * to run it directly.
+   *
+   * This skips raising the desktop and hunting for an icon — three clicks with
+   * their gates and settles, measured 05/09/2026 at ~18s of an 87s run. The
+   * mechanism is not new: `top.S.runProgram` was already here as the fallback
+   * for when Comax takes an icon off the desktop. It is only being promoted.
+   *
+   * The desktop route stays as the fallback rather than being deleted, because
+   * a path can go stale exactly the way an icon can, and failing over costs one
+   * settle while failing outright costs the whole task.
+   */
+  let after = null;
+  if (program) {
+    logger?.step('program', `${sc.label} (${sc.id}) — לפי נתיב, בלי מעבר בשולחן`);
+    await nav.evaluate((path) => top.S.runProgram(path), program);
+    after = await waitForProgram();
+    if (!settled(after)) {
+      logger?.step('program', `הנתיב לא פתח את ${sc.label} — נופל חזרה לשולחן העבודה`);
+      after = null;
+    }
+  }
+
+  if (!after) {
+    // An open program covers the desktop, and a double-click aimed at an icon
+    // underneath simply never lands. Raise the desktop first.
+    await showDesktop({ page, human, logger, cfg });
+
+    // `count()` asks the DOM as it stands rather than waiting for the element to
+    // appear, so an icon Comax has taken off the desktop costs nothing to rule
+    // out. Measured 04/09/2026 — `a157` is gone from a 51-icon desktop, and
+    // `customer-history` died on 30s of "waiting for locator('#a157')" with
+    // nothing saying the icon simply is not there any more.
+    if ((await nav.locator(selector).count()) > 0) {
+      // Desktop icons select on a single click; only a double-click launches them.
+      await human.doubleClick(selector, { scope: nav, label: `${sc.label} (${sc.id})` });
+    } else if (program) {
+      throw new Error(
+        `"${sc.label}" (${sc.id}) לא נפתח: הנתיב ${program} לא הביא תוכנית, והאייקון לא בשולחן.\n` +
+          'שני המסלולים נוסו. בדוק את הנתיב, או הרץ `node tools/_smoke/desktop-probe.mjs`.',
+      );
+    } else {
+      throw new Error(
+        `"${sc.label}" (${sc.id}) לא נמצא בשולחן העבודה, ואין נתיב חלופי.\n` +
+          'קומקס מסדר מחדש את השולחן בלי להודיע. הוסף `program` לקריאה ל-openProgram,\n' +
+          'או הרץ `node tools/_smoke/desktop-probe.mjs` כדי לראות אילו אייקונים כן קיימים.',
+      );
+    }
+    after = await waitForProgram();
   }
   const opened = after.filter((f) => !before.has(f.name + f.url));
 

@@ -47,6 +47,14 @@ export const meta = {
 };
 
 const PROGRAM = 'a224';
+
+/**
+ * a224's own path, so `openProgram` can launch it without walking the desktop.
+ * Read live from the frame URL on 05/09/2026:
+ * `Max2000_NET_2022/Erp/Nituah/MehirotLkTnuaP.aspx`. The desktop icon stays as
+ * the fallback.
+ */
+const PROGRAM_PATH = 'Erp/Nituah/MehirotLkTnuaP.aspx';
 const FILTER_FRAME = /MehirotLkTnuaP/i;
 const RESULT_FRAME = /Rpt_Html_G/i;
 
@@ -247,7 +255,10 @@ export async function run({ page, human, logger, input, cfg }) {
   // פתוח מחזיר אותנו אליו במקום להתחיל מחדש.
   await closePrograms({ page, human, logger, cfg }).catch(() => {});
 
-  const { frame } = await openProgram({ page, human, logger, cfg }, PROGRAM, { expect: FILTER_FRAME });
+  const { frame } = await openProgram({ page, human, logger, cfg }, PROGRAM, {
+    expect: FILTER_FRAME,
+    program: PROGRAM_PATH,
+  });
   if (!frame) throw new Error('דו"ח תנועות מכירה ללקוח לא נפתח.');
 
   // What the form already holds, read before touching it.
@@ -380,7 +391,24 @@ ${catWarn}
 `);
   }
 
-  await closePrograms({ page, human, logger, cfg }).catch(() => {});
+  // No trailing `closePrograms`. The run opens with one anyway, and measuring
+  // both sides on 05/09/2026 showed the cleanup is far cheaper at the start of
+  // the next run than at the end of this one:
+  //
+  //   closing here, after the answer is already in hand ......... 15.0s
+  //   next run starting with nothing left open ................. 10.0s
+  //   next run starting with this run's spool window open ...... 14.8s
+  //
+  // So the work costs 4.8s where it lands rather than 15.0s where it used to,
+  // and the person waiting for the report stops paying for tidying up after it.
+  // What is left open is the print spool window, and the next run closes every
+  // open program before it does anything — leftovers are bounded at one run's
+  // worth, not accumulating.
+  //
+  // ⚠️ This leans on `openProgram` now launching by path. Rule 10 exists because
+  // an open window swallows the double-click aimed at a desktop icon; we no
+  // longer click icons here. If this task ever goes back to the desktop route,
+  // the trailing close has to come back with it.
 
   return {
     customer,
