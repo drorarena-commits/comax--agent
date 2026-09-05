@@ -72,9 +72,9 @@ export async function run(ctx) {
   if (!dlg) throw new Error('חלון שליחת הדוא"ל לא נפתח.');
 
   const { prefilled: original } = await takeOverRecipient({ frame: dlg, human, logger, to });
-  if (input.toName) await human.type('#SentToEmail_Add', input.toName, { scope: dlg, label: 'שם הנמען' });
-  if (input.subject) await human.type('#Subject', input.subject, { scope: dlg, label: 'נושא' });
-  if (input.remark) await human.type('#Remark', input.remark, { scope: dlg, label: 'הערה' });
+  if (input.toName) await human.type('#SentToEmail_Add', input.toName, { scope: dlg, label: 'שם הנמען', paste: true });
+  if (input.subject) await human.type('#Subject', input.subject, { scope: dlg, label: 'נושא', paste: true });
+  if (input.remark) await human.type('#Remark', input.remark, { scope: dlg, label: 'הערה', paste: true });
 
   const mail = await dlg.evaluate(() => ({
     to: document.getElementById('Email')?.value,

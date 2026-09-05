@@ -43,6 +43,7 @@ export const meta = {
     item: 'string, אופציונלי — סינון אחרי הקריאה, לפי ברקוד או חלק משם',
     warehouse: 'string, אופציונלי — סינון מחסן בדוח עצמו',
     raw: 'boolean, אופציונלי — להחזיר גם את השורות הגולמיות בלי צבירה',
+    paste: 'boolean, אופציונלי — ברירת מחדל true. false מחזיר להקלדה תו-תו',
   },
 };
 
@@ -290,6 +291,9 @@ export async function run({ page, human, logger, input, cfg }) {
       await human.type(`#${id}`, wanted[id], {
         scope: frame,
         label: `${label} ${i === 0 ? 'מ-' : 'עד'}`,
+        // Safe here specifically: the verification gate below reads every field
+        // back and refuses to run the report on any mismatch.
+        paste: input.paste !== false,
       });
       await human.press('Tab');
       typed++;

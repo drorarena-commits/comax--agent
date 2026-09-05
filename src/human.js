@@ -102,7 +102,7 @@ export class Human {
    * @param {boolean} [opts.secret] Log a mask instead of the value. Required for
    *   the password field — the run log is a plain file kept on disk.
    */
-  async type(target, text, { scope = null, label = null, clear = true, secret = false } = {}) {
+  async type(target, text, { scope = null, label = null, clear = true, secret = false, paste = false } = {}) {
     const el = this.#loc(target, scope);
     await this.gate();
     await el.waitFor({ state: 'visible', timeout: this.pace.actionTimeoutMs });
@@ -117,17 +117,32 @@ export class Human {
       await sleep(rand(150, 350));
     }
 
-    for (const ch of String(text)) {
-      await this.page.keyboard.type(ch);
-      const base = rand(this.pace.typeMinMs, this.pace.typeMaxMs);
-      const extra = this.pace.typePauseChars.includes(ch)
-        ? rand(this.pace.typePauseMinMs, this.pace.typePauseMaxMs)
-        : 0;
-      await sleep(base + extra);
+    // A person filling a form does not always type. Dror pointed this out:
+    // copy-paste is human too, and it is one input event instead of dozens of
+    // key events. `insertText` is exactly that shape.
+    //
+    // ⚠️ Not the default. A field whose value is rebuilt by an onkeypress
+    // handler — Comax reformats dates as you type — can end up holding
+    // something else, and pasting would hide that. Only callers that read the
+    // field back and compare should ask for it. `customer-movements` does.
+    const t0 = Date.now();
+    if (paste) {
+      await this.page.keyboard.insertText(String(text));
+      await sleep(rand(120, 280));
+    } else {
+      for (const ch of String(text)) {
+        await this.page.keyboard.type(ch);
+        const base = rand(this.pace.typeMinMs, this.pace.typeMaxMs);
+        const extra = this.pace.typePauseChars.includes(ch)
+          ? rand(this.pace.typePauseMinMs, this.pace.typePauseMaxMs)
+          : 0;
+        await sleep(base + extra);
+      }
     }
+    const took = Date.now() - t0;
 
     const shown = secret ? '•'.repeat(Math.min(String(text).length, 8)) : `"${text}"`;
-    this.logger?.step('type', `${label ?? String(target)} = ${shown}`);
+    this.logger?.step(paste ? 'paste' : 'type', `${label ?? String(target)} = ${shown} (${took}ms)`);
     this.lastActionAt = Date.now();
   }
 

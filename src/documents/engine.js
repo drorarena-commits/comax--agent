@@ -108,7 +108,10 @@ export async function fillHeader(ctx, profile, frame, input) {
   if (input.priceList) await fillLookup(ctx, { frame, field: H.priceList, value: input.priceList, what: 'מחירון' });
   if (input.date) await human.type(H.date, input.date, { scope: frame, label: 'תאריך' });
   if (input.agent) await fillLookup(ctx, { frame, field: H.agent, value: input.agent, what: 'סוכן' });
-  if (input.details) await human.type(H.details, input.details, { scope: frame, label: 'פרטים' });
+  // Paste rather than type: this is long free text, and typing it costs
+  // ~121ms per character (measured 05/09/2026). Dates, quantities and
+  // prices deliberately keep typing — see the note in human.type().
+  if (input.details) await human.type(H.details, input.details, { scope: frame, label: 'פרטים', paste: true });
   await dismissPopups(ctx);
 
   return customer;
@@ -181,7 +184,7 @@ export async function addLine(ctx, profile, item, { index, last }) {
   await human.type(L.qty, String(item.qty ?? 1), { scope: frame, label: 'כמות' });
   if (item.price != null) await human.type(L.price, String(item.price), { scope: frame, label: 'מחיר' });
   if (item.discount != null) await human.type(L.discount, String(item.discount), { scope: frame, label: '% הנחה' });
-  if (item.remark && L.remark) await human.type(L.remark, item.remark, { scope: frame, label: 'הערה' });
+  if (item.remark && L.remark) await human.type(L.remark, item.remark, { scope: frame, label: 'הערה', paste: true });
 
   const read = async (sel) => frame.locator(sel).inputValue().catch(() => null);
   const line = {

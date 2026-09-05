@@ -498,7 +498,7 @@ export async function create(ctx, input = {}) {
 
   if (input.ref) await human.type(H.ref, String(input.ref), { scope: frame, label: 'אסמכתא', clear: true });
   if (input.refDate) await human.type(H.refDate, String(input.refDate), { scope: frame, label: 'תאריך אסמכתא', clear: true });
-  if (input.details) await human.type(H.details, String(input.details), { scope: frame, label: 'פרטים', clear: true });
+  if (input.details) await human.type(H.details, String(input.details), { scope: frame, label: 'פרטים', clear: true, paste: true });
   await dismissPopups(ctx);
 
   // ⚠️ Typing "10" is only half the job — Comax has to resolve it and show the

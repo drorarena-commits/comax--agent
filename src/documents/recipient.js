@@ -51,7 +51,22 @@ export async function takeOverRecipient({ frame, human, logger, to, field = '#Em
   // ניקוי לפני ההקלדה: `type` מוסיף לתוכן הקיים, וכתובת הלקוח הייתה נשארת
   // כתחילית — מה שמייצר כתובת לא תקינה, או גרוע מזה, כתובת אחרת שכן קיימת.
   await frame.locator(field).fill('');
-  await human.type(field, to, { scope: frame, label: 'מקבל דוא"ל' });
+  // Paste rather than type. An address is the longest string in any of these
+  // flows, and this is also the only field with a real gate behind it:
+  // `assertRecipient` re-reads it at send time and throws on exact mismatch,
+  // so a paste that did not land cannot reach the send button.
+  await human.type(field, to, { scope: frame, label: 'מקבל דוא"ל', paste: true });
+
+  // קריאה-חזרה מיד, לא רק בשער השליחה. הדבקה היא אירוע input אחד, ושדה שבונה
+  // את עצמו מחדש היה בולע אותה בשקט; ב-DRY RUN גם אין assertRecipient שיתפוס
+  // את זה, כי הוא רץ אחרי השער. כאן זה נתפס בנקודת הכתיבה.
+  const landed = (await frame.locator(field).inputValue().catch(() => '')) || '';
+  if (landed.trim().toLowerCase() !== to.trim().toLowerCase()) {
+    throw new Error(
+      `שדה הנמען מכיל "${landed}" מיד אחרי הכתיבה, ולא "${to}" — עוצר.\n` +
+        'ההדבקה לא נקלטה. להריץ שוב, או להחזיר את השדה הזה להקלדה תו-תו.',
+    );
+  }
 
   return { prefilled };
 }

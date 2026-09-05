@@ -223,7 +223,7 @@ async function fillHeader(ctx, frame, input) {
   await fillLookup(ctx, { frame, field: H.storeFrom, value: String(input.storeFrom), what: 'ממחסן' });
   await fillLookup(ctx, { frame, field: H.storeTo, value: String(input.storeTo), what: 'למחסן' });
   if (input.date) await human.type(H.date, input.date, { scope: frame, label: 'תאריך' });
-  if (input.details) await human.type(H.details, input.details, { scope: frame, label: 'פרטים' });
+  if (input.details) await human.type(H.details, input.details, { scope: frame, label: 'פרטים', paste: true });
   if (input.ref) await human.type(H.ref, input.ref, { scope: frame, label: 'אסמכתא' });
   await dismissPopups(ctx);
 }
