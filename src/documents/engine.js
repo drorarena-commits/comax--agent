@@ -97,6 +97,87 @@ export async function startNew(ctx, profile, listFrame) {
 }
 
 /** Fill the header. Explicit values win over whatever the customer card prefills. */
+/**
+ * Did the field actually take what we asked for?
+ *
+ * Comax normalises as it stores: `1/1/2026` comes back `01/01/2026`, `129.7`
+ * comes back `129.70`, `1016.42` comes back `1,016.42`. A strict equality check
+ * would fail on every one of those while they are all correct, which is exactly
+ * why the old code only *reported* the read-back instead of acting on it.
+ *
+ * So the comparison is normalised three ways, in order: as text, as a number,
+ * as a date. Anything that still differs is a real difference.
+ */
+const normText = (v) => String(v ?? '').replace(/\s+/g, ' ').trim();
+
+const normNumber = (v) => {
+  const t = normText(v).replace(/,/g, '');
+  if (!t || !/^-?\d*\.?\d+$/.test(t)) return null;
+  const n = Number(t);
+  return Number.isFinite(n) ? n : null;
+};
+
+const normDate = (v) => {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/.exec(normText(v));
+  if (!m) return null;
+  const yy = m[3].length === 2 ? `20${m[3]}` : m[3];
+  return `${m[1].padStart(2, '0')}/${m[2].padStart(2, '0')}/${yy}`;
+};
+
+function sameValue(want, got) {
+  const a = normText(want);
+  const b = normText(got);
+  if (a === b) return true;
+
+  const na = normNumber(a);
+  const nb = normNumber(b);
+  // half an agora: enough for 129.7 vs 129.70, not enough to hide a real gap
+  if (na !== null && nb !== null) return Math.abs(na - nb) < 0.005;
+
+  const da = normDate(a);
+  const db = normDate(b);
+  if (da && db) return da === db;
+
+  return false;
+}
+
+/**
+ * Read every field we wrote back off the screen, and refuse to go on if one of
+ * them is holding something else.
+ *
+ * "I typed it" was never proof that it landed. Comax rejects values, rounds
+ * them, and quietly puts a field back the way it was — and until now the
+ * document engine read the fields back only to print them. `customer-movements`
+ * has had a gate like this since it was written, and it is the reason a report
+ * has never gone out on the wrong filter.
+ *
+ * Throwing is the safe direction. A false positive stops a run and shows why;
+ * a miss files a document with the wrong number on it. Rule 9 — "not known is a
+ * refusal, not a guess".
+ */
+export async function assertFields(frame, wanted, what) {
+  const checked = {};
+  const mismatches = [];
+
+  for (const [selector, want] of Object.entries(wanted)) {
+    if (want === null || want === undefined || !selector) continue;
+    const got = await frame.locator(selector).inputValue().catch(() => null);
+    checked[selector] = { ביקשנו: String(want), בשדה: got };
+    if (!sameValue(want, got)) {
+      mismatches.push(`${selector}: ביקשנו ${JSON.stringify(String(want))} ובשדה ${JSON.stringify(got)}`);
+    }
+  }
+
+  if (mismatches.length) {
+    throw new Error(
+      `${what}: הטופס לא מחזיק את מה שביקשנו — עוצר לפני שממשיכים.\n  ` +
+        mismatches.join('\n  ') +
+        '\n  לא נוצר מסמך. לבדוק את המסך ולהריץ שוב.',
+    );
+  }
+
+  return checked;
+}
 export async function fillHeader(ctx, profile, frame, input) {
   const { human } = ctx;
   const H = profile.header;
@@ -113,6 +194,10 @@ export async function fillHeader(ctx, profile, frame, input) {
   // prices deliberately keep typing — see the note in human.type().
   if (input.details) await human.type(H.details, input.details, { scope: frame, label: 'פרטים', paste: true });
   await dismissPopups(ctx);
+
+  // Only the fields this function wrote. The lookups went through `fillLookup`,
+  // which resolves and confirms its own value.
+  await assertFields(frame, { [H.date]: input.date, [H.details]: input.details }, `${profile.label} — כותרת`);
 
   return customer;
 }
@@ -185,6 +270,14 @@ export async function addLine(ctx, profile, item, { index, last }) {
   if (item.price != null) await human.type(L.price, String(item.price), { scope: frame, label: 'מחיר' });
   if (item.discount != null) await human.type(L.discount, String(item.discount), { scope: frame, label: '% הנחה' });
   if (item.remark && L.remark) await human.type(L.remark, item.remark, { scope: frame, label: 'הערה', paste: true });
+
+  // Same gate as the header, before the line is committed. A quantity or a
+  // price that did not land is money on a real document.
+  await assertFields(
+    frame,
+    { [L.qty]: item.qty ?? 1, [L.price]: item.price, [L.discount]: item.discount, [L.remark]: item.remark },
+    `${profile.label} — שורה ${index}`,
+  );
 
   const read = async (sel) => frame.locator(sel).inputValue().catch(() => null);
   const line = {
