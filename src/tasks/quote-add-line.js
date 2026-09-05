@@ -224,7 +224,7 @@ async function fillLine(ctx, { grid, item, index, of, commit, last }) {
   // Paste rather than type: this is long free text, and typing it costs
   // ~121ms per character (measured 05/09/2026). Dates, quantities and
   // prices deliberately keep typing — see the note in human.type().
-  if (item.remark) await human.type('#Remark', item.remark, { scope: frame, label: 'הערה', paste: true });
+  if (item.remark) await human.type('#Remark', item.remark, { scope: frame, label: 'הערה' });
 
   const line = {
     item: await frame.locator('#Prt').inputValue().catch(() => null),

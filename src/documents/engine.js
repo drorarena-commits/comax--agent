@@ -158,14 +158,48 @@ function sameValue(want, got) {
 export async function assertFields(frame, wanted, what) {
   const checked = {};
   const mismatches = [];
+  const unreadableFields = [];
 
   for (const [selector, want] of Object.entries(wanted)) {
     if (want === null || want === undefined || !selector) continue;
-    const got = await frame.locator(selector).inputValue().catch(() => null);
-    checked[selector] = { ביקשנו: String(want), בשדה: got };
-    if (!sameValue(want, got)) {
+
+    // "Could not read it" and "it is empty" are different answers, and
+    // collapsing them is how a gate lies. `inputValue()` throws on anything
+    // that is not an <input>/<textarea>/<select> — a contenteditable, a div, an
+    // element in a nested frame — and a bare `.catch(() => null)` turns that
+    // into an empty string that looks exactly like a value that did not land.
+    // Measured 05/09/2026 on the quote line screen: `#Remark` reads back empty
+    // both when typed and when pasted, and until this is separated we cannot
+    // tell whether the remark is being lost or merely being read wrong.
+    let got = null;
+    let unreadable = null;
+    try {
+      got = await frame.locator(selector).inputValue();
+    } catch (e) {
+      unreadable = e.message.split('\n')[0];
+    }
+
+    checked[selector] = unreadable
+      ? { ביקשנו: String(want), בשדה: null, שגיאתקריאה: unreadable }
+      : { ביקשנו: String(want), בשדה: got };
+
+    if (unreadable) {
+      unreadableFields.push(`${selector}: לא ניתן לקרוא את השדה — ${unreadable}`);
+    } else if (!sameValue(want, got)) {
       mismatches.push(`${selector}: ביקשנו ${JSON.stringify(String(want))} ובשדה ${JSON.stringify(got)}`);
     }
+  }
+
+  // A field we cannot read is not a field we can vouch for. Stopping is still
+  // the safe direction, but the message has to say which problem this is, or
+  // the next person debugs the wrong thing.
+  if (unreadableFields.length) {
+    throw new Error(
+      `${what}: לא הצלחתי לקרוא שדה שכתבתי אליו — עוצר, לא מנחש.\n  ` +
+        unreadableFields.join('\n  ') +
+        '\n  ייתכן שהסלקטור מצביע על אלמנט שאינו input, או על frame אחר.' +
+        '\n  זה לא אומר שהערך לא נשמר — זה אומר שאי אפשר לאמת אותו.',
+    );
   }
 
   if (mismatches.length) {
@@ -269,7 +303,7 @@ export async function addLine(ctx, profile, item, { index, last }) {
   await human.type(L.qty, String(item.qty ?? 1), { scope: frame, label: 'כמות' });
   if (item.price != null) await human.type(L.price, String(item.price), { scope: frame, label: 'מחיר' });
   if (item.discount != null) await human.type(L.discount, String(item.discount), { scope: frame, label: '% הנחה' });
-  if (item.remark && L.remark) await human.type(L.remark, item.remark, { scope: frame, label: 'הערה', paste: true });
+  if (item.remark && L.remark) await human.type(L.remark, item.remark, { scope: frame, label: 'הערה' });
 
   // Same gate as the header, before the line is committed. A quantity or a
   // price that did not land is money on a real document.

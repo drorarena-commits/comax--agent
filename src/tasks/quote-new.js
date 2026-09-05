@@ -202,7 +202,7 @@ async function addLine(ctx, { item, index, last }) {
   await human.type('#Cmt', String(item.qty ?? 1), { scope: frame, label: 'כמות' });
   if (item.price != null) await human.type('#Mhr', String(item.price), { scope: frame, label: 'מחיר' });
   if (item.discount != null) await human.type('#AczDis', String(item.discount), { scope: frame, label: '% הנחה' });
-  if (item.remark) await human.type('#Remark', item.remark, { scope: frame, label: 'הערה', paste: true });
+  if (item.remark) await human.type('#Remark', item.remark, { scope: frame, label: 'הערה' });
 
   const line = {
     item: await frame.locator('#Prt').inputValue().catch(() => null),
