@@ -250,15 +250,41 @@ export async function run({ page, human, logger, input, cfg }) {
   const { frame } = await openProgram({ page, human, logger, cfg }, PROGRAM, { expect: FILTER_FRAME });
   if (!frame) throw new Error('דו"ח תנועות מכירה ללקוח לא נפתח.');
 
+  // What the form already holds, read before touching it.
+  //
+  // Every range is still written explicitly — rule 3 stands, and a value left
+  // over from a previous run must never join the report in silence. But a
+  // field that already holds exactly what we want does not need retyping, and
+  // each retype costs about 6.6s of human pace (click, clear, type, Tab, and
+  // two 2s gates). Ten of the fourteen fields are usually blanks we are asking
+  // to stay blank.
+  //
+  // This cannot loosen the rule, because the verification gate below reads
+  // every field back and compares it to `wanted` — off the very same
+  // `.value` this check reads. A field skipped here is still proven there.
+  const before = await frame.evaluate((idList) => {
+    const out = {};
+    for (const id of idList) out[id] = document.getElementById(id)?.value ?? null;
+    return out;
+  }, Object.keys(wanted));
+
+  let typed = 0;
+  let kept = 0;
   for (const { ids, label } of RANGES) {
     for (const [i, id] of ids.entries()) {
+      if (clean(before[id]) === clean(wanted[id])) {
+        kept++;
+        continue;
+      }
       await human.type(`#${id}`, wanted[id], {
         scope: frame,
         label: `${label} ${i === 0 ? 'מ-' : 'עד'}`,
       });
       await human.press('Tab');
+      typed++;
     }
   }
+  logger.step('filter', `${typed} שדות הוקלדו · ${kept} כבר החזיקו את הערך הנכון`);
   await human.settle('טווחי הסינון');
 
   // ---- השער -----------------------------------------------------------

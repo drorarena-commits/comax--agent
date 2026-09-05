@@ -26,7 +26,8 @@
     "hoverMinMs": 120,
     "hoverMaxMs": 300,
     "navTimeoutMs": 60000,
-    "actionTimeoutMs": 30000
+    "actionTimeoutMs": 30000,
+    "settleTimeoutMs": 3000
   },
   "debugPort": 9222,
   "loginUrl": "https://www.comax.co.il/COMAX_WEB/LogInComax/LogInWeb.aspx",

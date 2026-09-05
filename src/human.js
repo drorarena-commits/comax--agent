@@ -160,14 +160,36 @@ export class Human {
     this.lastActionAt = Date.now();
   }
 
-  /** Wait for the page to settle after a postback, then take a human beat. */
+  /**
+   * Wait for the page to settle after a postback, then take a human beat.
+   *
+   * The `networkidle` wait cannot succeed against Max2000, and that is
+   * structural rather than flaky: the frameset holds a connection open to the
+   * server (finding 3 in MAP.md), so there is never a 500ms window with zero
+   * requests in flight. Measured 05/09/2026 on a `customer-movements` run —
+   * five settles, each burning its full 15s timeout: 75s of a 243s run, 31%,
+   * spent waiting for something that cannot arrive.
+   *
+   * It is not deleted, because on a page without the frameset — the login
+   * form — idle is a real signal worth having. Instead it now runs
+   * **alongside** the human beat instead of before it, so the wait is free:
+   * settle costs `max(think, budget)` rather than `timeout + think`.
+   *
+   * ⚠️ This does not weaken any guarantee. The old code proceeded anyway when
+   * the timeout expired, which was every single time — so nothing downstream
+   * was ever actually protected by it. Callers that genuinely need a loaded
+   * state wait on a frame or a selector, and still do.
+   */
   async settle(label = null) {
-    try {
-      await this.page.waitForLoadState('networkidle', { timeout: 15000 });
-    } catch {
-      /* Comax polls in the background; networkidle may never arrive. */
-    }
-    await this.think(label ?? 'settling');
+    const budget = this.pace.settleTimeoutMs ?? 3000;
+    const t0 = Date.now();
+    const idle = this.page
+      .waitForLoadState('networkidle', { timeout: budget })
+      .then(() => Date.now() - t0)
+      .catch(() => null);
+
+    const [ms] = await Promise.all([idle, this.think(label ?? 'settling')]);
+    this.logger?.step('settle', ms === null ? `ללא networkidle (${budget}ms)` : `networkidle ב-${ms}ms`);
   }
 }
 
