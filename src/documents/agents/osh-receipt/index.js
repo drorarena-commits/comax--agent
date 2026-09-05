@@ -448,8 +448,14 @@ export async function create(ctx, input = {}) {
   const bank = resolveBank(input.bank);
 
   const invoiceCheck = await checkInvoicePresence(ctx, input.customer);
-  logger.save('invoice-check.json', { any: invoiceCheck.any, rows: invoiceCheck.rows.map((r) => r.text) });
-  if (!invoiceCheck.any && !input.allowNoInvoice) throw noInvoiceError(profile.label, input.customer);
+  logger.save('invoice-check.json', {
+    any: invoiceCheck.any,
+    year: invoiceCheck.year,
+    rows: invoiceCheck.rows.map((r) => r.text),
+  });
+  if (!invoiceCheck.any && !input.allowNoInvoice) {
+    throw noInvoiceError(profile.label, input.customer, invoiceCheck.year);
+  }
 
   const listFrame = await openList(ctx);
 
