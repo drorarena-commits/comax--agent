@@ -1,0 +1,21 @@
+import { attachBrowser } from '../../src/browser.js';
+import { RunLogger } from '../../src/logger.js';
+const logger = new RunLogger('a162-swpail');
+const s = await attachBrowser({ logger });
+const { page, human } = s;
+const prog = () => page.frames().find((f) => (f.url() || '').includes('Hr_WorkTeken_HtmlP.aspx'));
+const [month, pail] = [process.argv[2], process.argv[3]];
+await human.click('#Shonot', { scope: prog(), label: 'שונות' });
+await human.think('tab');
+await human.type('#DMA', month, { scope: prog(), label: `חודש = ${month}` });
+await prog().evaluate((v) => { const e = document.getElementById('SwPail'); e.value = v; e.onchange && e.onchange(); }, pail);
+const state = await prog().evaluate(() => ({ dma: DMA.value, pail: SwPail.value, pailText: SwPail.options[SwPail.selectedIndex].text }));
+console.log('מצב לפני הרצה:', JSON.stringify(state));
+if (state.dma !== month) { console.log('⛔ החודש לא נתפס'); process.exit(1); }
+await human.click('#OK', { scope: prog(), label: 'אישור' });
+await human.settle('running');
+await human.think('report');
+const ctrl = page.frames().find((f) => (f.url() || '').includes('Rpt_DafHtml_G'));
+console.log('עמודים:', ctrl ? await ctrl.evaluate(() => MaxPages) : '?');
+await s.browser.close().catch(() => {});
+logger.done();
