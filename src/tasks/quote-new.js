@@ -13,6 +13,7 @@
 import { readFileSync } from 'node:fs';
 import { ensureLoggedIn } from '../session.js';
 import { openProgram, dismissPopups, fillLookup } from '../navigate.js';
+import { profile as quoteProfile } from '../documents/agents/quote/index.js';
 
 export const meta = {
   name: 'quote-new',
@@ -60,7 +61,14 @@ export async function run(ctx) {
   await ensureLoggedIn({ page, human, logger, cfg });
 
   // 1. Open the quotes program. The frame name is discovered, never hardcoded.
-  const { frame: listFrame } = await openProgram(ctx, QUOTES_SHORTCUT, { expect: /Doc612V\.asp/i });
+  //    The path comes from the document profile rather than being spelled out
+  //    again here, so there is one place to fix when Comax moves the screen.
+  //    Without it `openProgram` falls back to the desktop-and-double-click
+  //    route, which measured 40.8s on 06/09/2026 against ~2s for the path.
+  const { frame: listFrame } = await openProgram(ctx, QUOTES_SHORTCUT, {
+    expect: /Doc612V\.asp/i,
+    program: quoteProfile.program,
+  });
   if (!listFrame) throw new Error('מסך ההצעות לא נפתח.');
 
   // 2. New quote — this opens the header dialog in a frame of its own.
