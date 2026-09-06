@@ -19,6 +19,7 @@
  * only function allowed to press the lines-screen `#OK`.
  */
 import { dismissPopups, fillLookup, framePath, openProgram } from '../navigate.js';
+import { resolveWholesale, assertWholesaleLanded } from './wholesale.js';
 
 /** A profile that has not been mapped yet must not be driven blind. */
 export function assertMapped(profile, stage) {
@@ -325,8 +326,28 @@ export async function readDocNumber(ctx, profile) {
   const grid = frameFor(ctx.page, profile.frames.linesGrid);
   if (!grid) return null;
   try {
-    const m = /מספר:\s*\(?\s*(\d+)/.exec(await grid.innerText('body'));
-    return m ? m[1] : null;
+    const body = await grid.innerText('body');
+
+    /*
+     * ⚠️ RTL serialisation puts the number **before** its label.
+     *
+     * The old pattern was `/מספר:\s*\(?\s*(\d+)/` — label first, number after.
+     * What `innerText` actually returns is the other way round:
+     *
+     *   "06/09/2026 :מתאריך   (6500086)  :חשבונית מספר"
+     *
+     * so it matched nothing and every invoice came back with an empty number.
+     * Measured on 6500086, 06/09/2026: the document was created correctly and
+     * simply could not say what it was called — which also means nothing
+     * downstream could verify or email it.
+     *
+     * Same trap `priceListFrom()` in document-totals.js documents for the price
+     * list footer. So: find the line the label is on, then take the number in
+     * parentheses from it, whichever side it fell.
+     */
+    const line = body.split(/\r?\n/).find((l) => /מספר/.test(l));
+    if (!line) return null;
+    return (/\((\d{4,})\)/.exec(line) ?? /מספר:?\s*\(?\s*(\d{4,})/.exec(line) ?? [])[1] ?? null;
   } catch {
     return null;
   }
@@ -351,8 +372,61 @@ export async function addLine(ctx, profile, item, { index, last }) {
   await dismissPopups(ctx);
 
   await human.type(L.qty, String(item.qty ?? 1), { scope: frame, label: 'כמות' });
-  if (item.price != null) await human.type(L.price, String(item.price), { scope: frame, label: 'מחיר' });
-  if (item.discount != null) await human.type(L.discount, String(item.discount), { scope: frame, label: '% הנחה' });
+
+  /*
+   * מחיר סיטונאי — הברוטו נקרא חי, כאן, ולא מחושב מראש.
+   *
+   * ⚠️ The `Tab` is the mechanism, not politeness: Comax computes the line's
+   * gross when focus leaves the quantity, and without it `#Mhr` still holds the
+   * previous item's number. Reading it a moment too early is how a wholesale
+   * price gets computed off the wrong base — silently, since every field looks
+   * filled afterwards.
+   *
+   * The catalog cannot stand in for this read. `content/מלאי-מלא-*.csv` holds
+   * the **net** after the standard discount (289.90 × 0.8275 = 239.89); half of
+   * that is 120 where the rule gives 145.
+   *
+   * `resolveWholesale` decides whether the rule applies at all — it does when
+   * the price list the document declares is marked `wholesale` in
+   * knowledge/lists.json and the caller gave no explicit price. A transfer
+   * declares "לפי מחירון: לא נבחר", so this costs it one field read and
+   * changes nothing.
+   */
+  // `priced: false` (תעודת העברה) opts a document out entirely: its price
+  // column is Comax's bookkeeping between two of our own warehouses, and
+  // nobody is charged it. Without this the rule would be one company-default
+  // away from halving prices inside a stock document.
+  const offered = { price: null, discount: null };
+  if (profile.priced !== false) {
+    await human.press('Tab', { label: 'יציאה משדה הכמות' });
+    await human.think('price recalculation');
+    offered.price = await frame.locator(L.price).inputValue().catch(() => null);
+    offered.discount = await frame.locator(L.discount).inputValue().catch(() => null);
+    logger.step('auto', `קומקס הציע: מחיר ${offered.price} · הנחה ${offered.discount}`);
+  }
+
+  const gross = Number(String(offered.price ?? '').replace(/[^\d.-]/g, ''));
+  const { price, discount, plan } = profile.priced === false
+    ? { price: item.price, discount: item.discount, plan: null }
+    : await resolveWholesale({
+      logger,
+      grid: frameFor(page, profile.frames.linesGrid),
+      gross: Number.isFinite(gross) ? gross : null,
+      item,
+    });
+
+  // Tab after each, for the same reason as above: Comax recomputes `#Scm` on
+  // blur, and the read-back below is only worth anything once it has.
+  if (price != null) {
+    await human.type(L.price, String(price), { scope: frame, label: 'מחיר' });
+    await human.press('Tab', { label: 'יציאה משדה המחיר' });
+    await human.think('amount recalculation');
+  }
+  if (discount != null) {
+    await human.type(L.discount, String(discount), { scope: frame, label: '% הנחה' });
+    await human.press('Tab', { label: 'יציאה משדה ההנחה' });
+    await human.think('discount applied');
+  }
   // ⚠️ `#Remark` בולע את הכתיבה הראשונה.
   //
   // נמדד 05/09/2026 על `Doc612LinesU`: הוא `<textarea>` יחיד בכל הדף, גלוי,
@@ -385,9 +459,12 @@ export async function addLine(ctx, profile, item, { index, last }) {
 
   // Same gate as the header, before the line is committed. A quantity or a
   // price that did not land is money on a real document.
+  // `price`/`discount`, not `item.price`/`item.discount` — under a wholesale
+  // price list those are the halved price and the zeroed discount, and checking
+  // the caller's (absent) values would check nothing at all.
   await assertFields(
     frame,
-    { [L.qty]: item.qty ?? 1, [L.price]: item.price, [L.discount]: item.discount, [L.remark]: item.remark },
+    { [L.qty]: item.qty ?? 1, [L.price]: price, [L.discount]: discount, [L.remark]: item.remark },
     `${profile.label} — שורה ${index}`,
   );
 
@@ -398,7 +475,14 @@ export async function addLine(ctx, profile, item, { index, last }) {
     price: await read(L.price),
     discount: await read(L.discount),
     amount: await read(L.amount),
+    gross: plan ? offered.price : null,
+    wholesale: plan,
   };
+
+  // The arithmetic is confirmed off the live fields, not assumed — Comax can
+  // reinstate a standard discount on blur, and a line that is 18% off looks
+  // entirely ordinary in the document afterwards.
+  assertWholesaleLanded(plan, line, logger);
 
   await human.click(last ? L.ok : L.okNew, {
     scope: frame,
@@ -407,6 +491,174 @@ export async function addLine(ctx, profile, item, { index, last }) {
   await human.settle(`line ${index} saved`);
   await dismissPopups(ctx);
   return line;
+}
+
+/* ── עריכת שורה קיימת ──────────────────────────────────────────────────── */
+
+/**
+ * Bring the row containing `match` onto the visible page, and hand back its cell.
+ *
+ * The grid paints **10 rows a page** and says nothing about the rest, so a
+ * document with more lines than that shows a page that looks like the whole
+ * thing. Paging is `#first` / `#prev` / `#next` / `#last` — real element ids.
+ *
+ * ⚠️ NOT `img:text-is("דף הבא")`. `knowledge/screens/*.txt` prints that selector,
+ * and it can never match: an `<img>` has no text content, so the label the
+ * snapshot shows comes from an attribute. Measured 06/09/2026 — the text
+ * selector matched nothing, `count()` returned 0, and a twenty-unit document
+ * was read as eight. Take ids from the `.json` snapshot, not the pretty `.txt`.
+ */
+export async function findLineRow(ctx, profile, match, { maxPages = 20 } = {}) {
+  const { human, logger } = ctx;
+  const grid = frameFor(ctx.page, profile.frames.linesGrid);
+  if (!grid) throw new Error(`${profile.label}: מסך השורות לא פתוח.`);
+
+  const cell = `td:text-is(${JSON.stringify(String(match))})`;
+
+  if (await grid.locator('#first').count().catch(() => 0)) {
+    await human.click('#first', { scope: grid, label: 'לדף הראשון' }).catch(() => {});
+    await human.settle('first page');
+  }
+
+  for (let page = 0; page < maxPages; page++) {
+    if (await grid.locator(cell).count().catch(() => 0)) {
+      logger.step('שורה', `${match} נמצא בדף ${page + 1}`);
+      return { grid, cell };
+    }
+    if (!(await grid.locator('#next').count().catch(() => 0))) break;
+    await human.click('#next', { scope: grid, label: 'לדף הבא' });
+    await human.settle(`page ${page + 2}`);
+  }
+
+  throw new Error(
+    `לא מצאתי שורה עם "${match}" ברשת השורות של ${profile.label}.\n`
+    + '  עברתי על כל הדפים. לבדוק שהמסמך הנכון פתוח ושהקוד הוא כפי שהוא מוצג ברשת.',
+  );
+}
+
+/**
+ * אישור שורה — ורק בדיאלוג השורה.
+ *
+ * 🚨 There are three different `#OK` in three frames of the same document:
+ *
+ *   Doc650U      אישור            — advances to the lines
+ *   Doc650LinesV `(Alt+e) קליטת חשבונית` — **files it. Moves stock. No undo.**
+ *   Doc650LinesU אישור            — saves the line
+ *
+ * `pressOk` in customer-history guards the header and `commitHeader` guards
+ * itself, but nothing guarded *this* one: a single wrong `scope` and saving a
+ * line issues the invoice instead. `human.click` takes the scope it is handed.
+ * So the check lives here, in code.
+ */
+async function pressLineOk(ctx, frame, profile, label) {
+  const url = frame.url();
+  if (!profile.frames.lineForm.test(framePath(url))) {
+    throw new Error(
+      `סירוב לאשר שורה מחוץ לדיאלוג השורה — ה-frame הוא ${framePath(url).split('/').pop()}.\n`
+      + '  ברשת השורות אותו #OK הוא "קליטת חשבונית": הוא קולט את המסמך ומזיז מלאי, ואין ביטול.',
+    );
+  }
+  await ctx.human.click(profile.line.ok, { scope: frame, label });
+}
+
+/**
+ * פתיחת שורה שמורה ועדכון השדות שנמסרו.
+ *
+ * The way in is a **double-click on the row's cell** — Dror's own hand motion,
+ * shown 06/09/2026. There is no `#editRec` on this grid and the mapping
+ * snapshot only ever caught `Doc650LinesU` in `Mode='ADD'`, so this was
+ * genuinely unknown territory until he demonstrated it.
+ *
+ * Only the fields actually passed are written; everything else on the line is
+ * left exactly as Comax has it.
+ *
+ * A **gift line** is `price: <consumer price>` + `discount: 100` — the price
+ * goes back up to what a customer would pay and the discount takes all of it,
+ * so the item still appears on the invoice with its real value and costs zero.
+ * Comax then raises `חריגה ממחירון מינימום ! האם להמשיך ?`, which `browser.js`
+ * accepts and logs.
+ */
+export async function editLine(ctx, profile, { match, price, discount, remark }) {
+  assertMapped(profile, 'lines');
+  const { page, human, logger } = ctx;
+  const L = profile.line;
+
+  const { grid, cell } = await findLineRow(ctx, profile, match);
+
+  await human.doubleClick(cell, { scope: grid, label: `פתיחת שורה ${match} לעריכה` });
+  await human.settle('line dialog opening');
+  await dismissPopups(ctx);
+
+  let frame = null;
+  for (let i = 0; i < 5 && !frame; i++) {
+    frame = frameFor(page, profile.frames.lineForm);
+    if (!frame) await human.think('waiting for the line dialog');
+  }
+  if (!frame) {
+    throw new Error(
+      `דאבל-קליק על ${match} לא פתח את דיאלוג השורה (${profile.frames.lineForm}).\n`
+      + '  היציאה הבטוחה: #DoExit ברשת ואז #Cancel בכותרת.',
+    );
+  }
+
+  const before = {
+    item: await frame.locator(L.item).inputValue().catch(() => null),
+    qty: await frame.locator(L.qty).inputValue().catch(() => null),
+    price: await frame.locator(L.price).inputValue().catch(() => null),
+    discount: await frame.locator(L.discount).inputValue().catch(() => null),
+  };
+  logger.step('שורה', `לפני: ${before.item} · כמות ${before.qty} · מחיר ${before.price} · הנחה ${before.discount}`);
+
+  // Tab after each, for the reason it is everywhere else in this file: Comax
+  // recomputes on blur, and a value read before that is the previous one.
+  if (price != null) {
+    await human.type(L.price, String(price), { scope: frame, label: 'מחיר' });
+    await human.press('Tab', { label: 'יציאה משדה המחיר' });
+    await human.think('amount recalculation');
+  }
+  if (discount != null) {
+    await human.type(L.discount, String(discount), { scope: frame, label: '% הנחה' });
+    await human.press('Tab', { label: 'יציאה משדה ההנחה' });
+    await human.think('discount applied');
+  }
+  // Same swallow-the-first-write loop as `addLine`. Measured on Doc612; whether
+  // Doc650 does it too was never tested, so the loop reports which write landed.
+  if (remark != null && L.remark) {
+    const field = frame.locator(L.remark);
+    const wanted = String(remark);
+    let landed = false;
+    for (let attempt = 1; attempt <= 3 && !landed; attempt++) {
+      await field.fill(wanted);
+      landed = (await field.inputValue().catch(() => null)) === wanted;
+      if (!landed) logger.step('הערה', `הכתיבה ה-${attempt} לא נתפסה — כותב שוב`);
+      else if (attempt > 1) logger.step('הערה', `נתפסה בכתיבה ${attempt} — כמו Doc612`);
+    }
+    if (landed && !remark) logger.step('הערה', 'ריקה');
+  }
+
+  await assertFields(
+    frame,
+    { [L.price]: price, [L.discount]: discount, [L.remark]: remark },
+    `${profile.label} — עריכת שורה ${match}`,
+  );
+
+  const read = async (sel) => frame.locator(sel).inputValue().catch(() => null);
+  const after = {
+    item: await read(L.item),
+    qty: await read(L.qty),
+    price: await read(L.price),
+    discount: await read(L.discount),
+    remark: L.remark ? await read(L.remark) : null,
+    amount: await read(L.amount),
+  };
+
+  await logger.shot(page, `line-${match}-edited`);
+  await pressLineOk(ctx, frame, profile, 'אישור השורה');
+  await human.settle('line saved');
+  await dismissPopups(ctx);
+
+  logger.step('שורה', `אחרי: מחיר ${after.price} · הנחה ${after.discount} · סכום ${after.amount}`);
+  return { before, after };
 }
 
 /** Totals at the foot of the lines grid. */

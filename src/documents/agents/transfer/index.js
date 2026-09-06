@@ -37,6 +37,33 @@ export const profile = {
   shortcut: 'a111',
   doc: 'Doc470',
   path: 'Erp/Mlay/TeydatAv/Doc',
+
+  /**
+   * How Comax itself launches a111 — and why this line had to exist.
+   *
+   * Measured 06/09/2026: the icon is **gone from the desktop**, exactly as
+   * `a157` went on 04/09 and `a146` the day before. With no path here,
+   * `openProgram` had nothing to fall back to and every transfer flow died on
+   * "לא נמצא בשולחן העבודה, ואין נתיב חלופי".
+   *
+   * The query string is not decoration. `top.S.runProgram(path)` adds the
+   * environment parameters (`SwPG`, `CurrYear`, `SSID_p`…) but **not** the
+   * screen-specific ones the icon passes — the lesson a164 taught, where the
+   * missing `SwLk=1` left `#IdxLk` hidden until timeout, three steps after a
+   * launch that looked perfect. So this is copied from the URL the *icon*
+   * produced, captured live on 02/09/2026 in
+   * `knowledge/screens/transfer-list.txt`:
+   *
+   *   Doc470V.asp?SwVO=0&MCGLOBAL=927&SwPG=0&swVisit=0&…
+   *
+   * `SwVO=0` is kept. `MCGLOBAL=927` is deliberately omitted, as it was for the
+   * quote: it looks like a menu-instance id, nothing needs it, and guessing at
+   * it is what rule 9 forbids. There is **no `SwLk` here at all** — and that is
+   * consistent rather than suspicious, because this is the one document with no
+   * customer field to reveal.
+   */
+  program: 'Erp/Mlay/TeydatAv/Doc/Doc470V.asp?SwVO=0',
+
   movesStock: true,
 
   // All three verified live on 4700239 (02/09/2026): Doc470V read off the
@@ -59,6 +86,32 @@ export const profile = {
      * belt to that pair of braces.
      */
     closeDialog: /Doc470CloseU\.asp$/i,
+  },
+
+  /**
+   * The list's own filter boxes — `Doc470V.asp`.
+   *
+   * 💣 **`#wFindLkNm` is the destination WAREHOUSE here, not a customer.**
+   * On `Doc650V` / `Doc652V` / `Doc612V` that same id is the customer filter,
+   * and every reader in this project (`customer-history`, `duplicate-check`,
+   * `invoice-presence-check`) types a customer code into it. Do that here and
+   * Comax filters by a warehouse that does not exist, returns nothing, and the
+   * caller reads "this document has no lines". A transfer has **no customer at
+   * all** — its header is two warehouses — so there is nothing to look one up
+   * by, and the only textual hook to a customer is whatever was written into
+   * `#Pratim` by hand.
+   *
+   * `findDocNo` is the way in: **filter, never scan.** Two numbering series
+   * live in this one list — the current `470xxxx` and the old `601xxxx` — and
+   * the default sort is by number descending, so 6010294 from 31/08 floats
+   * above 4700238 from 01/09 and the first page looks a week stale.
+   */
+  list: {
+    findDocNo: '#wFindDocNo',
+    findStoreFrom: '#wFindLkNmFrom', // ממחסן
+    findStoreTo: '#wFindLkNm', // ⚠️ למחסן — NOT a customer
+    findRemarks: '#wFindRemarks', // פרטים
+    findDate: '#wFindDate', // מתאריך
   },
 
   /**
@@ -95,6 +148,27 @@ export const profile = {
    */
   totals: { total: '#ScmBeforeDis', quantity: '#Scm_Cmt' },
   finalizeLabel: 'קליטת תעודת העברה',
+
+  /**
+   * 🚫 המחיר בתעודת העברה הוא עניין של קומקס, לא שלנו.
+   *
+   * `engine.addLine` gained wholesale pricing on 06/09/2026, driven off the
+   * price list the document declares in its footer. That is right for a sales
+   * document and wrong for this one: a transfer moves goods between two
+   * warehouses of the same business, and the number in its price column is
+   * bookkeeping Comax fills in — nobody is charged it.
+   *
+   * ⚠️ And the old comment above ("אין מחירון, המחיר נכנס 0.00") turned out to
+   * be true only of the empty draft this agent was mapped on. Read live from
+   * 6010295 on 06/09/2026, a real filed transfer declares
+   * `לפי מחירון: מכירה ראשי ( כולל מע"מ )` and carries real prices — 69.00 a
+   * bag, 289.90 less 17.25% for a pair of goggles. מכירה ראשי is not flagged
+   * `wholesale`, so nothing would have happened today; but the day a company
+   * default points at מחירון קבוצות, the engine would start halving prices
+   * inside a stock document. This flag closes that door rather than relying on
+   * a price list staying where it is.
+   */
+  priced: false,
 
   /**
    * **תעודת העברה תמיד 0** — כלל של דרור, 02/09/2026.
@@ -448,6 +522,258 @@ export async function finalize(ctx, { confirm = false, lines = [], items = [], a
 
   await engine.finalize(ctx, profile);
   return { filed: true, stores, totals, stock };
+}
+
+/* ── קריאת תעודה קיימת ─────────────────────────────────────────────────── */
+
+/**
+ * Advance a document *header* to its lines — and refuse anywhere else.
+ *
+ * 🚨 On `Doc470LinesV` the very same `#OK` is labelled
+ * "(Alt+e) קליטת תעודת העברה" and it **files the document**: stock moves out of
+ * one warehouse and into another, in one irreversible click, and there is no
+ * unfiling. A reader that is one frame off does not read a document — it ships
+ * one. So the guard is code, not a comment, and it is the same guard
+ * `customer-history.js` puts in front of the sales documents.
+ */
+async function pressHeaderOk(ctx, frame, label) {
+  const url = frame.url();
+  if (!/U\.aspx?/i.test(url) || /LinesV/i.test(url)) {
+    throw new Error(
+      `סירוב ללחוץ #OK מחוץ למסך כותרת — ה-frame הוא ${url.split('/').pop()?.split('?')[0]}.\n`
+      + 'במסך השורות של תעודת העברה #OK הוא "קליטת תעודת העברה" — הוא מזיז מלאי, ואין ביטול.',
+    );
+  }
+  await ctx.human.click(profile.header.ok, { scope: frame, label });
+}
+
+/**
+ * The lines of a transfer that already exists, read off its grid.
+ *
+ * Columns by label, never by position — the grid carries twenty of them
+ * (`פריט · שם פריט · במארז · מארזים · י"ח · סריאלי · כמות · מחיר · הנחה % ·
+ * סכום · ת.תוקף · משור · מטור · מקומה · …`) and their order is not something
+ * to bet a document on. Only `פריט` and `כמות` are actually needed: the price
+ * on a transfer is 0.00, because there is no price list.
+ */
+async function readGridPage(grid) {
+  return grid.evaluate(() => {
+    const txt = (c) => (c.innerText || '').replace(/\s+/g, ' ').trim();
+    const key = (s) => String(s ?? '').replace(/\s/g, '');
+
+    const table = [...document.querySelectorAll('table')].find((t) =>
+      [...t.rows].some((r) => [...r.cells].some((c) => txt(c) === 'שם פריט')));
+    if (!table) return { head: [], lines: [] };
+
+    const rows = [...table.rows].map((tr) => [...tr.cells].map(txt));
+    const hi = rows.findIndex((r) => r.includes('שם פריט'));
+    const head = rows[hi];
+    const at = (...labels) => {
+      for (const label of labels) {
+        const i = head.findIndex((h) => key(h) === key(label));
+        if (i >= 0) return i;
+      }
+      return -1;
+    };
+    // The row number column renders as "ש." and comes out of innerText as ".ש"
+    // depending on how the RTL cell serialises — accept either. It is the only
+    // stable identity a row has across pages.
+    const cols = {
+      no: at('ש.', '.ש'), code: at('פריט'), name: at('שם פריט'), qty: at('כמות'), amount: at('סכום'),
+    };
+
+    return {
+      head,
+      lines: rows.slice(hi + 1)
+        .filter((r) => cols.name >= 0 && r[cols.name])
+        .map((r) => ({
+              no: cols.no >= 0 ? (r[cols.no] ?? '') : '',
+          code: cols.code >= 0 ? (r[cols.code] ?? '') : '',
+          name: r[cols.name] ?? '',
+          qty: cols.qty >= 0 ? (r[cols.qty] ?? '') : '',
+          amount: cols.amount >= 0 ? (r[cols.amount] ?? '') : '',
+        })),
+    };
+  });
+}
+
+/**
+ * Every line of the document — not every line that happens to be on screen.
+ *
+ * 💣 **The grid is paged, and page one looks exactly like a whole document.**
+ * Measured 06/09/2026 on 6010295: eight rows visible, numbered 1–8, summing to
+ * 8 units and 722.89 — while the document's own footer said `סה"כ כמות: 20.00`
+ * and `סה"כ: 2,665.80`. Nothing was missing, nothing errored, and an invoice
+ * built from that read would have billed less than a third of the goods.
+ *
+ * So this walks the pages, keyed on the `ש.` column, and then **checks its own
+ * work against the document's total quantity**. A reader that cannot prove it
+ * saw everything refuses rather than returning a plausible subset: partial is
+ * the one failure that looks identical to success.
+ */
+async function readAllGridLines(ctx, grid, { maxPages = 40 } = {}) {
+  const { human, logger } = ctx;
+
+  /*
+   * ⚠️ The paging controls are `<img>` elements with **ids** — `#first`,
+   * `#prev`, `#next`, `#last`, `#nextRec`, `#prevRec`.
+   *
+   * `knowledge/screens/*.txt` prints them as `img:text-is("דף הבא")`, and that
+   * selector can never match: an `<img>` has no text content, so the label the
+   * snapshot shows comes from an attribute. Measured 06/09/2026 — the text
+   * selector matched nothing, `count()` returned 0, the loop concluded "no next
+   * page" and read one page of a twenty-unit document. Take ids from the
+   * `.json` snapshot, not the pretty-printed `.txt`.
+   */
+  if (await grid.locator('#first').count().catch(() => 0)) {
+    await human.click('#first', { scope: grid, label: 'לדף הראשון' }).catch(() => {});
+    await human.settle('first page');
+  }
+
+  const byNo = new Map();
+  let head = [];
+  let page = 0;
+
+  for (; page < maxPages; page++) {
+    const got = await readGridPage(grid);
+    if (got.head.length) head = got.head;
+
+    const before = byNo.size;
+    for (const l of got.lines) byNo.set(l.no || `${l.code}#${byNo.size}`, l);
+    logger.step('grid', `דף ${page + 1}: ${got.lines.length} שורות (${byNo.size} מצטבר)`);
+
+    // No new rows means the last page just repeated itself — Max2000 keeps
+    // showing the final page when "דף הבא" has nowhere to go.
+    if (byNo.size === before && page > 0) break;
+
+    if (!(await grid.locator('#next').count().catch(() => 0))) break;
+    await human.click('#next', { scope: grid, label: 'לדף הבא' });
+    await human.settle(`page ${page + 2}`);
+  }
+
+  return { head, lines: [...byNo.values()], pages: page + 1 };
+}
+
+/**
+ * פותח תעודת העברה קיימת, קורא את שורותיה, ויוצא בלי לקלוט.
+ *
+ * Read-only by construction: the only click that could commit anything is
+ * fenced behind `pressHeaderOk`, and the way out is `engine.backOut` —
+ * `#DoExit` on the grid then `#Cancel` on the header. Never `#OK`.
+ *
+ * The exit raises the browser's own "האם ברצונך לצאת ללא שמירה?" confirm;
+ * `browser.js` answers it and logs that it did.
+ */
+export async function read(ctx, docNo) {
+  const { page, human, logger } = ctx;
+  const wanted = String(docNo ?? '').trim();
+  if (!wanted) throw new Error('חסר מספר תעודה — אין דרך לחפש תעודת העברה לפי לקוח, כי אין בה לקוח.');
+
+  const listFrame = await engine.openList(ctx, profile);
+
+  // The URL the list actually opened with, logged because a path-launched
+  // program can be missing a flag the icon passes and still look perfect —
+  // that is how a164 lost `#IdxLk` three steps later. Cheap to record, and it
+  // is the only evidence available if a later screen misbehaves.
+  logger.step('program', `רשימת ההעברות נפתחה: ${listFrame.url().split('/').at(-1).split('&').slice(0, 3).join('&')}`);
+
+  // ⚠️ Every other filter box first. They are cumulative, and a leftover
+  // "ממחסן" or "מתאריך" from an earlier run turns a document that exists into
+  // an empty grid — which reads exactly like "there is no such document".
+  const L = profile.list;
+  for (const sel of [L.findStoreFrom, L.findStoreTo, L.findRemarks, L.findDate]) {
+    await listFrame.locator(sel).fill('').catch(() => {});
+  }
+
+  // Typing + Enter applies the filter. NOT `#Find` — that opens the חיתוכים
+  // dialog and leaves it hanging over the list.
+  await human.type(L.findDocNo, wanted, { scope: listFrame, label: `סינון לתעודה ${wanted}`, clear: true });
+  await human.press('Enter', { label: 'החלת הסינון' });
+  await human.think('filter applied');
+
+  await human.doubleClick(`td:text-is(${JSON.stringify(wanted)})`, {
+    scope: listFrame,
+    label: `פתיחת תעודה ${wanted}`,
+  });
+  await human.settle('header opening');
+
+  const F = (re) => page.frames().find((f) => re.test(f.url()));
+  const hdr = F(profile.frames.header);
+  if (!hdr) throw new Error(`כותרת התעודה ${wanted} לא נפתחה. יכול להיות שהמספר לא קיים ברשימה.`);
+  const header = await readHeader(hdr);
+
+  let lines = [];
+  let head = [];
+  let stores = null;
+  let totals = {};
+  try {
+    await dismissPopups(ctx);
+    await pressHeaderOk(ctx, hdr, 'אישור כותרת — מעבר לשורות (קריאה)');
+    await human.settle('lines loading');
+
+    let grid = null;
+    for (let i = 0; i < 6 && !grid; i++) {
+      grid = F(profile.frames.linesGrid);
+      if (!grid) await human.think(`waiting for lines of ${wanted}`);
+    }
+    if (!grid) throw new Error(`מסך השורות של ${wanted} לא נפתח`);
+
+    ({ head, lines } = await readAllGridLines(ctx, grid));
+    stores = await readStores(ctx).catch(() => null);
+    // Read off the grid directly, **not** through `engine.readTotals` — that one
+    // returns only beforeVat/vat/total and has no idea `quantity` exists. It
+    // handed back `undefined`, `Number('')` turned that into a confident `0`,
+    // and the gate below reported "the document says 0 units" about a document
+    // that says 20. Silence must not arrive dressed as a number.
+    totals = {
+      quantity: await grid.locator(profile.totals.quantity).inputValue().catch(() => null),
+      total: await grid.locator(profile.totals.total).inputValue().catch(() => null),
+    };
+    await logger.shot(page, `transfer-${wanted}-lines`);
+  } finally {
+    // Out through the door, not through קליטה — whatever happened above.
+    await engine.backOut(ctx, profile).catch(() => {});
+  }
+
+  /*
+   * 🚨 השער שהיה חסר: מה שנקרא חייב להסתכם למה שהמסמך מצהיר.
+   *
+   * `#Scm_Cmt` is the document's own quantity total, and it is the one witness
+   * that is independent of how many rows the grid felt like painting. Without
+   * this check a paged grid returns page one and every downstream number is
+   * quietly too small — measured on 6010295: 8 units read, 20 units real.
+   *
+   * A missing total is also a refusal. "Could not verify" is not "fine" —
+   * that is rule 9, and this is a document about to become an invoice.
+   */
+  // `Number('')` is 0, not NaN — so an empty field would otherwise become a
+  // perfectly confident "the document holds zero units". Empty is null here.
+  const money = (v) => {
+    const t = String(v ?? '').replace(/,/g, '').trim();
+    if (!t) return null;
+    const n = Number(t);
+    return Number.isFinite(n) ? n : null;
+  };
+  const expected = money(totals.quantity);
+  const got = lines.reduce((s, l) => s + (money(l.qty) ?? 0), 0);
+
+  if (expected == null) {
+    throw new Error(
+      `תעודה ${wanted}: לא הצלחתי לקרוא את "סה"כ כמות" מהמסמך (#Scm_Cmt).\n`
+      + `  נקראו ${lines.length} שורות בסך ${got} יחידות, ואין מול מה לאמת אותן.\n`
+      + '  לא מחזיר שורות שלא הוכחתי שהן כל השורות.',
+    );
+  }
+  if (Math.abs(expected - got) > 0.005) {
+    throw new Error(
+      `תעודה ${wanted}: קראתי ${got} יחידות ב-${lines.length} שורות, אבל המסמך אומר סה"כ כמות ${expected}.\n`
+      + '  הרשת מחולקת לדפים, וכנראה לא הגעתי לסופה — חשבונית שתיבנה מזה תחייב חלק מהסחורה.\n'
+      + '  צילום המסך של הרשת נמצא בתיקיית ההרצה.',
+    );
+  }
+
+  logger.step(profile.name, `תעודה ${wanted} · ${header.תאריך ?? '?'} · ${lines.length} שורות · ${got} יחידות = סה"כ המסמך ✓ · נקראה ולא נקלטה`);
+  return { docNo: wanted, header, stores, totals, head, lines };
 }
 
 export const readTotals = (ctx) => engine.readTotals(ctx, profile);
