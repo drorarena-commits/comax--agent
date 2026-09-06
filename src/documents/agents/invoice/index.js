@@ -58,6 +58,32 @@ export const profile = {
    */
   program: 'Erp/Mehirot/Doc650/Inv_Mlay/Doc650V.asp',
 
+  /**
+   * The invoice reaches the envelope the long way, and this is the **only** way.
+   *
+   * Mapped 06/09/2026 by dumping every control on the print tab. It holds six
+   * buttons and every one of them prints: `#PrintDoc`, `#PrintDocAll`,
+   * `#PrintDocVet`, `#PrintDocN`, `#Madbekot`, `#PrintDegem`. There is no
+   * `#Email` here — that button exists only on the quote.
+   *
+   * Dror confirmed the route: "הדפסת שיחזור" (`#PrintDocAll`), always, for this
+   * document. It asks for a document range, then offers printer / mail / fax,
+   * and mail opens the same `Erp/Divor_Doc.asp` envelope every document shares.
+   *
+   * ⛔ Do not reach for `#DoPrint`, whatever its name suggests. Its handler is
+   * `top.Cs.doPrint_Email`, and generalising the quote's route to the invoice
+   * fell back to it and broke sending entirely. Measured on a live run with a
+   * row selected: it raises `confirm("האם ברצונך להדפיס?")` and then opens
+   * nothing — no envelope, no chooser, not even a new frame — whether the
+   * confirm is answered yes **or** no.
+   */
+  mail: {
+    via: 'restore',
+    button: '#PrintDocAll',
+    range: { frame: /Doc650_ShihzurP\.asp$/i, from: '#DocM', to: '#DocA', ok: '#OK' },
+    chooser: { frame: /PicOne\.asp$/i, email: 'img[title=\'דוא"ל\']' },
+  },
+
   movesStock: true,
   discountColumn: 'הנחה %', // with the space — Doc652 has none
   hasItemFilter: false, // no #wPrt, unlike Doc652V and Doc612V

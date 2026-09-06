@@ -56,6 +56,16 @@ export const profile = {
    */
   program: 'Erp/Mehirot/Doc612/AzaaMhr/Doc612V.asp?SwVO=0&SwLk=1',
 
+  /**
+   * How the mail envelope is reached from the print tab. Declared per document
+   * because it is genuinely different per document, and **must not** be guessed
+   * from which buttons happen to exist — that guess is what broke the invoice.
+   *
+   * The quote has a dedicated `#Email` button ("שליחת דואל מרוכזת") that opens
+   * `Erp/Divor_Doc.asp` directly. The invoice has no such button at all.
+   */
+  mail: { via: 'button', button: '#Email' },
+
   movesStock: false,
   discountColumn: 'הנחה %',
   printView: '/Max2000/Erp/Mehirot/Doc612/AzaaMhr/Doc612_HtmlP_T13.asp',

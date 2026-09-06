@@ -30,6 +30,85 @@ import { openProgram, closePrograms } from '../navigate.js';
 import * as registry from '../documents/registry.js';
 import { requireRecipient, takeOverRecipient, assertRecipient } from '../documents/recipient.js';
 
+/**
+ * Match a frame on its **path**, never on the whole URL.
+ *
+ * Max2000 puts the parent frame's name in the query string, so testing a full
+ * URL for "Doc650_ShihzurP" also matches `Doc650_HtmlP_T13` and picks the wrong
+ * frame. Lifted from `tools/_smoke/invoice-restore.mjs`, where it was learned.
+ */
+const pathOf = (u) => { try { return new URL(u).pathname; } catch { return u; } };
+const byPath = (page, re) => page.frames().find((f) => re.test(pathOf(f.url())));
+
+/**
+ * Open `Erp/Divor_Doc.asp` — the envelope every document shares — from the
+ * print tab of the document's own list.
+ *
+ * **The route is declared in the document profile (`profile.mail`), never
+ * inferred from which buttons the page happens to have.** That inference is
+ * exactly what broke invoice mail: the quote's `#Email` does not exist on
+ * `Doc650V`, so the code fell back to `#DoPrint`, which prints (or does
+ * nothing) but never opens the envelope.
+ *
+ *   via 'button'  — one dedicated button straight to the envelope (quote).
+ *   via 'restore' — print-restore, a document range, then printer/mail/fax
+ *                   (invoice: `#PrintDocAll`, confirmed by Dror as the route
+ *                   for this document, always).
+ */
+async function openEnvelope(ctx, profile, list, docNo) {
+  const { page, human, logger } = ctx;
+  const route = profile.mail;
+
+  if (!route) {
+    throw new Error(
+      `${profile.label}: אין מסלול שליחה מוגדר בפרופיל (profile.mail).\n`
+      + '  המסלול שונה בין סוגי המסמכים ואי אפשר לנחש אותו מהכפתורים שקיימים —\n'
+      + '  צריך למפות אותו במסך ולהצהיר עליו, כמו ב-quote וב-invoice.',
+    );
+  }
+
+  logger.step('מעטפה', `${profile.label} — מסלול "${route.via}" דרך ${route.button}`);
+  await human.click(route.button, { scope: list, label: `מעטפה — ${route.button}` });
+  await human.settle('envelope step');
+
+  if (route.via === 'button') return;
+
+  // --- via 'restore': range dialog → chooser → envelope ---
+  const range = byPath(page, route.range.frame);
+  if (!range) throw new Error(`${profile.label}: מסך טווח ההדפסה לא נפתח.`);
+
+  for (const field of [route.range.from, route.range.to]) {
+    await range.locator(field).fill('').catch(() => {});
+    await human.type(field, docNo, { scope: range, label: field });
+  }
+
+  /**
+   * The range is read back before it is confirmed. It defaults to a span of
+   * documents, and confirming a wrong one mails somebody else's invoice to this
+   * recipient — the same class of mistake כלל 14 guards against, one screen up.
+   */
+  const got = await range.evaluate(
+    ([from, to]) => ({
+      from: document.querySelector(from)?.value,
+      to: document.querySelector(to)?.value,
+    }),
+    [route.range.from, route.range.to],
+  );
+  if (got.from !== docNo || got.to !== docNo) {
+    throw new Error(`טווח ההדפסה הוא ${got.from}→${got.to} ולא ${docNo}→${docNo} — עוצר לפני אישור.`);
+  }
+  logger.step('טווח', `${got.from} → ${got.to}`);
+
+  await human.click(route.range.ok, { scope: range, label: 'אישור טווח ההדפסה' });
+  await human.settle('chooser');
+
+  const chooser = byPath(page, route.chooser.frame);
+  if (!chooser) throw new Error(`${profile.label}: מסך הבחירה (מדפסת/דוא"ל/פקס) לא נפתח.`);
+  await human.click(route.chooser.email, { scope: chooser, label: 'דוא"ל' });
+  await human.settle('envelope');
+  await human.think('mail form');
+}
+
 export const meta = {
   name: 'document-email',
   description: 'שליחת מסמך בדוא"ל דרך קומקס — הצעת מחיר, חשבונית וכל מסמך עם רשימה ממופה',
@@ -91,25 +170,9 @@ export async function run(ctx) {
   await human.click('#Row3', { scope: list, label: 'לשונית הדפסה' });
   await human.think('tab switched');
 
-  /**
-   * שני מסלולים למעטפה, ולא אותו כפתור בכל מסמך.
-   *
-   * נמדד 05/09/2026: ב-`Doc612V` (הצעת מחיר) יש כפתור `#Email` ייעודי בלשונית
-   * ההדפסה. ב-`Doc650V` (חשבונית מס) **אין כזה בכלל** — הרצה יבשה נפלה על
-   * 30 שניות של המתנה ל-`#Email`. שם המעטפה נפתחת מאייקון סרגל הכלים
-   * `#DoPrint`, שה-onclick שלו הוא `top.Cs.doPrint_Email(FrameName)` והוא קיים
-   * בכל הלשוניות.
-   *
-   * מנסים את `#Email` קודם כי הוא המסלול שאומת בהצעה, ונופלים ל-`#DoPrint`.
-   * `count()` שואל את ה-DOM כפי שהוא במקום להמתין, כך שכפתור שלא קיים עולה
-   * אפס — אותו טריק שמונע 30 שניות המתנה לאייקון שירד מהשולחן.
-   */
-  const envelope = (await list.locator('#Email').count()) > 0 ? '#Email' : '#DoPrint';
-  logger.step('מעטפה', `נפתחת דרך ${envelope}`);
-  await human.click(envelope, { scope: list, label: 'מעטפה — שליחת דוא"ל' });
-  await human.settle('email dialog');
+  await openEnvelope(ctx, profile, list, String(input.docNo));
 
-  const dlg = page.frames().find((f) => /Divor_Doc\.asp/i.test(f.url()));
+  const dlg = byPath(page, /Divor_Doc\.asp$/i);
   if (!dlg) throw new Error('חלון שליחת הדוא"ל לא נפתח.');
 
   const { prefilled: original } = await takeOverRecipient({ frame: dlg, human, logger, to });
