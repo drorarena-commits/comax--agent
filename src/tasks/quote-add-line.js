@@ -24,7 +24,7 @@ export const meta = {
     items: 'array — [{ code, qty, price?, discount?, remark? }] לכמה שורות ברצף',
     price: 'number, אופציונלי — מחיר ידני',
     discount: 'number, אופציונלי — % הנחה',
-    wholesale: 'boolean — מחיר סיטונאי: נטו חצי מהברוטו. דרך ההזנה נקבעת לפי משטר המע\"מ של המסמך',
+    wholesale: 'boolean, אופציונלי — מחיר סיטונאי: נטו חצי מהברוטו. **ברירת המחדל היא true תחת מחירון שמסומן wholesale ב-knowledge/lists.json** (מחירון קבוצות). להעביר false כדי לבטל. דרך ההזנה נקבעת לפי משטר המע\"מ של המסמך',
     remark: 'string, אופציונלי',
   },
 };
@@ -160,13 +160,45 @@ async function fillLine(ctx, { grid, item, index, of, commit, last }) {
   let discount = item.discount;
   const gross = num(auto.price);
   let wholesalePlan = null;
-  if (item.wholesale) {
+
+  /**
+   * Wholesale is the **default** under a price list marked `wholesale` in
+   * `knowledge/lists.json`, not something the caller has to remember to ask for.
+   *
+   * Dror, 06/09/2026: "מחירון קבוצות" and "מחיר סיטונאי" mean the same thing to
+   * him — half the gross, every line, every item. Quotes 6120050 and 6120051
+   * were built under that price list without the flag and took Comax's own
+   * offer instead: 199.90 a unit where the rule gives 140. Nothing looked
+   * wrong at any point; the document was simply 43% too expensive.
+   *
+   * Two ways to override, both deliberate:
+   *   `wholesale: false`            — this document is not wholesale after all
+   *   an explicit `price`/`discount` — "מחיר מפורש גובר" (MAP.md)
+   *
+   * The flag comes off the price list the **document** declares, read from its
+   * footer, not from what the caller passed as `priceList` — the customer card
+   * can override the header, and the money follows the document.
+   */
+  const explicitPrice = item.price != null || item.discount != null;
+  let wantWholesale = item.wholesale === true;
+  let totals = null;
+
+  if (!wantWholesale && item.wholesale !== false && !explicitPrice) {
+    totals = await readTotals(grid);
+    const known = knownPriceLists().find((pl) => pl.name === totals.priceList);
+    if (known?.wholesale === true) {
+      wantWholesale = true;
+      logger.step('wholesale', `מחירון "${totals.priceList}" מסומן כסיטונאי — מחיר סיטונאי כברירת מחדל`);
+    }
+  }
+
+  if (wantWholesale) {
     if (gross == null) throw new Error('לא הצלחתי לקרוא את מחיר הברוטו מקומקס.');
 
     // Ask the document, do not assume. Writing the halved price into a
     // VAT-inclusive document has Comax read 145 as gross — net 122.88 instead
     // of 145.00, ~15% under-charged, on a document that looks fine afterwards.
-    const totals = await readTotals(grid);
+    totals = totals ?? await readTotals(grid);
 
     // The **price list** is what decides the regime — that is the mechanism, not
     // an inference from it. Reading it off the footer works on an empty document
@@ -232,7 +264,7 @@ async function fillLine(ctx, { grid, item, index, of, commit, last }) {
     price: await frame.locator('#Mhr').inputValue().catch(() => null),
     discount: await frame.locator('#AczDis').inputValue().catch(() => null),
     amount: await frame.locator('#Scm').inputValue().catch(() => null),
-    gross: item.wholesale ? auto.price : null,
+    gross: wantWholesale ? auto.price : null,
     wholesale: wholesalePlan,
   };
 
