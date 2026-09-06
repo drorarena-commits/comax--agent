@@ -28,6 +28,7 @@
 | `dror@finbot-docs.co.il` | הנהלת חשבונות (finbot) | לשם מעבירים חשבוניות הוצאה |
 | Eva Vitali — `E.Vitali@arenasport.com`, Angelica Pennesi — `a.pennesi@arenasport.com` (עותק תמיד: `gal@arenaisrael.co.il`, `revital_m@sportm.co.il`, מאיר) | ארנה איטליה | הזמנות עונתיות |
 | `Gvia@comax.co.il` | קומקס | חשבוניות מקומקס |
+| שירן ויצמן קרויטורו, רו"ח — `shiran@wiseman-cpa.com` (עותק קבוע: רחלי אנקונינה, המשרד — `office@wiseman-cpa.com`) | ויצמן ושות', רואי חשבון ויועצים | **דוח הנוכחות החודשי לשכר** — ומשם חוזרים תלושי משכורת ודוח פנסיה. גם חומרי הנהלת חשבונות תקופתיים |
 
 **הערה:** `marketing@comax.co.il` הוא תפוצה/תחזוקה בלבד — **לא** לחשבוניות,
 לא לתמיכה טכנית.
