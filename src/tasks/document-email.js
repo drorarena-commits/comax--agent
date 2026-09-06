@@ -41,6 +41,36 @@ const pathOf = (u) => { try { return new URL(u).pathname; } catch { return u; } 
 const byPath = (page, re) => page.frames().find((f) => re.test(pathOf(f.url())));
 
 /**
+ * Prove the envelope belongs to the document we were asked to send.
+ *
+ * Selecting the row can fail quietly. `document-email` filters the list and
+ * then clicks the row, and when that click misses it logs a warning and
+ * "carries on with whatever is selected" — which on 06/09/2026 happened to be
+ * the right document, and next time might not be. Sending a stranger's quote
+ * to this recipient is the same class of mistake as כלל 14 one level up, and
+ * it is just as irreversible.
+ *
+ * The envelope URL is an independent witness (`knowledge/MAP.md`): the quote
+ * carries `wrkDoc=<n>`, the invoice carries `Param=##DocA:<n>%^##DocM:<n>`.
+ * Neither is written by us, so agreeing with the request means Comax loaded
+ * the document we meant — not that our own click happened to look right.
+ */
+function assertEnvelopeDocument(url, docNo, label, logger) {
+  const byWrk = new RegExp(`[?&]wrkDoc=${docNo}(?:&|$)`).test(url);
+  const byParam = new RegExp(`Doc[AM]:${docNo}(?:%|&|$)`).test(url);
+  if (byWrk || byParam) {
+    logger?.step('מסמך', `המעטפה נטענה על ${label} ${docNo} — אומת מה-URL`);
+    return;
+  }
+  throw new Error(
+    `המעטפה לא נטענה על ${label} ${docNo}.\n`
+    + `  ה-URL של המעטפה: ${url}\n`
+    + '  בחירת השורה כנראה החטיאה, והמסמך שעל המסך אינו זה שהתבקש.\n'
+    + '  עוצר — שליחה כאן הייתה שולחת מסמך של לקוח אחר לנמען הזה.',
+  );
+}
+
+/**
  * Open `Erp/Divor_Doc.asp` — the envelope every document shares — from the
  * print tab of the document's own list.
  *
@@ -175,6 +205,8 @@ export async function run(ctx) {
   const dlg = byPath(page, /Divor_Doc\.asp$/i);
   if (!dlg) throw new Error('חלון שליחת הדוא"ל לא נפתח.');
 
+  assertEnvelopeDocument(dlg.url(), String(input.docNo), profile.label, logger);
+
   const { prefilled: original } = await takeOverRecipient({ frame: dlg, human, logger, to });
   if (input.toName) await human.type('#SentToEmail_Add', input.toName, { scope: dlg, label: 'שם הנמען', paste: true });
   if (input.subject) await human.type('#Subject', input.subject, { scope: dlg, label: 'נושא', paste: true });
@@ -208,13 +240,50 @@ export async function run(ctx) {
   // repopulated by the page between filling and clicking.
   const finalTo = await assertRecipient(dlg, to);
 
+  /**
+   * ⚠️ החלון נסגר מיד, **לפני** שהשליחה הסתיימה — ולכן היעלמותו אינה ראיה.
+   *
+   * `OK_onclick()` בקומקס עושה `Fr.action = str; Fr.submit();` ומיד אחריו
+   * `top.S.endProgram(...)`. הבקשה יוצאת לדרך והחלון נעלם באותו רגע, בעוד
+   * השרת עוד עובד. השליחה עצמה היא **שלושה** סבבים:
+   *
+   *   POST Doc612_HtmlP.asp?…&SwPdf=1&EmailAdd=…   → 302
+   *   GET  Doc612_HtmlP_T13.asp?…                  → 200   (תצוגת ההדפסה)
+   *   POST Erp/Divor_PDF_IO.asp                    → 200   ← זו השליחה בפועל
+   *
+   * הבדיקה הקודמת כאן שאלה "האם פריים המעטפה נעלם" והכריזה `sent: true`.
+   * היא החזירה true בכל פעם, כולל בשלוש הרצות שבהן שום מייל לא הגיע —
+   * נמדד 06/09/2026 מול התיבה עצמה. גרוע מכך, `closePrograms` שרץ מיד אחריה
+   * **הרג את הפריימים באמצע השרשרת וקטע את השליחה**: הרצה שסגרה 5.4 שניות
+   * אחרי הקליק לא נשלחה, והרצה שהמתינה 8.6 שניות כן.
+   *
+   * לכן ממתינים ל-`Divor_PDF_IO.asp` עצמו. זו הראיה היחידה שקומקס נותן, והיא
+   * גם מה שמונע מהניקוי לרוץ מוקדם מדי.
+   *
+   * ⚠️ ועדיין — 200 כאן אומר שקומקס קיבל ושידר, לא שההודעה נחתה בתיבה.
+   * `sent` הוא "נמסר לשרת הדיוור", ואין להציג אותו כ"הלקוח קיבל".
+   */
+  const sendDone = page
+    .waitForResponse((r) => /Divor_PDF_IO\.asp/i.test(r.url()), { timeout: 45_000 })
+    .catch(() => null);
+
   await human.click('#OK', { scope: dlg, label: 'שליחה' });
-  await human.settle('sending');
-  const stillOpen = page.frames().some((f) => /Divor_Doc\.asp/i.test(f.url()) && !/Blank/i.test(f.url()));
-  logger.step('email', stillOpen ? 'חלון השליחה עדיין פתוח — ייתכן שהשליחה נכשלה' : `נשלח אל ${finalTo}`);
+  const resp = await sendDone;
+  const sent = resp?.status() === 200;
+
+  if (sent) {
+    logger.step('email', `נמסר לשרת הדיוור של קומקס עבור ${finalTo} (Divor_PDF_IO 200)`);
+  } else if (resp) {
+    logger.step('warn', `שרת הדיוור החזיר ${resp.status()} — ההודעה כנראה לא נשלחה`);
+  } else {
+    logger.step('warn', 'לא נצפתה פנייה לשרת הדיוור תוך 45 שניות — ההודעה כנראה לא נשלחה');
+  }
+
+  await human.settle('after send');
   await logger.shot(page, 'after-send');
 
+  // הניקוי רק אחרי שהשרשרת נסגרה — הוא זה שקטע אותה קודם.
   if (input.keepOpen !== true) await closePrograms(ctx);
 
-  return { document: profile.name, docNo: input.docNo, mail, comaxSuggested: original, sent: !stillOpen };
+  return { document: profile.name, docNo: input.docNo, mail, comaxSuggested: original, sent };
 }
