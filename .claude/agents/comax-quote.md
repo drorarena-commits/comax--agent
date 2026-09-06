@@ -48,10 +48,27 @@ tools: Bash, Read, Write, Edit, Glob, Grep
 
 התמחור הסיטונאי ו-ה-PDF **קיימים רק במסלול המשימות.** למסמך במחיר מפורש, או לשרשור עם מסמך אחר — `document`. לתמחור סיטונאי או כשצריך קובץ — המשימות.
 
+### ✅ ברירת המחדל: `quote-full` — הכל בפקודה אחת
+
+```bash
+node tools/run.js quote-full --json '{
+  "customer":"...","store":"...","priceList":"מחירון קבוצות",
+  "items":[{"code":"...","qty":6}],
+  "to":"dror.arena@gmail.com"
+}' --confirm
+```
+
+**זו הדרך המומלצת.** היא מריצה את ארבע המשימות ברצף בתהליך אחד ובאותו דפדפן, ולכן משלמת את החימום פעם אחת במקום ארבע. נמדד 06/09/2026 על הצעה 6120052: **157 שניות** מול 457 בזרימה המפוצלת — כותרת 44.5s · שורות 40.8s · קליטה+PDF 17.4s · מייל 53.8s.
+
+בלי `to` — לא נשלח מייל ולא נפתחת מעטפה. בלי `--confirm` — עוצר אחרי הכותרת ולא יוצר כלום. `copies` ברירת מחדל 0.
+
+**המשימות הבודדות נשארו** לתיקון מסמך שכבר פתוח, למיפוי, ולכל מקרה שבו הזרימה נשברה באמצע:
+
 ```bash
 node tools/run.js quote-new       --json '{"customer":"...","store":"...","priceList":"מחירון קבוצות"}' --confirm
 node tools/run.js quote-add-line  --json '{"items":[{"code":"...","qty":6}]}' --confirm
 node tools/run.js quote-finalize  --json '{"docNo":"...","copies":0}' --confirm
+node tools/run.js quote-email     --json '{"docNo":"...","to":"..."}' --confirm
 ```
 
 ## 💰 מחירון קבוצות = סיטונאות. ברירת מחדל, לא דגל
