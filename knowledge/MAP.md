@@ -2852,8 +2852,8 @@ function SwImpType_onchange() {
 | **אישור — בלתי הפיך** | `#ok` | קולט |
 | ביטול · יציאה | `#cancel` · `#DoExit` | |
 
-המשימה: [`src/tasks/items-import.js`](../src/tasks/items-import.js) —
-`npm run items-import`. שלושה שערים חוסמים לפני הקליק: **שער המאסטר** (דגם
+הסוכן: **[`comax-items`](../.claude/agents/comax-items.md)**. המשימה:
+[`src/tasks/items-import.js`](../src/tasks/items-import.js) — `npm run items-import`. שלושה שערים חוסמים לפני הקליק: **שער המאסטר** (דגם
 וצבע קיימים), **שער הסוג** (כתובת `FMiun` מאשרת סוג 0), ו**שער העמודות**
 (קריאה בחזרה של `.title` ולא של `.value`). ההוכחה ששער העמודות תופס היא
 `tools/_smoke/items-import-gate.mjs`, שמקלקל שדה בכוונה.
