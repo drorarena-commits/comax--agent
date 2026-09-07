@@ -67,11 +67,12 @@ export function masterIndex(K) {
  * @param {string[][]} rows שורות ההקמה, בלי הכותרת, בסדר של IMPORT_HEADERS
  * @param {{head:string[], rows:string[][]}} K הקטלוג של קומקס
  */
-export function masterGate(rows, K) {
+export function masterGate(rows, K, { parentLen = new Map() } = {}) {
   const idx = masterIndex(K);
   const iModel = IMPORT_HEADERS.indexOf('דגם');
   const iColor = IMPORT_HEADERS.indexOf('צבע');
   const iName = IMPORT_HEADERS.indexOf('שם פריט');
+  const iBarcode = IMPORT_HEADERS.indexOf('ברקוד');
 
   const missModels = new Map();
   const missColors = new Map();
@@ -85,6 +86,7 @@ export function masterGate(rows, K) {
     const e = map.get(code) ?? { code, count: 0, sampleName: name, existsAs };
     e.count += 1;
     map.set(code, e);
+    return e;
   };
 
   for (const r of rows) {
@@ -94,7 +96,18 @@ export function masterGate(rows, K) {
     let hit = false;
 
     if (model && !idx.models.has(model)) {
-      bump(missModels, model, name);
+      const e = bump(missModels, model, name);
+      // 💣 דגם חסר שנגזר מקוד באורך חריג הוא כמעט תמיד **חיתוך שגוי, לא דגם
+      //    שצריך להקים**. `פריט מרכז/דגם` הוא שרשור בלי מפריד, והקוד חותך
+      //    במקום 6 — נכון רק כשהאורך 9. בלי הסימון הזה ההודעה אומרת "דגם
+      //    219390 חסר, תקים אותו", ומי שיעזור יקים דגם מומצא. זה הרגע שבו
+      //    החוב הופך לנזק. ראו MAP.md, "חיתוך הדגם והצבע".
+      const src = parentLen.get(String(r[iBarcode] ?? '').trim());
+      if (src && src.len !== 9) {
+        e.suspectSplit = true;
+        e.parentRaw = src.raw;
+        e.parentLen = src.len;
+      }
       hit = true;
     }
     if (color && !idx.colors.has(color)) {
@@ -107,8 +120,11 @@ export function masterGate(rows, K) {
 
   const byCode = (a, b) => a.code.localeCompare(b.code);
   const missingColors = [...missColors.values()].sort(byCode);
+  const missingModels = [...missModels.values()].sort(byCode);
   return {
-    missingModels: [...missModels.values()].sort(byCode),
+    missingModels,
+    // הדגמים שכנראה אינם חסרים אלא חתוכים לא נכון — אלה שאין להקים.
+    suspectSplit: missingModels.filter((m) => m.suspectSplit),
     missingColors,
     lookalikes: missingColors.filter((c) => c.existsAs),
     affectedRows,

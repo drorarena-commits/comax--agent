@@ -402,6 +402,8 @@ export function buildRows(src = loadSources()) {
 
 
   const ready = [], pending = [], skipped = [];
+  // ברקוד ⇒ אורך קוד המקור, לשער המאסטר. ראו ההערה ליד החיתוך.
+  const parentLen = new Map();
 
   for (const r of S.rows) {
     const barcode = String(r[B]).trim();
@@ -418,7 +420,12 @@ export function buildRows(src = loadSources()) {
     if (!p || !(p.consumer > 0)) { skipped.push({ barcode, why: 'אין מחיר מאושר' }); continue; }
 
     const priority = String(r[MK]).trim();            // הקוד החלופי, כפי שהוא אצלם
+    // 💣 `פריט מרכז/דגם` הוא שרשור **בלי מפריד** של דגם וצבע, והחיתוך הזה מניח
+    //    דגם בן 6. ההנחה נכונה רק כשהקוד באורך 9 — ולמדנו שיש קודים באורך
+    //    7 עד 12. `parentLen` נושא את האורך הלאה כדי ששער המאסטר יוכל להתריע
+    //    במקום להציע להקים דגם מומצא. ראו MAP.md, "חיתוך הדגם והצבע".
     const parent = String(r[PM] ?? '').replace(/^AR/, '');
+    parentLen.set(barcode, { len: parent.length, raw: parent });
     const model = parent.slice(0, 6);
     const color = parent.slice(6, 9);
     const cls = classify(model, r[D]) ?? familyRule(r[D]);
@@ -438,5 +445,5 @@ export function buildRows(src = loadSources()) {
     (cls ? ready : pending).push(row);
   }
 
-  return { ready, pending, skipped };
+  return { ready, pending, skipped, parentLen };
 }

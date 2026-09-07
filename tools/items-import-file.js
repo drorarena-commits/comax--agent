@@ -10,6 +10,7 @@
  *
  * קריאה בלבד. לא נוגע בקומקס.
  */
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ROOT } from '../src/config.js';
 import { loadSources, buildRows, IMPORT_HEADERS } from '../src/items/build-import.js';
@@ -19,8 +20,14 @@ import { sheetNames, readSheet } from './xlsx.js';
 
 const dest = resolve(ROOT, process.argv[2] ?? 'data/exports/הקמה-קומקס-175.xlsx');
 
-const src = loadSources();
-const { ready, pending, skipped } = buildRows(src);
+// `--comax <path>` — לבנות מול קטלוג פריטים אחר מזה שב-`content/`.
+// הצורך היחיד עד כה: לשחזר מנה שכבר נקלטה. `buildRows` מדלג על פריט שקיים
+// בקטלוג, ולכן מול הקטלוג העדכני מנה שנקלטה מחזירה 0 שורות.
+const ci = process.argv.indexOf('--comax');
+const comax = ci > 0 ? resolve(ROOT, process.argv[ci + 1]) : undefined;
+
+const src = loadSources(comax ? { comax } : {});
+const { ready, pending, skipped, parentLen } = buildRows(src);
 
 console.log(`מקורות:\n  ${Object.values(src.files).join('\n  ')}\n`);
 console.log(`מוכנים להקמה : ${ready.length}`);
@@ -30,8 +37,21 @@ for (const [why, n] of Object.entries(skipped.reduce((m, s) => ({ ...m, [s.why]:
   console.log(`    ${why}: ${n}`);
 }
 
+// ⛔ לא לדרוס קובץ קיים בתוצאה ריקה.
+//
+// אחרי שמנה נקלטת, `buildRows` מדלג על אותם פריטים כ"כבר קיימים בקומקס" —
+// וריצה חוזרת מייצרת חוברת עם 0 שורות. נמדד 07/09/2026: הרצה שנועדה להיות
+// בדיקת רגרסיה **מחקה את קובץ 175 הפריטים שהרגע נקלטו**, ו-`data/` אינו בגיט.
+// הדריסה נראתה כמו הצלחה: "נכתב" ואז "0/0 ✅".
+if (!ready.length && !pending.length && existsSync(dest)) {
+  console.error(`\n⛔ אין שורות לכתוב, והקובץ ${dest} כבר קיים — לא דורסים אותו.`);
+  console.error('   אם כל הפריטים כבר נקלטו בקומקס, זו התוצאה הצפויה ואין מה לבנות.');
+  console.error('   לבנייה מחדש של מנה שכבר נקלטה: להעביר קטלוג מלפני הקליטה ל-loadSources.');
+  process.exit(1);
+}
+
 // שער המאסטר — דגם וצבע הם ישויות נפרדות בקומקס, וחייבים להתקיים לפני היבוא.
-const gate = masterGate([...ready, ...pending], src.K);
+const gate = masterGate([...ready, ...pending], src.K, { parentLen });
 const master = masterSheet(gate);
 
 const ITEM_SHEETS = ['להקמה', 'דורש החלטה'];
@@ -128,9 +148,25 @@ if (led.length) {
 }
 console.log(`  שורות שנוגעות בערך חסר: ${gate.affectedRows}/${gate.totalRows}`);
 
+// ⚠️ לפני שמציעים להקים משהו — להפריד את הדגמים שכנראה אינם חסרים אלא **חתוכים
+//    לא נכון**. בלי ההפרדה הזאת ההודעה למטה אומרת "תקים את 219390", ומי שיעזור
+//    יקים דגם מומצא כדי שהשער יעבור. זה הרגע שבו החוב הופך לנזק.
+if (gate.suspectSplit.length) {
+  console.error('\n⛔ אל תקים את הדגמים האלה — הם כנראה תוצאה של חיתוך שגוי, לא דגמים חסרים:');
+  for (const m of gate.suspectSplit) {
+    const alt = m.parentRaw.slice(0, 5);
+    console.error(`   דגם ${m.code} (${m.count} שורות) — נגזר מקוד "${m.parentRaw}" באורך ${m.parentLen},`);
+    console.error(`      וההנחה בקוד היא אורך 9. סביר שהדגם האמיתי הוא ${alt} והצבע ${m.parentRaw.slice(5)}.`);
+  }
+  console.error('   ראו knowledge/MAP.md, פרק "חיתוך הדגם והצבע". צריך לתקן את הפיצול, לא להקים.');
+}
+
 if (gate.affectedRows) {
   console.error('\n⛔ אי אפשר לייבא: יש דגמים או צבעים שלא קיימים בקומקס — צריך להקים אותם קודם.');
   console.error('   הרשימה המלאה בגיליון "מאסטר חסר". שורה צהובה = יש בקומקס קוד דומה, לא זהה.');
+  if (gate.suspectSplit.length) {
+    console.error(`   ⚠️ ${gate.suspectSplit.length} מהדגמים ברשימה הם חשודי-חיתוך — ראו ההודעה שמעל.`);
+  }
   process.exit(1);
 }
 console.log('  כל הדגמים והצבעים קיימים בקומקס ✅');
