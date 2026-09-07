@@ -376,17 +376,40 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
     return { dryRun: true, file, rows: dataRows, columns: mapped, options: opts };
   }
 
-  // ---- בלתי הפיך --------------------------------------------------------
-  await human.click('#ok', { scope: dlg, label: 'אישור — קליטת היבוא' });
-  await human.settle('הקליטה');
-  await logger.shot(page, 'after-import');
-  const report = await page.frames().reduce(async (accP, f) => {
-    const acc = await accP;
-    if (acc) return acc;
-    const t = await f.evaluate(() => document.body?.innerText ?? '').catch(() => '');
-    return /שגיא|נקלט|הוקמ|שורות/.test(t) && t.length < 4000 ? t.trim() : null;
-  }, Promise.resolve(null));
-  if (report) logger.step('report', report.slice(0, 1500));
+  // ---- שלב 1: תצוגה מקדימה, לא קליטה ------------------------------------
+  // ⚠️ `#ok` בדיאלוג **אינו קולט**. הוא בונה מסך תוצאה (`Prt_ImpExlU.asp`)
+  //    עם שתי רשתות — "יבוא תקין" ו"יבוא לא תקין" — ו-`#OK` משלו. זה כלל 4
+  //    ב-CLAUDE.md בלבוש של יבוא: הקליטה היא הכפתור השני. נמדד 07/09/2026:
+  //    המשימה חשבה שסיימה, ובקומקס לא נוצר עדיין דבר.
+  await human.click('#ok', { scope: dlg, label: 'אישור — בניית התצוגה המקדימה' });
+  await human.settle('מסך התוצאה');
+  const result = page.frames().find((f) => /Prt_ImpExlU/i.test(f.url()));
+  if (!result) throw new Error('מסך תוצאת היבוא לא נפתח. לא נקלט דבר — תבדוק בקומקס לפני שתריץ שוב.');
 
-  return { ok: true, file, rows: dataRows, columns: mapped, report };
+  const summary = (await result.evaluate(() => (document.body?.innerText ?? '').replace(/\s+/g, ' ').trim())).slice(0, 400);
+  const okGrid = page.frames().find((f) => /Prt_ImpExl_Fr\.asp/i.test(f.url()));
+  const badGrid = page.frames().find((f) => /Prt_ImpExl2_Fr\.asp/i.test(f.url()));
+  const count = (fr) => (fr ? fr.evaluate(() => Math.max(0, document.querySelectorAll('tr').length - 1)) : Promise.resolve(0));
+  const [shown, rejected] = await Promise.all([count(okGrid), count(badGrid)]);
+  logger.step('preview', `${summary}`);
+
+  // ⚠️ "סה"כ פריטים: 100 מתוך 175" הוא **תקרת תצוגה**, לא דחייה. נמדד: 100
+  //    השורות המוצגות היו בדיוק 100 הברקודים הראשונים בסדר עולה. הסמכות על
+  //    דחיות היא רשת "יבוא לא תקין" — היא, ורק היא.
+  if (rejected > 0) {
+    const rows = await badGrid.evaluate(() =>
+      [...document.querySelectorAll('tr')].slice(1, 11).map((tr) => [...tr.cells].map((c) => c.innerText.trim()).join(' | ')));
+    throw new Error(`⛔ ${rejected} שורות ברשת "יבוא לא תקין". לא קולטים חלקית — עוצר.\n  ${rows.join('\n  ')}`);
+  }
+  logger.step('preview', `0 שורות ב"יבוא לא תקין" · הרשת התקינה מציגה ${shown} (תקרת תצוגה, לא כמות)`);
+  await logger.shot(page, 'import-preview');
+
+  // ---- שלב 2: הקליטה עצמה, בלתי הפיכה ------------------------------------
+  await human.click('#OK', { scope: result, label: 'אישור — קליטה בפועל' });
+  await human.settle('אחרי הקליטה');
+  await logger.shot(page, 'after-import');
+  const stillOpen = page.frames().some((f) => /Prt_ImpExlU/i.test(f.url()));
+  if (stillOpen) logger.step('report', '⚠ מסך התוצאה עדיין פתוח — תוודא בקומקס שהפריטים נקלטו');
+
+  return { ok: true, file, rows: dataRows, shown, rejected, columns: mapped, summary };
 }
