@@ -125,6 +125,26 @@ export const CATALOG_COLS = {
   color: ['Colorway', 'Color Code'],
 };
 
+/**
+ * מסיר מתיאור הצבע את קידומת המספר: `222-NEON BLAZE` ⇒ `NEON BLAZE`.
+ *
+ * ארנה ואליסה כותבות את התיאור עם קוד הצבע בראשו. בקומקס הקוד כבר יושב בשדה
+ * `צבע` נפרד, ולכן הכפילות מיותרת (הכרעת דרור 07/09/2026).
+ *
+ * ⛔ **מסירים רק כשהמספר הוא באמת קוד הצבע של אותה שורה.** תיאור שמתחיל
+ *    במספר אחר אינו קידומת אלא חלק מהשם, וחיתוך עיוור היה משמיד אותו.
+ *    נמדד: 126 מתוך 171 התיאורים נשאו קידומת, וכולן — 126 מתוך 126 — תאמו
+ *    את קוד הצבע.
+ */
+export function stripColorCode(desc, color) {
+  const s = String(desc ?? '').trim();
+  const m = s.match(/^(\d+)\s*-\s*(.+)$/);
+  if (!m) return s;
+  const c = String(color ?? '').trim();
+  const same = m[1] === c || padColor(m[1]) === padColor(c);
+  return same ? m[2].trim() : s;
+}
+
 /** האינדקס של העמודה הראשונה מבין הנרדפים, או -1. */
 const colOf = (head, names) => {
   for (const n of names) {
@@ -374,7 +394,8 @@ export function buildRows(src = loadSources()) {
     const cls = classify(model, r[D]) ?? familyRule(r[D]);
 
     const row = [
-      barcode, barcode, priority, cleanName(r[D], r[SZ]), src.colors.lookup(barcode, model, color),
+      barcode, barcode, priority, cleanName(r[D], r[SZ]),
+      stripColorCode(src.colors.lookup(barcode, model, color), color),
       model, color, r[SZ],   // הצבע כפי שהוא מגיע מהמקור — בלי ריפוד
       cls?.depCode ?? '', cls?.depName ?? '',
       cls?.grpCode ?? '', cls?.grpName ?? '',

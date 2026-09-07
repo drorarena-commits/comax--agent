@@ -98,6 +98,15 @@ console.log(moved.length
 const withColorName = all.filter((r) => String(r[iEng]).trim()).length;
 console.log(`  תיאור צבע מולא: ${withColorName}/${all.length}  (מתוך ${src.colors.files.length} קטלוגי ארנה)`);
 
+// אימות: אין קוד צבע בראש התיאור — הוא כבר יושב בשדה `צבע`.
+const withCode = all.filter((r) => {
+  const m = String(r[iEng] ?? '').match(/^(\d+)\s*-/);
+  return m && (m[1] === String(r[iCol]) || m[1].replace(/^0+/, '') === String(r[iCol]).replace(/^0+/, ''));
+});
+console.log(withCode.length
+  ? `⛔ ${withCode.length} תיאורי צבע שעדיין נושאים את קוד הצבע: ${withCode.slice(0, 5).map((r) => r[iEng]).join(', ')}`
+  : '  אף תיאור צבע אינו נושא את קוד הצבע ✅');
+
 console.log(`\nנכתב: ${dest}`);
 
 // ── שער המאסטר ──────────────────────────────────────────────────────────────
