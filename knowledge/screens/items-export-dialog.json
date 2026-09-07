@@ -1,0 +1,2055 @@
+{
+  "capturedAt": "2026-09-07T03:42:44.893Z",
+  "frames": [
+    {
+      "name": "",
+      "url": "https://www.comax.co.il/Max2000/Max2000_run_G.asp?p=0|wmkggbkga|zdbg|07/09/2026_06:42:19"
+    },
+    {
+      "name": "G",
+      "url": "https://www.comax.co.il/Max2000/Blank.asp"
+    },
+    {
+      "name": "S",
+      "url": "https://www.comax.co.il/Max2000/MainNew_G.asp?CSID=&d1=07/09/2026%2006:42:20&Date=Mon%20Sep%2007%202026%2006:42:20%20GMT+0300%20(%F9%F2%E5%EF%20%E9%F9%F8%E0%EC%20(%F7%E9%F5))&SwQ_T=1&swQ_Run=&LogInC=187669760&CSID_OLD=&QS=043960%20%20%20%20%20%20%20%20%202%20%20%20%20%20%20%20%20%2011%20%20%20%20%20%20%20%20%20113%20%20%205%20%200%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20187669760%20%20%20%20%20%206853631741%20%20%20%200%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E3%F8%E5%F8%20%F1%F4%E5%F8%E8%20ARENA&UsrSafa=0&Sw_CHROME=1&UsrSafa=0"
+    },
+    {
+      "name": "L_Buttons",
+      "url": "https://www.comax.co.il/Max2000/Buttons_Html_G.asp?FullGraf=0"
+    },
+    {
+      "name": "C",
+      "url": "https://www.comax.co.il/Max2000/Code_G.htm?Date=7/9/2026%206:42:19&CSID=&d1=07/09/2026%2006:42:20"
+    },
+    {
+      "name": "T",
+      "url": "https://www.comax.co.il/Max2000/Code_Table_New_G.htm?CSID="
+    },
+    {
+      "name": "R",
+      "url": "https://www.comax.co.il/Max2000/Code_Report_G.asp?CSID="
+    },
+    {
+      "name": "Cs",
+      "url": "https://www.comax.co.il/Max2000/Code_Screen_G.htm?v=1&CSID=&DNow=07/09/2026%2006:42:21"
+    },
+    {
+      "name": "B",
+      "url": "https://www.comax.co.il/Max2000/Company_Set_G.asp?SwPG=0&swVisit=0&SwSQL=113&swEngl=&ZorbaApp=51&ZorbaLk=4396&UserAdmin=1&CurrYear=2026&CurrSnif=0&CurrCompany=1&UserCounter=2&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&Date=Mon%20Sep%2007%202026%2006:42:22%20GMT+0300%20(%D7%A9%D7%A2%D7%95%D7%9F%20%D7%99%D7%A9%D7%A8%D7%90%D7%9C%20(%D7%A7%D7%99%D7%A5))"
+    },
+    {
+      "name": "M",
+      "url": "https://www.comax.co.il/Max2000/Code_App_G.htm?CSID=&d1=07/09/2026%2006:42:20"
+    },
+    {
+      "name": "L",
+      "url": "https://www.comax.co.il/Max2000/Code_Logistet.htm?CSID="
+    },
+    {
+      "name": "Tranzila",
+      "url": "https://www.comax.co.il/Max2000/Server/Tranzila/send_Tranzila.asp"
+    },
+    {
+      "name": "XOR",
+      "url": "https://www.comax.co.il/Max2000/Server/XOR/send_XOR_Main.asp"
+    },
+    {
+      "name": "Hov",
+      "url": "https://www.comax.co.il/Max2000/Server/Hov_MsgScreen.asp"
+    },
+    {
+      "name": "E",
+      "url": "https://www.comax.co.il/Max2000/Comax_External_G.htm?d=07/09/2026%2006:42:19"
+    },
+    {
+      "name": "UsrMsg",
+      "url": "https://www.comax.co.il/Max2000_NET_2022/Server/UsersMessages_Dialog.aspx?ZorbaLk=4396&UserCounter=2&Odbc=Max2000_4396&d=07/09/2026%2006:42:19"
+    },
+    {
+      "name": "CM",
+      "url": "https://www.comax.co.il/Max2000_Net_2022/System/Code_MLang_G.aspx?UserCounter=2&Lk=4396&UsrSafa=0&d=07/09/2026%2006:42:19"
+    },
+    {
+      "name": "React",
+      "url": "https://www.comax.co.il/Max2000_Net_2022/Code_React.html?d=07/09/2026"
+    },
+    {
+      "name": "ifr",
+      "url": "https://www.comax.co.il/Max2000_NET_2022/Blank.aspx"
+    },
+    {
+      "name": "FrmE",
+      "url": "https://www.comax.co.il/Max2000/Blank.asp"
+    },
+    {
+      "name": "FrameAtraa",
+      "url": "https://www.comax.co.il/Max2000/Atraa.asp?FullGraf=5"
+    },
+    {
+      "name": "FrameHelp",
+      "url": "https://www.comax.co.il/Max2000/Blank_Screen.htm"
+    },
+    {
+      "name": "FrameSystemsU",
+      "url": "https://www.comax.co.il/Max2000/Blank_Screen.htm"
+    },
+    {
+      "name": "FrmPr",
+      "url": "https://www.comax.co.il/Max2000/Blank_Screen.htm"
+    },
+    {
+      "name": "FrmPr1",
+      "url": "https://www.comax.co.il/Max2000/Blank_Screen.htm"
+    },
+    {
+      "name": "FrmPr2",
+      "url": "https://www.comax.co.il/Max2000/Blank_Screen.htm"
+    },
+    {
+      "name": "FrmExl",
+      "url": "https://www.comax.co.il/Max2000/Blank_Screen.htm"
+    },
+    {
+      "name": "SelectHead",
+      "url": "https://www.comax.co.il/Max2000/System/Select/SelectHead.htm?Date=07/09/2026"
+    },
+    {
+      "name": "ReactExternalContainer",
+      "url": "https://www.comax.co.il/Max2000/Blank_Screen.htm"
+    },
+    {
+      "name": "ChkT",
+      "url": "https://www.comax.co.il/Max2000/Blank_Screen.htm"
+    },
+    {
+      "name": "ifMenu_click",
+      "url": "https://www.comax.co.il/Max2000/srcMenu_click.asp"
+    },
+    {
+      "name": "ifPageOption_click",
+      "url": "https://www.comax.co.il/Max2000/PageOption_click.asp"
+    },
+    {
+      "name": "FrameCompany",
+      "url": "https://www.comax.co.il/Max2000/Company_G.asp?swVisit=0&SwSQL=113&FullGraf=5&UserCounter=2&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&Sw_CHROME=1&UsrSafa=0"
+    },
+    {
+      "name": "FrameActivXCalender",
+      "url": "https://www.comax.co.il/Max2000/ActivXCalender_G.asp?FullGraf=5"
+    },
+    {
+      "name": "FrameCalenderMonth",
+      "url": "https://www.comax.co.il/Max2000/CalenderMonth.asp?FullGraf=5"
+    },
+    {
+      "name": "FrameLock",
+      "url": "https://www.comax.co.il/Max2000/Lock.htm"
+    },
+    {
+      "name": "Fr_Nivut",
+      "url": "https://www.comax.co.il/Max2000/Nivut/Nivut_Global.asp?D=07/09/2026%2006:42:20"
+    },
+    {
+      "name": "Fr_BI",
+      "url": "https://www.comax.co.il/Max2000/BI/BI_Global.asp?D=07/09/2026%2006:42:20&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&SwSQL=113"
+    },
+    {
+      "name": "frm",
+      "url": "https://www.comax.co.il/Max2000/Nivut/Blank.asp"
+    },
+    {
+      "name": "frm",
+      "url": "https://www.comax.co.il/Max2000/BI/Blank.asp"
+    },
+    {
+      "name": "",
+      "url": "https://static.glassix.com/widget/conversations/f08b869e-27d7-43d1-9d54-028d36b954c5?conversational-flow-id=217f39b4-bf00-4b5e-8a44-83be6042b2fb&culture=he-IL&default-department-id=b0038f9c-177f-44a5-92ba-afc82b247136&h=&has-had-conversations=false&host-origin=https%3A%2F%2Fwww.comax.co.il&host-page-title=Max2000&identity-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJiMDAzOGY5Yy0xNzdmLTQ0YTUtOTJiYS1hZmM4MmIyNDcxMzYiLCJpYXQiOjE3ODg3NTI1NDEsImV4cCI6MTc4ODkyNTM0MSwiYXVkIjoiYWRlN2E3YzQtY2E2Yi00MTZhLThlM2QtNGQ5MmNkNzUxNDI1Iiwic3ViIjoiIiwiZmllbGQxIjoi15PXqNeV16giLCJmaWVsZDIiOiIwNTAyMjA1MTc4IiwiZmllbGQzIjoiZHJvci5hcmVuYUBnbWFpbC5jb20iLCJmaWVsZDQiOiI0Mzk2IiwiZmllbGQ1IjoiMSIsImZpZWxkNiI6IteT16jXldeoINeh16TXldeo15ggIGFyZW5hICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIiwiZmllbGQ3IjoiIiwiZmllbGQ4IjoiIiwiZmllbGQ5IjoiMSIsInBhcnRpY2lwYW50TmFtZSI6IlVzZXJfTmFtZTIiLCJwYXJ0aWNpcGFudFBob25lTnVtYmVyIjoiVXNlcl9QZWwyIiwicGFydGljaXBhbnRNYWlsQWRkcmVzcyI6IlVzZXJfRW1haWwyIn0.nkKUsEJIl5MZQhjpAu5lOL53b0z9scNpti0hlRb8j4E&is-embedded=true&loaderBg=%2359A607&snippet-id=0BUDyS8okHHYCdEsecmy&unique-identifier=ade7a7c4-ca6b-416a-8e3d-4d92cd751425&w=&was-unique-identifier-provided=true&handled-widget=1"
+    },
+    {
+      "name": "Frm_Task",
+      "url": "https://www.comax.co.il/Max2000/Server/checkLast_Task_NEW_G.asp?SwVisit=0&SwSQL=113&SwChkOnly=1&LogC=187669760&SessionID=685363174&Odbc=Max2000_4396&ZorbaLk=4396&UserCounter=2&LastDateAtraa=&LogC_p=187669760&D1=7/9/2026%206:42:29"
+    },
+    {
+      "name": "MenuLevel1",
+      "url": "https://www.comax.co.il/Max2000/Menu/MenuLevel1_G.asp?SwSQL=113&swEngl=0&UsrSafa=0&FullGraf=5&UserCounter=2&UserAdmin=1&ZorbaApplication=51&CurrCompany=1&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&SugComax=0&ScreenColorMenu=#008000&Date=Mon%20Sep%2007%202026%2006:42:23%20GMT+0300%20(%D7%A9%D7%A2%D7%95%D7%9F%20%D7%99%D7%A9%D7%A8%D7%90%D7%9C%20(%D7%A7%D7%99%D7%A5))"
+    },
+    {
+      "name": "MenuLevel2",
+      "url": "https://www.comax.co.il/Max2000/Menu/MenuLevel2_G.asp?SwSQL=113&swEngl=0&UsrSafa=0&FullGraf=5&UserCounter=2&UserAdmin=1&ZorbaApplication=51&CurrCompany=1&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&SugComax=0&ScreenColorMenu=#008000&Date=Mon%20Sep%2007%202026%2006:42:23%20GMT+0300%20(%D7%A9%D7%A2%D7%95%D7%9F%20%D7%99%D7%A9%D7%A8%D7%90%D7%9C%20(%D7%A7%D7%99%D7%A5))"
+    },
+    {
+      "name": "MenuLevel3",
+      "url": "https://www.comax.co.il/Max2000/Menu/MenuLevel3_G.asp?SwSQL=113&swEngl=0&UsrSafa=0&FullGraf=5&UserCounter=2&UserAdmin=1&ZorbaApplication=51&CurrCompany=1&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&SugComax=0&ScreenColorMenu=#008000&Date=Mon%20Sep%2007%202026%2006:42:23%20GMT+0300%20(%D7%A9%D7%A2%D7%95%D7%9F%20%D7%99%D7%A9%D7%A8%D7%90%D7%9C%20(%D7%A7%D7%99%D7%A5))"
+    },
+    {
+      "name": "MenuLevel4",
+      "url": "https://www.comax.co.il/Max2000/Menu/MenuLevel4_G.asp?SwSQL=113&swEngl=0&UsrSafa=0&FullGraf=5&UserCounter=2&UserAdmin=1&ZorbaApplication=51&CurrCompany=1&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&SugComax=0&ScreenColorMenu=#008000&Date=Mon%20Sep%2007%202026%2006:42:23%20GMT+0300%20(%D7%A9%D7%A2%D7%95%D7%9F%20%D7%99%D7%A9%D7%A8%D7%90%D7%9C%20(%D7%A7%D7%99%D7%A5))"
+    },
+    {
+      "name": "MenuLevel5",
+      "url": "https://www.comax.co.il/Max2000/Menu/MenuLevel5_G.asp?SwSQL=113&swEngl=0&UsrSafa=0&FullGraf=5&UserCounter=2&UserAdmin=1&ZorbaApplication=51&CurrCompany=1&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&SugComax=0&ScreenColorMenu=#008000&Date=Mon%20Sep%2007%202026%2006:42:23%20GMT+0300%20(%D7%A9%D7%A2%D7%95%D7%9F%20%D7%99%D7%A9%D7%A8%D7%90%D7%9C%20(%D7%A7%D7%99%D7%A5))"
+    },
+    {
+      "name": "FrameMListOne",
+      "url": "https://www.comax.co.il/Max2000/Blank_Screen.htm"
+    },
+    {
+      "name": "FrameMenuOne",
+      "url": "https://www.comax.co.il/Max2000/Blank.asp"
+    },
+    {
+      "name": "Select",
+      "url": "https://www.comax.co.il/Max2000/System/Select/Select_G.htm?a=11"
+    },
+    {
+      "name": "MoveProgram",
+      "url": "https://www.comax.co.il/Max2000/MoveProgram.htm"
+    },
+    {
+      "name": "FramePrintSend",
+      "url": "https://www.comax.co.il/Max2000/System/Spool/PrintSend_New_G.asp?FullGraf=5&Host=https://www.comax.co.il/&SwEnter=1"
+    },
+    {
+      "name": "FrameMenuList",
+      "url": "https://www.comax.co.il/Max2000/Blank.asp"
+    },
+    {
+      "name": "FrSys",
+      "url": "https://www.comax.co.il/Max2000/Atraa_Fr.asp?SwSQL=113&Lk=4396&CurrYear=2026&CurrCompany=1&UserCounter=2&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&Date=Mon%20Sep%2007%202026%2006:42:22%20GMT+0300%20(%F9%F2%E5%EF%20%E9%F9%F8%E0%EC%20(%F7%E9%F5))"
+    },
+    {
+      "name": "ifrB",
+      "url": "https://www.comax.co.il/Max2000/Blank.asp"
+    },
+    {
+      "name": "f0",
+      "url": "https://www.comax.co.il/Max2000_NET_2022/Erp/Prt/PrtV.aspx?&SwVO=0&MCGLOBAL=2345&SwPG=0&swVisit=0&swEngl=&SwSQL=113&UserBooker=0&Prt_Company=1&SaveLine=1&CurrCompanyNoMaam=0&SwEnter=1&FullGraf=5&FrameName=%27FramePrtV%27&UserAdmin=1&CurrSnif=0&CurrCompany=1&CurrYear=2026&ZorbaLk=4396&ZorbaApp=51&UserCounter=2&Odbc=Max2000_4396&SSID_p=685363174&LogC_p=187669760&Host=https%3A//www.comax.co.il/&LCforPC=1&SwWC_test=0%2C%200&Sw_CHROME=1&swMLangJson=0&UsrSafa=0&Safa_LTR=0&SwUse_UI=0&NOWW=7/9/2026%206%3A42%3A33"
+    },
+    {
+      "name": "f1",
+      "url": "https://www.comax.co.il/Max2000/Excel/Prt/Prt_ExcelP.asp?SwPG=0&swVisit=0&swEngl=&SwSQL=113&UserBooker=0&Prt_Company=1&SaveLine=1&CurrCompanyNoMaam=0&SwEnter=1&FullGraf=5&FrameName=%27FramePrt_ExcelP%27&UserAdmin=1&CurrSnif=0&CurrCompany=1&CurrYear=2026&ZorbaLk=4396&ZorbaApp=51&UserCounter=2&Odbc=Max2000_4396&SSID_p=685363174&LogC_p=187669760&Host=https://www.comax.co.il/&LCforPC=1&SwWC_test=0&SwWC_test=0&Sw_CHROME=1&swMLangJson=0&UsrSafa=0&Safa_LTR=0&SwUse_UI=0&NOWW=7/9/2026%206:42:41"
+    },
+    {
+      "name": "FMiun",
+      "url": "https://www.comax.co.il/Max2000/Excel/Prt/MiunSw.asp"
+    }
+  ],
+  "dialogFields": [
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "DateA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "DateM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Store_prtM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Store_prtA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Store_MlayM",
+      "name": "",
+      "value": "15"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Store_MlayA",
+      "name": "",
+      "value": "15"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "PrtM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "PrtA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "GrpM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "GrpA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "GrpTtM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "GrpTtA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "DegemM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "DegemA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "GimorM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "GimorA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "GodelM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "GodelA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "ShonotM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "ShonotA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "NosafM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "NosafA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SpkM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SpkA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "wSpkGrpM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "wSpkGrpA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "DepM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "DepA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "IzranM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "IzranA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "StoreM",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "StoreA",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Mida",
+      "name": "",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Mhr1",
+      "name": "",
+      "value": "1 - מכירה ראשי"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPrtKod",
+      "name": "",
+      "value": "true"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPrtC",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPrtNm",
+      "name": "",
+      "value": "true"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwEngPrtNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwHalufiNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwHalufiKod",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMashlimNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMida",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwBarkod",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwDepKod",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwDepNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwGrpKod",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwGrpNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwTtGrp",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwTtGrpNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwSpkKod",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwSpkNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwSpkMakat",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwIzran",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwIzranNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwDegem",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwDegemNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwSize",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwSizeNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwColor",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwColorNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwNosaf",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwShonot",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwShonotNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwNosaf2",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwNosaf2Nm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwNosaf3",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwNosaf3Nm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwShakil",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMadania",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwDateOpen",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwOpenKod",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwOpenNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwUpdateNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMhrSell",
+      "name": "",
+      "value": "true"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMhrAlutSpk",
+      "name": "",
+      "value": "true"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwItratMlay",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMishkal",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMchan",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMchanNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwSugP",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwSugPNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwNotMlay",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwSpk_PrtNm",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPrt_Pikuah",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwNefach",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwDerog",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwAmr",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwAmr_N",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPratim",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPrtRemarkJump",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPrtRemarkWarranty",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPrtRemarkAmlaza",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPrtRemarkInsideUse",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Sw_Chames",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LimitAge",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwKodDepAl",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwVetrinary",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMlay",
+      "name": "",
+      "value": "true"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwTeurDepAl",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwHovala",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwNetoSpk",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwItraMlayComp",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPikadonCmt",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPikadonAlut",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPrtMarlog",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwGrpHetel",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwPic",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "PackageWeight",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwChkTz_ForSell",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwView",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Kinyan",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "KinyanKod",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "NewPrt",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwNoMustTzunaValue",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwSivugDep",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwAlcohol",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwNotKfolotInKupa",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMustCmtKupa",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwVisualKupa",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "WeightAvtachaKupa",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwBarzel",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Master",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "layer",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Mishtach",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMaster",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "Swlayer",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMishtach",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbDgm",
+      "name": "",
+      "value": "דגם"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbGodl",
+      "name": "",
+      "value": "מותג"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbGimr",
+      "name": "",
+      "value": "מידה"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbNsf",
+      "name": "",
+      "value": "שונות"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbShnt",
+      "name": "",
+      "value": "נוסף"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbDgmNm",
+      "name": "",
+      "value": "שם דגם"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbGodlNm",
+      "name": "",
+      "value": "שם מידה"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbGimrNm",
+      "name": "",
+      "value": "שם צבע"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbShntNm",
+      "name": "",
+      "value": "שם נוסף"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbNsf2",
+      "name": "",
+      "value": "נוסף 2"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbNsf2Nm",
+      "name": "",
+      "value": "שם נוסף 2"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbNsf3",
+      "name": "",
+      "value": "נוסף 3"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "LbNsf3Nm",
+      "name": "",
+      "value": "שם נוסף 3"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwDate_Tokef",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwMlayDays_Tokef",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwTokef_Hatrha",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "input",
+      "type": "text",
+      "id": "SwTokef_Hasima",
+      "name": "",
+      "value": "false"
+    },
+    {
+      "tag": "select",
+      "type": "select-one",
+      "id": "SelDate",
+      "name": "",
+      "value": "1",
+      "options": [
+        "1=כולל",
+        "2=ללא",
+        "3=בלבד"
+      ]
+    },
+    {
+      "tag": "select",
+      "type": "select-one",
+      "id": "Arcive",
+      "name": "",
+      "value": "1",
+      "options": [
+        "1=כולל",
+        "2=ללא",
+        "3=בלבד"
+      ]
+    },
+    {
+      "tag": "select",
+      "type": "select-one",
+      "id": "SwExcelType_Sug2",
+      "name": "",
+      "value": "0",
+      "options": [
+        "0=,",
+        "1=^"
+      ]
+    },
+    {
+      "tag": "select",
+      "type": "select-one",
+      "id": "SwExcelType",
+      "name": "",
+      "value": "2",
+      "options": [
+        "1=אקסל 2003",
+        "2=אקסל 2007 ומעלה",
+        "0=ASCII"
+      ]
+    },
+    {
+      "tag": "select",
+      "type": "select-one",
+      "id": "Chames",
+      "name": "",
+      "value": "1",
+      "options": [
+        "0=ללא",
+        "1=כולל",
+        "2=בלבד"
+      ]
+    },
+    {
+      "tag": "select",
+      "type": "select-one",
+      "id": "Atar",
+      "name": "",
+      "value": "0",
+      "options": [
+        "0=",
+        "1=פעיל",
+        "2=לא פעיל"
+      ]
+    },
+    {
+      "tag": "input",
+      "type": "hidden",
+      "id": "CurrCompany",
+      "name": "CurrCompany",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "hidden",
+      "id": "UserCounter",
+      "name": "UserCounter",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "hidden",
+      "id": "CurrYear",
+      "name": "CurrYear",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "hidden",
+      "id": "FrameName",
+      "name": "FrameName",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "hidden",
+      "id": "Odbc",
+      "name": "Odbc",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "hidden",
+      "id": "OdbcUserName",
+      "name": "OdbcUserName",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "hidden",
+      "id": "OdbcPassword",
+      "name": "OdbcPassword",
+      "value": ""
+    },
+    {
+      "tag": "input",
+      "type": "hidden",
+      "id": "FrameName",
+      "name": "FrameName",
+      "value": "FramePrt_ExcelP"
+    }
+  ],
+  "boxes": [
+    {
+      "id": "SwPrtC",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":קוד פנימי"
+    },
+    {
+      "id": "SwPrtKod",
+      "name": "",
+      "checked": true,
+      "disabled": false,
+      "label": ":פריט"
+    },
+    {
+      "id": "SwPrtNm",
+      "name": "",
+      "checked": true,
+      "disabled": false,
+      "label": ":שם פריט"
+    },
+    {
+      "id": "SwEngPrtNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם פריט באנגלית"
+    },
+    {
+      "id": "SwHalufiNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם חלופי"
+    },
+    {
+      "id": "SwHalufiKod",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":קוד חלופי"
+    },
+    {
+      "id": "SwMashlimNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם משלים"
+    },
+    {
+      "id": "SwMida",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מידה"
+    },
+    {
+      "id": "SwBarkod",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ברקוד"
+    },
+    {
+      "id": "SwDepKod",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מחלקה"
+    },
+    {
+      "id": "SwDepNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם מחלקה"
+    },
+    {
+      "id": "SwGrpKod",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":קבוצה"
+    },
+    {
+      "id": "SwGrpNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם קבוצה"
+    },
+    {
+      "id": "SwTtGrp",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":קבוצת משנה"
+    },
+    {
+      "id": "SwTtGrpNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם קבוצת משנה"
+    },
+    {
+      "id": "SwSpkKod",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ספק"
+    },
+    {
+      "id": "SwSpkNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם ספק"
+    },
+    {
+      "id": "SwSpkMakat",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מק\"ט ספק"
+    },
+    {
+      "id": "SwIzran",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":יצרן"
+    },
+    {
+      "id": "SwIzranNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם יצרן"
+    },
+    {
+      "id": "SwDegem",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":דגם"
+    },
+    {
+      "id": "SwDegemNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם דגם"
+    },
+    {
+      "id": "SwColor",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":צבע"
+    },
+    {
+      "id": "SwColorNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם צבע"
+    },
+    {
+      "id": "SwSize",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מידה"
+    },
+    {
+      "id": "SwSizeNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם מידה"
+    },
+    {
+      "id": "SwShonot",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":נוסף"
+    },
+    {
+      "id": "SwShonotNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם נוסף"
+    },
+    {
+      "id": "SwNosaf",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שונות"
+    },
+    {
+      "id": "SwNosaf2",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":נוסף 2"
+    },
+    {
+      "id": "SwNosaf2Nm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם נוסף 2"
+    },
+    {
+      "id": "SwNosaf3",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":נוסף 3"
+    },
+    {
+      "id": "SwNosaf3Nm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם נוסף 3"
+    },
+    {
+      "id": "SwShakil",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שקיל"
+    },
+    {
+      "id": "SwMadania",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מעדניה"
+    },
+    {
+      "id": "SwAmr",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":המרה"
+    },
+    {
+      "id": "SwAmr_N",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":המרה נוספת"
+    },
+    {
+      "id": "SwMishkal",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":משקל"
+    },
+    {
+      "id": "SwDateOpen",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":תאריך הקמה"
+    },
+    {
+      "id": "SwOpenKod",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מקים"
+    },
+    {
+      "id": "SwOpenNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם מקים"
+    },
+    {
+      "id": "SwUpdateNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם מעדכן אחרון"
+    },
+    {
+      "id": "SwMhrSell",
+      "name": "",
+      "checked": true,
+      "disabled": false,
+      "label": ":מחיר מכירה"
+    },
+    {
+      "id": "SwMhrAlutSpk",
+      "name": "",
+      "checked": true,
+      "disabled": false,
+      "label": ":מחיר עלות לפי ספק"
+    },
+    {
+      "id": "SwItratMlay",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":יתרת מלאי"
+    },
+    {
+      "id": "SwMchan",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מכונה"
+    },
+    {
+      "id": "SwMchanNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם מכונה"
+    },
+    {
+      "id": "SwSugP",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":סוג פעילות"
+    },
+    {
+      "id": "SwSugPNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם סוג פעילות"
+    },
+    {
+      "id": "SwNotMlay",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ללא ניהול מלאי"
+    },
+    {
+      "id": "SwSpk_PrtNm",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם פריט ספק"
+    },
+    {
+      "id": "SwPrt_Pikuah",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":פריט בפיקוח"
+    },
+    {
+      "id": "SwNefach",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":נפח"
+    },
+    {
+      "id": "SwDerog",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":דרוג"
+    },
+    {
+      "id": "SwPrtRemarkInsideUse",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":הערה פנימית"
+    },
+    {
+      "id": "SwPratim",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":הערה כללית"
+    },
+    {
+      "id": "SwPrtRemarkJump",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":הערה קופצת"
+    },
+    {
+      "id": "SwPrtRemarkWarranty",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":הערת אחריות"
+    },
+    {
+      "id": "SwPrtRemarkAmlaza",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":הערת ה.לרכש"
+    },
+    {
+      "id": "Sw_Chames",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":חמץ"
+    },
+    {
+      "id": "LimitAge",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מוגבל גיל"
+    },
+    {
+      "id": "SwAlcohol",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":אלכוהול"
+    },
+    {
+      "id": "SwKodDepAl",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":קוד מחלקת על"
+    },
+    {
+      "id": "SwTeurDepAl",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":תאור מחלקת על"
+    },
+    {
+      "id": "SwVetrinary",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":אגרה וטרינרית"
+    },
+    {
+      "id": "SwMlay",
+      "name": "",
+      "checked": true,
+      "disabled": false,
+      "label": ":מלאי"
+    },
+    {
+      "id": "SwHovala",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":הובלה"
+    },
+    {
+      "id": "SwNetoSpk",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מחיר עלות נטו"
+    },
+    {
+      "id": "SwItraMlayComp",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":יתרת מלאי לחברות"
+    },
+    {
+      "id": "SwPikadonCmt",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":כמות פקדון"
+    },
+    {
+      "id": "SwPikadonAlut",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":עלות פקדון"
+    },
+    {
+      "id": "SwPrtMarlog",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מרלוג"
+    },
+    {
+      "id": "Master",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":מסטר"
+    },
+    {
+      "id": "SwMaster",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ברירת מחדל"
+    },
+    {
+      "id": "layer",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שכבה"
+    },
+    {
+      "id": "Swlayer",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ברירת מחדל"
+    },
+    {
+      "id": "Mishtach",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":משטח"
+    },
+    {
+      "id": "SwMishtach",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ברירת מחדל"
+    },
+    {
+      "id": "SwGrpHetel",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ק.הטלים"
+    },
+    {
+      "id": "SwPic",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":תמונה"
+    },
+    {
+      "id": "PackageWeight",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":משקל אריזה"
+    },
+    {
+      "id": "SwNotKfolotInKupa",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ללא כפולות בקופה"
+    },
+    {
+      "id": "SwMustCmtKupa",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":חובת כמות בקופה"
+    },
+    {
+      "id": "SwVisualKupa",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":אישור ויזואלי בקופה"
+    },
+    {
+      "id": "WeightAvtachaKupa",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":משקל אבטחה בקופה"
+    },
+    {
+      "id": "SwBarzel",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ברזל"
+    },
+    {
+      "id": "SwDate_Tokef",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ימי תוקף"
+    },
+    {
+      "id": "SwMlayDays_Tokef",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":'ימים להת'/חס"
+    },
+    {
+      "id": "SwTokef_Hatrha",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ימים להתראה"
+    },
+    {
+      "id": "SwTokef_Hasima",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":ימים לחסימה"
+    },
+    {
+      "id": "SwChkTz_ForSell",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":נמכר באילת לפי ת.ז"
+    },
+    {
+      "id": "SwView",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":נתוני אתר - לא להציג"
+    },
+    {
+      "id": "KinyanKod",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":קוד קניין"
+    },
+    {
+      "id": "Kinyan",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":שם קניין"
+    },
+    {
+      "id": "NewPrt",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":פריט חדש"
+    },
+    {
+      "id": "SwNoMustTzunaValue",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":(לא נדרש (ס.תזונתי"
+    },
+    {
+      "id": "SwSivugDep",
+      "name": "",
+      "checked": false,
+      "disabled": false,
+      "label": ":סווג מחלקה"
+    }
+  ]
+}
