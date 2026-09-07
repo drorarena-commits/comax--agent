@@ -17,7 +17,7 @@
  * את הצבע, ומה שכתוב בו `מותג` מחזיק את המידה. לכן העמודות כאן נקראות לפי
  * מיקום מאומת ולא לפי הכותרת — `KCOL` למטה.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ROOT } from '../config.js';
 import { sheetNames, readSheet } from '../../tools/xlsx.js';
@@ -162,8 +162,21 @@ export function headerRow(rows) {
   return -1;
 }
 
-export function arenaCatalogs(dir = resolve(ROOT, 'data/exports')) {
+/**
+ * שתי התיקיות שנסרקות, לפי סדר:
+ *   `content/arena-catalogs` — **המקום הקבוע**, נשמר בגיט ולכן שורד מעבר בין
+ *      מחשבים. לשם `catalogs-sync` מוריד וממיר.
+ *   `data/exports` — תיקיית העבודה. קובץ שהומר לשם ידנית עדיין ייקלט, אבל
+ *      הוא לא יגובה.
+ */
+export const CATALOG_DIRS = [
+  resolve(ROOT, 'content/arena-catalogs'),
+  resolve(ROOT, 'data/exports'),
+];
+
+export function arenaCatalogs(dirs = CATALOG_DIRS) {
   const out = [];
+  const seen = new Set();
   const walk = (d, depth) => {
     if (depth > 2) return;
     for (const e of readdirSync(d, { withFileTypes: true })) {
@@ -174,11 +187,14 @@ export function arenaCatalogs(dir = resolve(ROOT, 'data/exports')) {
         const head = readFileSync(p, 'utf8').slice(0, 8000).split(/\r?\n/).slice(0, 3);
         const hasEan = head.some((l) => CATALOG_COLS.ean.some((n) => l.includes(n)));
         const hasDesc = head.some((l) => CATALOG_COLS.desc.some((n) => l.includes(n)));
-        if (hasEan && hasDesc) out.push(p);
+        // אותו קטלוג יכול לשבת בשתי התיקיות אחרי סנכרון. שם הקובץ מספיק
+        // כמפתח: קטלוג נשמר תמיד בתיקייה על שמו.
+        const key = e.name;
+        if (hasEan && hasDesc && !seen.has(key)) { seen.add(key); out.push(p); }
       } catch { /* קובץ שאי אפשר לקרוא אינו קטלוג */ }
     }
   };
-  walk(dir, 0);
+  for (const d of [dirs].flat()) { try { walk(d, 0); } catch { /* תיקייה שאינה קיימת */ } }
   return out;
 }
 
@@ -247,7 +263,12 @@ export function colorIndex(files = arenaCatalogs(), K = null) {
 export function loadSources({
   comax = newestContent(/^פריטים-מלא-.*\.csv$/),
   samCard = resolve(ROOT, 'data/exports/SAM/DataSheet.csv'),
-  arena = resolve(ROOT, 'data/exports/SS27/1. ארנה איטליה.csv'),
+  // הקטלוגים עברו ל-`content/arena-catalogs` כדי שיישמרו בגיט; הנתיב הישן
+  // ב-`data/exports` נשאר כנפילה לאחור למי שעוד לא סינכרן.
+  arena = [
+    resolve(ROOT, 'content/arena-catalogs/SS27/1. ארנה איטליה.csv'),
+    resolve(ROOT, 'data/exports/SS27/1. ארנה איטליה.csv'),
+  ].find((p) => existsSync(p)) ?? resolve(ROOT, 'content/arena-catalogs/SS27/1. ארנה איטליה.csv'),
   prices = resolve(ROOT, 'data/exports/175-פריטים-להקמה-מחירים-סופיים.xlsx'),
 } = {}) {
   const K = loadCsv(comax);
