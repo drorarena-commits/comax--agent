@@ -25,7 +25,8 @@
     "apply-matrix": "node tools/apply-matrix.js",
     "payroll": "node tools/payroll-report.js",
     "catalogs-sync": "node tools/catalogs-sync.js",
-    "items-file": "node tools/items-import-file.js"
+    "items-file": "node tools/items-import-file.js",
+    "items-import": "node tools/run.js items-import"
   },
   "dependencies": {
     "playwright-core": "^1.49.0"

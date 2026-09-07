@@ -55,6 +55,15 @@ function newestContent(re) {
   return resolve(dir, hit.f);
 }
 
+/**
+ * הקטלוג של קומקס בלבד — לצרכן שצריך רק אותו.
+ *
+ * `loadSources()` טוען גם את ספורט אנד מור, גם את קטלוגי ארנה וגם את גיליון
+ * המחירים; מי שרק מריץ את שער המאסטר (למשל `src/tasks/items-import.js`) לא
+ * צריך אף אחד מהם, ונפילה של קובץ שאינו קשור אליו הייתה חוסמת אותו לשווא.
+ */
+export const comaxCatalog = () => loadCsv(newestContent(/^פריטים-מלא-.*\.csv$/));
+
 // ---- מיקומי עמודות בייצוא של קומקס, מאומתים על הנתונים ---------------------
 export const KCOL = {
   internal: 0, item: 1, name: 2, alt: 3, english: 4, barcode: 5,

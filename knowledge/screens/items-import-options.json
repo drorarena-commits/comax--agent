@@ -1,0 +1,600 @@
+{
+  "capturedAt": "2026-09-07T13:53:04.896Z",
+  "url": "https://www.comax.co.il/Max2000/Erp/Prt/Prt_ImpExl_New.asp?FromFrame=%27FramePrtV%27&NoUp=%270%27&SwPG=0&swVisit=0&swEngl=&SwSQL=113&UserBooker=0&Prt_Company=1&SaveLine=1&CurrCompanyNoMaam=0&SwEnter=1&FullGraf=5&FrameName=%27FramePrt_ImpExl_New%27&UserAdmin=1&CurrSnif=0&CurrCompany=1&CurrYear=2026&ZorbaLk=4396&ZorbaApp=51&UserCounter=2&Odbc=Max2000_4396&SSID_p=878955959&LogC_p=187712876&Host=https://www.comax.co.il/&LCforPC=1&SwWC_test=0&SwWC_test=0&Sw_CHROME=1&swMLangJson=0&UsrSafa=0&Safa_LTR=0&SwUse_UI=0&NOWW=7/9/2026%2016:50:36",
+  "fields": [
+    {
+      "id": "FileValue",
+      "tag": "input",
+      "type": "text",
+      "value": "s",
+      "title": "",
+      "visible": false,
+      "label": ""
+    },
+    {
+      "id": "File",
+      "tag": "input",
+      "type": "file",
+      "value": "",
+      "title": "",
+      "visible": true,
+      "label": ""
+    },
+    {
+      "id": "SwPrtRequiredFeaturesCheck",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "בדיקת מאפייני חובה לפריט",
+      "checked": false,
+      "visible": true,
+      "label": ":ב. מאפיינים :חדש :יבוא"
+    },
+    {
+      "id": "SwNew",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": true,
+      "visible": true,
+      "label": ":ב. מאפיינים :חדש :יבוא"
+    },
+    {
+      "id": "SwBuildGrpTt",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-ק. משנה -קבוצה -מחלקה -ספק :הקמה"
+    },
+    {
+      "id": "SwBuildGrp",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-ק. משנה -קבוצה -מחלקה -ספק :הקמה"
+    },
+    {
+      "id": "SwBuildDep",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-ק. משנה -קבוצה -מחלקה -ספק :הקמה"
+    },
+    {
+      "id": "SwBuildSpk",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-ק. משנה -קבוצה -מחלקה -ספק :הקמה"
+    },
+    {
+      "id": "SwBiuldByNm",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-אפיון 2-5 -אפיון 1 :הקמה לפי שם"
+    },
+    {
+      "id": "SwBiuldByNm1",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-אפיון 2-5 -אפיון 1 :הקמה לפי שם"
+    },
+    {
+      "id": "SwShiuchEfyun",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": true,
+      "visible": true,
+      "label": "-שיוך אפיונים 2-3 -קבוצת משנה -קבוצה -מחלקה :"
+    },
+    {
+      "id": "SwUpGrpTt",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": true,
+      "visible": true,
+      "label": "-שיוך אפיונים 2-3 -קבוצת משנה -קבוצה -מחלקה :"
+    },
+    {
+      "id": "SwUpGrp",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": true,
+      "visible": true,
+      "label": "-שיוך אפיונים 2-3 -קבוצת משנה -קבוצה -מחלקה :"
+    },
+    {
+      "id": "SwUpDep",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": true,
+      "visible": true,
+      "label": "-שיוך אפיונים 2-3 -קבוצת משנה -קבוצה -מחלקה :"
+    },
+    {
+      "id": "SwDel_ArchiveDate",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-לארכיון -חסימת מכירות -חסימת רכש -ת. יציאה :"
+    },
+    {
+      "id": "SwDel_DateStop_Sell",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-לארכיון -חסימת מכירות -חסימת רכש -ת. יציאה :"
+    },
+    {
+      "id": "SwDel_DateStop_Buy",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-לארכיון -חסימת מכירות -חסימת רכש -ת. יציאה :"
+    },
+    {
+      "id": "SwDel_DateStartPrt",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-לארכיון -חסימת מכירות -חסימת רכש -ת. יציאה :"
+    },
+    {
+      "id": "SwDel_GrpT",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-ק. משנה -קבוצה -מחלקה -חסימת הזמנת רכש"
+    },
+    {
+      "id": "SwDel_Grp",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-ק. משנה -קבוצה -מחלקה -חסימת הזמנת רכש"
+    },
+    {
+      "id": "SwDel_Dep",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-ק. משנה -קבוצה -מחלקה -חסימת הזמנת רכש"
+    },
+    {
+      "id": "SwDel_DateStop_HzmBuy",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-ק. משנה -קבוצה -מחלקה -חסימת הזמנת רכש"
+    },
+    {
+      "id": "SwDel_Tav",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-תוים מיוחדים -דגם -יצרן -אפיון 5 -אפיון 3"
+    },
+    {
+      "id": "SwDel_Degem",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-תוים מיוחדים -דגם -יצרן -אפיון 5 -אפיון 3"
+    },
+    {
+      "id": "SwDel_Izran",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-תוים מיוחדים -דגם -יצרן -אפיון 5 -אפיון 3"
+    },
+    {
+      "id": "SwDel_Efyun5",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-תוים מיוחדים -דגם -יצרן -אפיון 5 -אפיון 3"
+    },
+    {
+      "id": "SwDel_Efyun4",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": false,
+      "label": "-תוים מיוחדים -דגם -יצרן -אפיון 5 -אפיון 3"
+    },
+    {
+      "id": "SwDel_Efyun3",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "-תוים מיוחדים -דגם -יצרן -אפיון 5 -אפיון 3"
+    },
+    {
+      "id": "SwByGrp",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=פריטים",
+        "1=קבוצת משנה",
+        "2=קבוצה"
+      ],
+      "visible": true,
+      "label": "עדכן היררכיה לפי: פריטים קבוצת משנה קבוצה"
+    },
+    {
+      "id": "SwHavaraSpk",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": ":ללא העברת ספק ראשי למשני"
+    },
+    {
+      "id": "Kupa_SwDis",
+      "tag": "select",
+      "type": "select-one",
+      "value": "3",
+      "title": "",
+      "options": [
+        "3=לא לעדכן",
+        "0=ללא שינוי - 0",
+        "1=בר הנחה - 1",
+        "2=חסימת הנחה - 2"
+      ],
+      "visible": true,
+      "label": "לא לעדכן ללא שינוי - 0 בר הנחה - 1 חסימת הנחה"
+    },
+    {
+      "id": "PrtFrom",
+      "tag": "input",
+      "type": "text",
+      "value": "",
+      "title": "",
+      "visible": true,
+      "label": ":פריט מ"
+    },
+    {
+      "id": "SwShiucDr",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false,
+      "visible": false,
+      "label": ":מחיקת שיוך ספק קיים"
+    },
+    {
+      "id": "CheckAmara",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": ":בדיקת המרה לא כן :הקמת מאפיינים"
+    },
+    {
+      "id": "SwBiuldEfyun",
+      "tag": "select",
+      "type": "select-one",
+      "value": "1",
+      "title": "",
+      "options": [
+        "0=לא",
+        "1=כן"
+      ],
+      "visible": true,
+      "label": ":בדיקת המרה לא כן :הקמת מאפיינים"
+    },
+    {
+      "id": "CheckHkOnly",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": false,
+      "label": "הקמה בלבד:"
+    },
+    {
+      "id": "SwPrtKod",
+      "tag": "select",
+      "type": "select-one",
+      "value": "1",
+      "title": "",
+      "options": [
+        "0=ברקוד",
+        "1=קוד",
+        "2=חלופי"
+      ],
+      "visible": true,
+      "label": "פריט לפי: ברקוד קוד חלופי עדכון ברקוד:"
+    },
+    {
+      "id": "SwPrtKodIns",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=פריט",
+        "1=מק\"ט"
+      ],
+      "visible": false,
+      "label": "פריט לפי: ברקוד קוד חלופי עדכון ברקוד:"
+    },
+    {
+      "id": "SwPrtKodB",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=ברקוד",
+        "1=קוד"
+      ],
+      "visible": false,
+      "label": "פריט לפי: ברקוד קוד חלופי עדכון ברקוד:"
+    },
+    {
+      "id": "SwUpBarKod",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": "פריט לפי: ברקוד קוד חלופי עדכון ברקוד:"
+    },
+    {
+      "id": "SwUpKod",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": false,
+      "label": "פריט לפי: ברקוד קוד חלופי עדכון ברקוד:"
+    },
+    {
+      "id": "SwUpBarKodNosaf",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "בדיקה נעשית רק עבור ברקודים נומרים",
+      "checked": false,
+      "visible": false,
+      "label": "פריט לפי: ברקוד קוד חלופי עדכון ברקוד:"
+    },
+    {
+      "id": "SwWebGrpTt_2",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": false,
+      "label": ""
+    },
+    {
+      "id": "SwWebGrpTt_1",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": false,
+      "label": ""
+    },
+    {
+      "id": "SwDelMishkalim",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "בסימון איפוס, יאופסו שדות המשקל לחישוב מ",
+      "checked": false,
+      "visible": false,
+      "label": ""
+    },
+    {
+      "id": "DelPrm",
+      "tag": "input",
+      "type": "text",
+      "value": "",
+      "title": "",
+      "visible": true,
+      "label": ":איפוס ערכים"
+    },
+    {
+      "id": "SwDelPrm",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false,
+      "visible": true,
+      "label": ":איפוס ערכים"
+    },
+    {
+      "id": "SwHkPrt",
+      "tag": "select",
+      "type": "select-one",
+      "value": "2",
+      "title": "",
+      "options": [
+        "0=",
+        "1=ללא",
+        "2=בלבד"
+      ],
+      "visible": true,
+      "label": "הקמת פריט: ללא בלבד"
+    },
+    {
+      "id": "SwNoUpdPrtNm",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false,
+      "visible": false,
+      "label": "הקמת פריט: ללא בלבד"
+    },
+    {
+      "id": "SwMhrByDegem",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "עדכון מחיר מכירה לפריט לפי מחיר  הדגם בת",
+      "checked": false,
+      "visible": true,
+      "label": ":מחיר תת רשת לפי דגם :מחיר קניה נכון לתאריך"
+    },
+    {
+      "id": "MhrNachonL",
+      "tag": "input",
+      "type": "text",
+      "value": "",
+      "title": "",
+      "visible": true,
+      "label": ":מחיר תת רשת לפי דגם :מחיר קניה נכון לתאריך"
+    },
+    {
+      "id": "MhrNachonM",
+      "tag": "input",
+      "type": "text",
+      "value": "",
+      "title": "",
+      "visible": true,
+      "label": ":מחיר מכירה נכון לתאריך"
+    },
+    {
+      "id": "SugBarzel",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=תת רשת",
+        "1=סיווג 2 של סניף"
+      ],
+      "visible": false,
+      "label": ""
+    },
+    {
+      "id": "BarzelBizua",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=הקמה בלבד",
+        "1=עדכון בלבד",
+        "2=הקמה ו/או עדכון בלבד"
+      ],
+      "visible": false,
+      "label": ""
+    },
+    {
+      "id": "Snif",
+      "tag": "input",
+      "type": "text",
+      "value": "ראשי",
+      "title": "",
+      "visible": true,
+      "label": ""
+    },
+    {
+      "id": "SwImpType",
+      "tag": "input",
+      "type": "text",
+      "value": "פריטים",
+      "title": "0",
+      "visible": true,
+      "label": ""
+    },
+    {
+      "id": "ArrChoose",
+      "tag": "input",
+      "type": "text",
+      "value": "Kod,Nm,BarKod,Degem,Gimor,Godel,Eng_Nm,H",
+      "title": "",
+      "visible": false,
+      "label": ""
+    }
+  ]
+}

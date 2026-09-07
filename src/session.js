@@ -88,8 +88,13 @@ async function loginOnce({ page, human, logger, cfg, creds, fresh = false }) {
 
   await human.type(cfg.login.orgField, creds.org, { label: 'ארגון', clear: true });
   const userSel = await visibleField(page, [cfg.login.userField, ...(cfg.login.userFieldAlt ?? [])]);
-  const passSel = await visibleField(page, [cfg.login.passField, ...(cfg.login.passFieldAlt ?? [])]);
   await human.type(userSel, creds.user, { label: 'משתמש', clear: true });
+  // The password pair is resolved **after** the user is typed, not before.
+  // Typing into the user field flips the form between the two credential sets,
+  // so a selector chosen up front can be visible when picked and hidden a
+  // second later. Measured 07/09/2026: `Password_Pass` went `display:none`
+  // while `Password` came up, and the run died waiting 30s on the twin.
+  const passSel = await visibleField(page, [cfg.login.passField, ...(cfg.login.passFieldAlt ?? [])]);
   // `secret` keeps the value out of runs/<run>/steps.log, which is a plain file
   // that stays on disk. Without it the password would be written in the clear.
   await human.type(passSel, creds.pass, { label: 'סיסמה', secret: true, clear: true });
