@@ -163,13 +163,20 @@ export function arenaCatalogs(dir = resolve(ROOT, 'data/exports')) {
 }
 
 /**
- * תיאור הצבע, בשני מפתחות: לפי EAN, וכגיבוי לפי `דגם+צבע`.
+ * תיאור הצבע, בשלושה מפתחות לפי סדר אמינות יורד:
+ *   1. לפי EAN מקטלוג של ארנה — התאמה מדויקת לפריט.
+ *   2. לפי `דגם+צבע` מקטלוג של ארנה — מה שמאפשר לקטלוג של עונה אחת למלא
+ *      פריטים של עונה אחרת, כי הצירוף שומר על אותו תיאור בין עונות.
+ *   3. לפי `דגם+צבע` **מהקטלוג של קומקס עצמו** — פריט קיים באותו דגם ובאותו
+ *      צבע כבר נושא את התיאור. נמדד 07/09/2026: `011584|222` לא היה באף
+ *      קטלוג של ארנה שעל הדיסק, ובקומקס ישבו 9 פריטים עם `222-NEON BLAZE`.
+ *      זו קריאה ממקור קיים ולא ניחוש, ולכן היא לגיטימית — אבל **אחרונה**,
+ *      כי קומקס הוא ההעתק ולא המקור.
  *
- * הגיבוי הוא מה שמאפשר לקטלוג של עונה אחת למלא פריטים של עונה אחרת — אותו
- * צירוף דגם+צבע שומר על אותו תיאור בין עונות, גם כשה-EAN שונה.
+ * @param {{head:string[], rows:string[][]}} [K] הקטלוג של קומקס, לשלב 3
  */
-export function colorIndex(files = arenaCatalogs()) {
-  const byEan = new Map(), byStyleColor = new Map();
+export function colorIndex(files = arenaCatalogs(), K = null) {
+  const byEan = new Map(), byStyleColor = new Map(), byComax = new Map();
   for (const f of files) {
     const A = loadCsv(f);
     // שורת הכותרת אינה תמיד הראשונה — ראו `headerRow`. כשהיא למטה, השורות
@@ -192,13 +199,27 @@ export function colorIndex(files = arenaCatalogs()) {
       if (!byStyleColor.has(k)) byStyleColor.set(k, desc);
     }
   }
+  // שלב 3 — הקטלוג של קומקס. נרשם גם בצורה הגולמית וגם במרופדת, כי הצבע אצלו
+  // יכול להיות `75` ואצל ארנה `075`, ואנחנו מחפשים בשתי הצורות.
+  if (K) {
+    for (const r of K.rows) {
+      const desc = String(r[KCOL.english] ?? '').trim();
+      const st = String(r[KCOL.model] ?? '').trim();
+      const cw = String(r[KCOL.color] ?? '').trim();
+      if (!desc || !st || !cw) continue;
+      for (const k of [`${st}|${cw}`, `${st}|${padColor(cw)}`]) if (!byComax.has(k)) byComax.set(k, desc);
+    }
+  }
+
   return {
     files,
     lookup: (barcode, style, color) =>
       byEan.get(String(barcode).trim())
       ?? byStyleColor.get(`${style}|${padColor(color)}`)
+      ?? byComax.get(`${style}|${color}`)
+      ?? byComax.get(`${style}|${padColor(color)}`)
       ?? '',
-    size: { byEan: byEan.size, byStyleColor: byStyleColor.size },
+    size: { byEan: byEan.size, byStyleColor: byStyleColor.size, byComax: byComax.size },
   };
 }
 
@@ -212,7 +233,8 @@ export function loadSources({
   const K = loadCsv(comax);
   const S = loadCsv(samCard);
   const A = loadCsv(arena);
-  const colors = colorIndex();
+  // הקטלוג של קומקס נמסר כמקור אחרון לתיאור הצבע — ראו `colorIndex`.
+  const colors = colorIndex(arenaCatalogs(), K);
 
   const sh = sheetNames(prices)[0];
   const priceRows = readSheet(prices, sh.path);
