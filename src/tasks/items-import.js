@@ -31,7 +31,7 @@ import { resolve, isAbsolute } from 'node:path';
 import { ROOT } from '../config.js';
 import { ensureLoggedIn } from '../session.js';
 import { openProgram } from '../navigate.js';
-import { readSheet, sheetNames } from '../../tools/xlsx.js';
+import { readSheet, sheetNames, numericCells } from '../../tools/xlsx.js';
 import { IMPORT_HEADERS, comaxCatalog } from '../items/build-import.js';
 import { masterGate } from '../items/master-gate.js';
 
@@ -43,6 +43,8 @@ export const meta = {
     file: 'נתיב לקובץ ההקמה (xlsx), יחסי ל-root או מוחלט',
     probe: 'true — למפות את הדיאלוג ולעצור בלי לגעת בכלום',
     columns: 'מיפוי ידני {chkId: "A"}, אופציונלי — ברירת המחדל נגזרת מכותרות הקובץ',
+    allowUpdate: 'true — לאפשר גם עדכון פריטים קיימים ("הקמת פריט" ריק). ברירת המחדל: הקמה בלבד',
+    priceDate: 'תאריך "מחיר מכירה נכון לתאריך" בפורמט dd/mm/yyyy. ברירת המחדל: היום',
   },
 };
 
@@ -77,6 +79,14 @@ export const HEADER_TO_FIELD = {
   'מחיר צרכן': 'chk113',      // מחיר מכירה
 };
 
+/** היום בישראל בפורמט שקומקס מצפה לו — `dd/mm/yyyy`, `maxlength=10`. */
+function todayInIsrael(timeZone) {
+  const p = new Intl.DateTimeFormat('en-GB', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' })
+    .formatToParts(new Date());
+  const g = (t) => p.find((x) => x.type === t).value;
+  return `${g('day')}/${g('month')}/${g('year')}`;
+}
+
 /** מיקום 0-בסיס ⇒ אות עמודה באקסל: 0⇒A, 25⇒Z, 26⇒AA. */
 export function colLetter(n) {
   let s = '';
@@ -91,8 +101,14 @@ function readImportFile(file) {
   const rows = readSheet(file, sheets[0].path);
   const head = (rows[0] ?? []).map((c) => String(c ?? '').trim());
   if (!head.length) throw new Error(`שורת הכותרות ריקה ב-${file}`);
-  return { head, body: rows.slice(1), dataRows: rows.length - 1, sheet: sheets[0].name };
+  return { head, body: rows.slice(1), dataRows: rows.length - 1, sheet: sheets[0].name, path: sheets[0].path };
 }
+
+/**
+ * העמודות שקומקס משתמש בהן כמזהה, ושתא מספרי הורס בשקט.
+ * `002507` בתא מספרי מוצג `2507`, ו-`3468337939436` מוצג `3.46834E+12`.
+ */
+const IDENTIFIER_HEADERS = ['מק"ט', 'ברקוד', 'קוד חלופי', 'דגם', 'צבע', 'מידה'];
 
 /** כל שורה ב-FMiun: ה-id, התווית, אות העמודה (`value`) והסידורי (`title`). */
 async function readPicker(picker) {
@@ -179,8 +195,27 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   if (!input.file) throw new Error('חסר `file` — הנתיב לקובץ ההקמה.');
   const file = isAbsolute(input.file) ? input.file : resolve(ROOT, input.file);
   if (!existsSync(file)) throw new Error(`הקובץ לא קיים: ${file}`);
-  const { head, body, dataRows, sheet } = readImportFile(file);
+  const { head, body, dataRows, sheet, path: sheetPath } = readImportFile(file);
   logger.step('file', `${sheet} · ${dataRows} שורות · ${head.length} עמודות`);
+
+  // ---- ⛔ שער סוג התא ---------------------------------------------------
+  // הכשל היחיד שאף בדיקת ערכים לא תופסת. `readSheet` קורא את ה-XML הגולמי
+  // ומחזיר `"002507"` גם מתא **מספרי**, ולכן שער המאסטר עובר בשמחה — בזמן
+  // שאקסל, וכל מי שקורא דרכו, רואה `2507`. נמדד 07/09/2026: כל 175 השורות
+  // נשאו דגם כזה. מה שבודקים כאן הוא **סוג התא**, לא הערך.
+  const idCols = IDENTIFIER_HEADERS.map((h) => head.indexOf(h)).filter((i) => i >= 0);
+  const numeric = numericCells(file, sheetPath, idCols);
+  if (numeric.length) {
+    const byCol = new Map();
+    for (const c of numeric) (byCol.get(c.col) ?? byCol.set(c.col, []).get(c.col)).push(c.value);
+    const detail = [...byCol].map(([col, vals]) =>
+      `${head[col]}: ${vals.length} תאים (${[...new Set(vals)].slice(0, 5).join(' ')}…)`).join(' · ');
+    throw new Error(
+      `שער סוג התא נפל: ${numeric.length} תאי מזהה נכתבו כמספר ולא כטקסט.\n  ${detail}\n` +
+      `  אקסל ידרוס אפסים מובילים ויציג ברקוד כ-3.46834E+12. תבנה מחדש: npm run items-file`,
+    );
+  }
+  logger.step('cell-types', `כל ${idCols.length} עמודות המזהה הן טקסט — אפסים מובילים וברקודים שלמים`);
 
   // ---- ⛔ שער המאסטר ----------------------------------------------------
   // `דגם` ו`צבע` הם ישויות מאסטר נפרדות מהפריט. שורה שנוגעת בקוד שלא הוקם
@@ -257,10 +292,39 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   const mapped = [...wanted].map(([id, v]) => `${v.letter}=${byId.get(id).label}`);
   logger.step('columns-final', `אומת: ${mapped.join(' · ')}`);
 
-  // ---- תיבות ההתנהגות — נקראות, לא נוגעים ------------------------------
-  // הכרעת דרור 07/09/2026: היבוא רץ עם מה שקומקס טעון בו. המשימה מדווחת,
-  // וחוסמת רק על שתי ההגנות שבלעדיהן יבוא של פריטים חדשים הופך לעדכון של
-  // פריטים קיימים.
+  // ---- שני השדות שדרור כן ביקש לגעת בהם --------------------------------
+  // כלל הבסיס נשאר "היבוא רץ עם מה שקומקס טעון בו", ומהמעבר המשותף על המסך
+  // (07/09/2026) יצאו בדיוק שני חריגים — כאן, ורק כאן.
+
+  // 1. `מחיר מכירה נכון לתאריך` — היום. הוא נטען ריק בכל פתיחה, וזה השדה
+  //    שמתאים ליבוא שלנו: הקובץ מזין `מחיר צרכן` לשדה `מחיר מכירה` (chk113)
+  //    ואין בו עמודת מחיר קניה, ולכן `#MhrNachonL` נשאר ריק בכוונה.
+  const priceDate = input.priceDate ?? todayInIsrael(cfg.timezone);
+  await human.type('#MhrNachonM', priceDate, { scope: dlg, label: 'מחיר מכירה נכון לתאריך', clear: true });
+  await dlg.evaluate(() => document.getElementById('MhrNachonM')?.blur()); // onblur הוא שמאמת
+  await human.settle('אימות התאריך');
+  const dateBack = await dlg.evaluate(() => document.getElementById('MhrNachonM')?.value ?? '');
+  if (dateBack !== priceDate) throw new Error(`שדה התאריך מחזיק "${dateBack}" ולא "${priceDate}". עוצר.`);
+  logger.step('date', `מחיר מכירה נכון לתאריך = ${priceDate}`);
+
+  // 2. `הקמת פריט` — "בלבד" הוא ברירת המחדל וההגנה: מק"ט שגוי בשורה אחת
+  //    יידחה במקום לדרוס בשקט פריט קיים. `allowUpdate` הוא הבקשה המפורשת
+  //    של דרור להרצת תיקון על פריטים שכבר קיימים (מאפיינים, קבוצות), ואז
+  //    השדה נשאר ריק — כלומר הקמה **ו/או** עדכון. שתי פעולות נפרדות בכוונה.
+  if (input.allowUpdate) {
+    await dlg.evaluate(() => {
+      const el = document.getElementById('SwHkPrt');
+      el.value = '0';                       // הערך הריק — הקמה ו/או עדכון
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      window.SwHkPrt_onclick?.();
+    });
+    await human.settle('הקמת פריט = ריק');
+    logger.step('mode', '⚠ allowUpdate — "הקמת פריט" ריק: היבוא יעדכן גם פריטים קיימים');
+  }
+
+  // ---- שאר תיבות ההתנהגות — נקראות, לא נוגעים ---------------------------
+  // המשימה מדווחת, וחוסמת רק על ההגנות שבלעדיהן היבוא עושה משהו אחר ממה
+  // שביקשנו.
   const opts = await dlg.evaluate(() => {
     const g = (id) => document.getElementById(id);
     const sel = (id) => { const e = g(id); return e ? { value: e.value, text: e.options?.[e.selectedIndex]?.text.trim() } : null; };
@@ -275,8 +339,11 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
     };
   });
   logger.step('options', `הקמת פריט=${opts.SwHkPrt?.text} · פריט לפי=${opts.SwPrtKod?.text} · פריט חדש=${opts.SwNew ? 'V' : '—'} · הקמת מאפיינים=${opts.SwBiuldEfyun?.text} · סניף=${opts.Snif}`);
-  if (opts.SwHkPrt?.value !== '2') {
-    throw new Error(`"הקמת פריט" הוא "${opts.SwHkPrt?.text}" ולא "בלבד" — היבוא עלול לעדכן פריטים קיימים. עוצר.`);
+  const wantHk = input.allowUpdate ? '0' : '2';
+  if (opts.SwHkPrt?.value !== wantHk) {
+    throw new Error(input.allowUpdate
+      ? `"הקמת פריט" הוא "${opts.SwHkPrt?.text}" ולא ריק — allowUpdate לא נתפס. עוצר.`
+      : `"הקמת פריט" הוא "${opts.SwHkPrt?.text}" ולא "בלבד" — היבוא עלול לדרוס פריטים קיימים. עוצר, או הוסף allowUpdate אם זו הכוונה.`);
   }
   if (!opts.SwNew) throw new Error('"פריט חדש" אינו מסומן — היבוא לא יקים פריטים. עוצר.');
   if (opts.del.length) logger.step('options', `⚠ תיבות איפוס מסומנות: ${opts.del.join(', ')}`);
@@ -292,7 +359,8 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   console.log(`\n  קובץ:    ${file}`);
   console.log(`  שורות:   ${dataRows}`);
   console.log(`  עמודות:  ${mapped.join(' · ')}`);
-  console.log(`  התנהגות: הקמת פריט=${opts.SwHkPrt?.text} · פריט לפי=${opts.SwPrtKod?.text} · הקמת מאפיינים=${opts.SwBiuldEfyun?.text}\n`);
+  console.log(`  התנהגות: הקמת פריט=${opts.SwHkPrt?.text || '(ריק — גם עדכון)'} · פריט לפי=${opts.SwPrtKod?.text} · הקמת מאפיינים=${opts.SwBiuldEfyun?.text}`);
+  console.log(`  תאריך:   מחיר מכירה נכון ל-${priceDate}\n`);
 
   if (dryRun) {
     logger.step('dryrun', 'עוצר לפני הקליטה. להרצה אמיתית: הוסף --confirm');

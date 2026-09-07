@@ -105,8 +105,24 @@ function sheetXml(rows, highlight) {
       const v = row[c] ?? '';
       if (v === '') continue;
       const ref = `${colName(c + 1)}${i + 1}`;
-      // Numbers stay numbers so Excel can sum and sort them.
-      const num = typeof v === 'number' || (/^-?\d+(\.\d+)?$/.test(String(v).trim()) && String(v).trim() !== '');
+      // Numbers stay numbers so Excel can sum and sort them — but a string of
+      // digits is not always a number, and two shapes of it must stay text:
+      //
+      //   1. **אפס מוביל** (`002507`, `075`). זה מזהה, לא כמות, והאפס נושא
+      //      משמעות. נמדד 07/09/2026: כל 175 שורות ההקמה נכתבו עם דגם כמו
+      //      `002507` בתא מספרי, אקסל הציג `2507`, ובקומקס הדגם הוא `002507` —
+      //      כלומר כל שורה הייתה נקלטת על דגם שאינו קיים. שער המאסטר לא תפס
+      //      את זה כי הוא רץ על המחרוזות **לפני** הכתיבה לקובץ.
+      //   2. **מספר שלם ארוך מ-11 ספרות** (ברקוד בן 13). הערך עצמו נשמר
+      //      במלואו, אבל אקסל **מציג** `3.46834E+12`, וכל צרכן שקורא את הטקסט
+      //      המוצג ולא את הערך הגולמי מקבל את זה.
+      //
+      // בשני המקרים אין מה להפסיד: אף אחד לא מסכם ברקודים ולא ממיין קודי דגם
+      // כמספרים, והנזק מהכיוון השני הוא שקט ומוחלט.
+      const t = String(v).trim();
+      const looksNumeric = typeof v === 'number' || (/^-?\d+(\.\d+)?$/.test(t) && t !== '');
+      const isIdentifier = /^0\d/.test(t) || /^\d{12,}$/.test(t);
+      const num = looksNumeric && !isIdentifier;
       cells.push(num
         ? `<c r="${ref}" s="${s}"><v>${esc(v)}</v></c>`
         : `<c r="${ref}" s="${s}" t="inlineStr"><is><t xml:space="preserve">${esc(v)}</t></is></c>`);

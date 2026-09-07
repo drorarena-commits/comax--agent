@@ -131,3 +131,40 @@ if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import
     console.log(`${s.name}: ${rows.length} שורות × ${rows[0]?.length ?? 0} עמודות → ${dest}`);
   }
 }
+
+/**
+ * תאי מזהה שנכתבו כתא **מספרי** ושהערך בהם **ישתנה** בגללו.
+ *
+ * זה הכשל היחיד בקובץ הקמה שאף בדיקת ערכים לא תופסת: `readSheet` קורא את ה-XML
+ * הגולמי ומחזיר `"002507"` גם מתא מספרי, ולכן שער המאסטר עובר — בזמן ש**אקסל**
+ * וכל מי שקורא דרכו רואים `2507`. נמדד 07/09/2026: כל 175 שורות ההקמה נשאו דגם
+ * כזה, וכולן היו נקלטות בקומקס על דגם שאינו קיים.
+ *
+ * ⚠️ מדווחים **רק על תא שהערך בו ישתנה** — אפס מוביל, או שלם בן 12 ספרות ומעלה
+ * שאקסל מציג כ-`3.46834E+12`. `105` או `36` בתא מספרי חוזרים בדיוק כמו שהם,
+ * ושער שנופל עליהם הוא רעש שמאמנים אנשים להתעלם ממנו.
+ *
+ * @param {string} file  קובץ ה-xlsx
+ * @param {string} path  נתיב הגיליון בתוך החוברת
+ * @param {number[]} cols  מיקומי העמודות (0-בסיס) שחייבות להיות טקסט
+ * @returns {{col:number, ref:string, value:string}[]} התאים החורגים
+ */
+export function numericCells(file, path, cols) {
+  const xml = unzip(file, path);
+  const want = new Set(cols.map((c) => c + 1));
+  const out = [];
+  let rowNo = 0;
+  for (const rm of xml.matchAll(/<row\b[^>]*>([\s\S]*?)<\/row>/g)) {
+    rowNo += 1;
+    if (rowNo === 1) continue;                       // הכותרת
+    for (const cm of rm[1].matchAll(/<c\b([^>]*)>([\s\S]*?)<\/c>/g)) {
+      const ref = /r="([A-Z]+\d+)"/.exec(cm[1])?.[1] ?? '';
+      const type = /t="([^"]+)"/.exec(cm[1])?.[1] ?? 'n';
+      const col = colOf(ref);
+      if (!want.has(col) || type !== 'n') continue;
+      const value = /<v>([\s\S]*?)<\/v>/.exec(cm[2])?.[1] ?? '';
+      if (/^0\d/.test(value) || /^\d{12,}$/.test(value)) out.push({ col: col - 1, ref, value });
+    }
+  }
+  return out;
+}

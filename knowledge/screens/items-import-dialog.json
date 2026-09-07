@@ -1,8 +1,8 @@
 {
-  "capturedAt": "2026-09-07T14:12:28.668Z",
+  "capturedAt": "2026-09-07T14:28:10.853Z",
   "impType": "0",
-  "dialogUrl": "https://www.comax.co.il/Max2000/Erp/Prt/Prt_ImpExl_New.asp?FromFrame=%27FramePrtV%27&NoUp=%270%27&SwPG=0&swVisit=0&swEngl=&SwSQL=113&UserBooker=0&Prt_Company=1&SaveLine=1&CurrCompanyNoMaam=0&SwEnter=1&FullGraf=5&FrameName=%27FramePrt_ImpExl_New%27&UserAdmin=1&CurrSnif=0&CurrCompany=1&CurrYear=2026&ZorbaLk=4396&ZorbaApp=51&UserCounter=2&Odbc=Max2000_4396&SSID_p=878955959&LogC_p=187712876&Host=https://www.comax.co.il/&LCforPC=1&SwWC_test=0&SwWC_test=0&Sw_CHROME=1&swMLangJson=0&UsrSafa=0&Safa_LTR=0&SwUse_UI=0&NOWW=7/9/2026%2016:50:36",
-  "pickerUrl": "https://www.comax.co.il/Max2000/Erp/Prt/MiunSwImp.asp?ArrChoose=Kod,Nm,BarKod,Degem,Gimor,Godel,Eng_Nm,Halufi,Dep,Grp,GrpTt,Spk,MhrM&SwImpType=0&Usr=2&SwTblBorder=1&Prt_Company=1&SwSQL=113&CurrCompany=1&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&D=07/09/2026%2016:50:37",
+  "dialogUrl": "https://www.comax.co.il/Max2000/Erp/Prt/Prt_ImpExl_New.asp?FromFrame=%27FramePrtV%27&NoUp=%270%27&SwPG=0&swVisit=0&swEngl=&SwSQL=113&UserBooker=0&Prt_Company=1&SaveLine=1&CurrCompanyNoMaam=0&SwEnter=1&FullGraf=5&FrameName=%27FramePrt_ImpExl_New%27&UserAdmin=1&CurrSnif=0&CurrCompany=1&CurrYear=2026&ZorbaLk=4396&ZorbaApp=51&UserCounter=2&Odbc=Max2000_4396&SSID_p=889414647&LogC_p=187714423&Host=https://www.comax.co.il/&LCforPC=1&SwWC_test=0&SwWC_test=0&Sw_CHROME=1&swMLangJson=0&UsrSafa=0&Safa_LTR=0&SwUse_UI=0&NOWW=7/9/2026%2017:28:4",
+  "pickerUrl": "https://www.comax.co.il/Max2000/Erp/Prt/MiunSwImp.asp?ArrChoose=Kod,Nm,BarKod,Degem,Gimor,Godel,Eng_Nm,Halufi,Dep,Grp,GrpTt,Spk,MhrM&SwImpType=0&Usr=2&SwTblBorder=1&Prt_Company=1&SwSQL=113&CurrCompany=1&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&D=07/09/2026%2017:28:05",
   "options": [
     {
       "id": "FileValue",
