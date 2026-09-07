@@ -231,6 +231,7 @@ src/documents/agents/*/AGENT.md  המלכודות של כל מסמך, ומצב �
 knowledge/MAP.md                 מפת קומקס — ממצאים מהרצות חיות
 knowledge/contacts.md            מי-זה-מי — צוות טכני + ספקים ושותפים עסקיים
 knowledge/payroll-attendance.md   דוח הנוכחות לשכר — a162, המייל לרו"ח, והמשימה החודשית
+knowledge/items-setup.md          הקמת פריטי ארנה — הנוסחאות, מיפוי השדות, ומצב העבודה
 knowledge/screens/               מתכון הסלקטורים לכל מסך שמופה
 config/comax.config.json         כתובות, קצב אנושי, timeouts, מחסני הדוח
 content/                         הייצוא המקומי — מלאי ולקוחות
