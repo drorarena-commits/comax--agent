@@ -19,6 +19,7 @@ npm run run -- <משימה> --json '{...}'            # הרצה יבשה (עו�
 npm run run -- <משימה> --json '{...}' --confirm  # הרצה אמיתית
 npm run run -- stock-matrix        # מטריצת מחסנים -> data/exports/
 npm run run -- customer-history --json '{"customer":"112447","item":"שנורקל"}'
+npm run payroll -- --to <כתובת>    # דוח נוכחות חודשי לשכר -> מייל מקומקס
 ```
 
 `customer-history` עונה על "מה הלקוח הזה קנה בעבר, ובאיזה מחיר". הוא סורק **בדיוק
@@ -185,3 +186,26 @@ node tools/run.js transfer-to-invoice --json '{"transfer":"4700241","customer":"
 
 **שים לב:** הצעה שלא הופקה נתפסת מחדש — `quote-new` על אותו לקוח יחזור אליה
 ויחליף לה את הכותרת. מפיקים (`quote-finalize`) לפני שמתחילים מסמך נוסף.
+
+## `npm run payroll` — דוח הנוכחות החודשי לשכר
+
+```bash
+npm run payroll -- --to dror.arena@gmail.com                 # החודש הקודם
+npm run payroll -- --to dror.arena@gmail.com --month 08/2026
+npm run payroll -- --to dror.arena@gmail.com --dry           # ממלא ועוצר
+```
+
+מריץ את `a162`, מאמת שהחודש שנקלט הוא זה שביקשנו, קורא את הדוח, שומר PDF
+ל-`runs/downloads/`, ושולח אותו **לדרור עצמו** מתוך קומקס. לוקח את `runs/.lock`,
+מתנתק בסוף וסוגר את החלון.
+
+`--to` **חובה, בלי ברירת מחדל** — כלל 14.
+
+**משימה מקומית ב-Task Scheduler:** `COMAX-Payroll-Monthly`, ה-2 בכל חודש ב-08:07,
+`StartWhenAvailable=true` כדי שמחשב שהיה כבוי יריץ בהזדמנות הראשונה. הלוג מצטבר
+ב-`runs/payroll-cron.log`. היא רצה רק כשיש סשן משתמש — לכרום צריך שולחן עבודה.
+
+⚠️ **המשימה שולחת לדרור בלבד.** ההעברה לרואת החשבון נשארת ידנית ומאחורי המילה
+"שלח" — ההערות פר-עובד משתנות כל חודש, וכלי ההעברה בג'ימייל שולח מיד בלי טיוטה.
+
+הפרטים המלאים: [knowledge/payroll-attendance.md](knowledge/payroll-attendance.md)
