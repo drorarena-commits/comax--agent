@@ -22,8 +22,12 @@
  *   than assumed fine.
  *
  * Mapped live on 02/09/2026 against document 4700239: list, header and both
- * line screens read off the real thing. **Filing was never run** — 4700239 was
- * backed out — so `finalize` past its gates is the one step still unproven.
+ * line screens read off the real thing. **Filing was proven on 07/09/2026** by
+ * 4700247 — ראשי (1) → פגומים/לבדיקה/איפווס (17), one unit of AR22902500038 —
+ * driven end to end by this code and verified afterwards by filtering the list
+ * on `#wFindDocNo`. That run also answered the open question about gate 3:
+ * `allowShort: true` on a source reading 0 filed **without any warning from
+ * Comax at all**, taking ראשי to -1. The local gate is the only guard there is.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
