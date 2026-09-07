@@ -49,6 +49,8 @@ const decisionsFile = arg('--decisions');
 const pilotN = Number(arg('--pilot') ?? 0);
 const verifyFile = arg('--verify');
 const buildImport = process.argv.includes('--import') || Boolean(decisionsFile);
+/** `--only last` / `--only supplier` — הרצה אחת בכל פעם. ראה `RUNS`. */
+const only = arg('--only');
 
 // ── מספרים נקראים בעברית מימין לשמאל; העמודות בגיליון נכתבות משמאל לימין ────
 const fmt = (n) => (n === null || n === undefined || Number.isNaN(n) ? '' : String(n));
@@ -290,6 +292,7 @@ if (buildImport || pilotN) {
   if (decisionsFile) console.log(`\nדריסות ידניות מהקובץ שהוכרע: ${chosen.size}`);
 
   for (const [key, run] of Object.entries(RUNS)) {
+    if (only && key !== only) continue;
     const base = pilotN ? `${PILOT}-${run.file}-${pilotN}` : `data/exports/${run.file}`;
     const { list, rows } = importRows(run, chosen, pilotN);
     console.log(`\n── ${run.label} ──  הערך: ${run.field === 'weighted' ? 'ממוצע משוקלל לפי הכמות' : 'הרכישה האחרונה'}`);
