@@ -173,7 +173,7 @@ function readDecisions(file) {
 }
 
 /** בונה את שורות היבוא לפי השדה שההרצה מבקשת. ראה `RUNS` ב-`build-cost.js`. */
-function importRows(field, chosen = new Map(), limit = 0) {
+function importRows(run, chosen = new Map(), limit = 0) {
   let list = items;
   if (limit) {
     // פיילוט: 2 עם עלות זהה · 2 עם פער גדול · 1 בלי עלות בכלל — כדי שהתשובה
@@ -184,7 +184,7 @@ function importRows(field, chosen = new Map(), limit = 0) {
     list = [...same.slice(0, 2), ...big.slice(0, 2), ...none.slice(0, 1)].slice(0, limit);
   }
   // `--decisions` הוא דריסה ידנית נקודתית, לא תנאי — והיא גוברת על שני השדות.
-  const rows = list.map((i) => [i.barcode, String(chosen.get(i.barcode) ?? i[field])]);
+  const rows = list.map((i) => [String(run.list), i.barcode, String(chosen.get(i.barcode) ?? i[run.field])]);
   return { list, rows };
 }
 
@@ -197,7 +197,7 @@ function writeImport(rows, base) {
   // שער סוג התא: ברקוד שנכתב כמספר מוצג `3.46834E+12` וכל צרכן שקורא את
   // המוצג ולא את הערך מקבל את זה. `xlsx-write` כבר מגן, והשער מאמת.
   const sheet = sheetNames(xlsx)[0];
-  const numeric = numericCells(xlsx, sheet.path, [0]);
+  const numeric = numericCells(xlsx, sheet.path, [1]);
   if (numeric.length) {
     console.error(`⛔ ${numeric.length} ברקודים נכתבו כתא מספרי — הערך ישתנה. לא ממשיכים.`);
     process.exit(1);
@@ -291,7 +291,7 @@ if (buildImport || pilotN) {
 
   for (const [key, run] of Object.entries(RUNS)) {
     const base = pilotN ? `${PILOT}-${run.file}-${pilotN}` : `data/exports/${run.file}`;
-    const { list, rows } = importRows(run.field, chosen, pilotN);
+    const { list, rows } = importRows(run, chosen, pilotN);
     console.log(`\n── ${run.label} ──  הערך: ${run.field === 'weighted' ? 'ממוצע משוקלל לפי הכמות' : 'הרכישה האחרונה'}`);
     if (pilotN) {
       for (const i of list) {
@@ -301,7 +301,7 @@ if (buildImport || pilotN) {
     const out = writeImport(rows, base);
     console.log(`  נכתב: ${out.xlsx}`);
     console.log(`  נכתב: ${out.csv}`);
-    console.log(`  ${out.rows} שורות × 2 עמודות, ברקוד כטקסט ✅`);
+    console.log(`  ${out.rows} שורות × 3 עמודות · מחירון ${run.list} · ברקוד כטקסט ✅`);
   }
 
   // ⚠️ הערך שונה בין שתי ההרצות רק ב-25 פריטים — אבל בהם הוא שונה מהותית.
