@@ -12,8 +12,11 @@ import { resolve } from 'node:path';
 import { attachBrowser } from '../src/browser.js';
 import { inspectPage, digest } from '../src/inspect.js';
 import { ROOT } from '../src/config.js';
+import { touch } from '../src/activity.js';
 
 const name = (process.argv[2] || 'screen').replace(/[^\w֐-׿-]/g, '-');
+// מיפוי מסך הוא שימוש — אחרת `idle-logoff` מנתק באמצע עבודת מיפוי ידנית.
+touch(`snapshot-${name}`);
 
 const session = await attachBrowser();
 if (!session) {

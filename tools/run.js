@@ -9,7 +9,7 @@
  * form, and stop before the irreversible button. --confirm is the only way past
  * that line.
  */
-import { readdirSync, existsSync } from 'node:fs';
+import { readdirSync, existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { RunLogger } from '../src/logger.js';
@@ -36,7 +36,12 @@ if (!argv.length || argv[0] === '--list') {
 
 const taskName = argv[0];
 const jsonIdx = argv.indexOf('--json');
-const input = jsonIdx >= 0 ? JSON.parse(argv[jsonIdx + 1]) : {};
+// `--json-file` קיים כי PowerShell מפשיט את המרכאות מ-`--json '{"a":1}'` והקלט
+// מגיע כ-`{a:1}` שאינו JSON תקין (נמדד 07/09/2026). קלט ארוך עובר דרך קובץ.
+const fileIdx = argv.indexOf('--json-file');
+const input = fileIdx >= 0
+  ? JSON.parse(readFileSync(resolve(ROOT, argv[fileIdx + 1]), 'utf8'))
+  : jsonIdx >= 0 ? JSON.parse(argv[jsonIdx + 1]) : {};
 const confirm = argv.includes('--confirm');
 
 const taskFile = resolve(TASK_DIR, `${taskName}.js`);

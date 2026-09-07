@@ -8,6 +8,7 @@
     "open": "node tools/open.js",
     "ensure": "node tools/ensure-comax.js",
     "idle-logoff": "node tools/idle-logoff.js",
+    "hold": "node tools/hold.js",
     "snapshot": "node tools/snapshot.js",
     "run": "node tools/run.js",
     "open-program": "node tools/open-program.js",

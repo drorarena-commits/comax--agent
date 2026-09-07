@@ -26,9 +26,18 @@ import { attachBrowser } from '../src/browser.js';
 import { RunLogger } from '../src/logger.js';
 import { isLoggedIn, logoff } from '../src/session.js';
 import { acquire, busyMessage } from '../src/lock.js';
-import { idleMinutes, lastUse } from '../src/activity.js';
+import { idleMinutes, lastUse, holdActive } from '../src/activity.js';
 
 const IDLE_MINUTES = Number(process.env.COMAX_IDLE_MINUTES ?? 10);
+
+// ── תנאי 0: החזקה מפורשת ────────────────────────────────────────────────────
+// עבודה ידנית מול החלון אינה כותבת חותמת שימוש, ולכן דרור יכול לבקש החזקה
+// (`npm run hold`). היא פגה מעצמה ואינה מתחדשת — ראו ההסבר ב-src/activity.js.
+const held = holdActive();
+if (held) {
+  console.log(`המושב מוחזק לבקשה מפורשת — עוד ${held.minutesLeft.toFixed(0)} דקות. לא נוגע.`);
+  process.exit(0);
+}
 
 // ── תנאי 1: זול, בלי נעילה ובלי לגעת בדפדפן ─────────────────────────────────
 const idle = idleMinutes();

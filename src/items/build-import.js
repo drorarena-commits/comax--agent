@@ -90,7 +90,13 @@ export function cleanName(name, size) {
   return s.replace(/^[\s\-–]+/, '').trim();
 }
 
-/** צבע — תמיד שלוש ספרות, כמו בארנה איטליה. `75` ⇒ `075`. */
+/**
+ * ריפוד ל-3 ספרות — **רק לצורך התאמה מול קטלוג ארנה**, ב-`colorIndex.lookup`.
+ *
+ * ⛔ אסור שייגע בערך שנכתב לקובץ ההקמה. הכרעת דרור 07/09/2026: הצבע נכתב כפי
+ *    שהוא מגיע מהמקור. מסד הצבעים של קומקס מחזיק `75` ו-`075` כשתי רשומות
+ *    נפרדות, וריפוד עיוור היה מחבר פריט לצבע הלא נכון.
+ */
 export const padColor = (c) => {
   const s = String(c ?? '').trim();
   return /^\d{1,2}$/.test(s) ? s.padStart(3, '0') : s;
@@ -303,7 +309,7 @@ export function buildRows(src = loadSources()) {
 
     const row = [
       barcode, barcode, priority, cleanName(r[D], r[SZ]), src.colors.lookup(barcode, model, color),
-      model, padColor(color), r[SZ],
+      model, color, r[SZ],   // הצבע כפי שהוא מגיע מהמקור — בלי ריפוד
       cls?.depCode ?? '', cls?.depName ?? '',
       cls?.grpCode ?? '', cls?.grpName ?? '',
       cls?.subCode ?? '', cls?.subName ?? '',

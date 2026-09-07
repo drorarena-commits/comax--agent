@@ -2,6 +2,7 @@ import { attachBrowser } from '../src/browser.js';
 import { RunLogger } from '../src/logger.js';
 import { ensureLoggedIn } from '../src/session.js';
 import { openProgram } from '../src/navigate.js';
+import { touch } from '../src/activity.js';
 
 /**
  *   node tools/open-program.js <shortcut> [program path]
@@ -12,6 +13,11 @@ import { openProgram } from '../src/navigate.js';
  */
 const target = process.argv[2];
 const program = process.argv[3] ?? null;
+// פתיחת תוכנית היא שימוש לכל דבר. בלי החותמת `idle-logoff` רואה את השימוש
+// האחרון של `run.js` — שיכול להיות מלפני שעות — ומנתק תוך דקות, באמצע עבודה
+// ידנית מול החלון. נמדד 07/09/2026: הסשן שוחרר פעמיים "אחרי 347 דקות ללא
+// שימוש" בזמן שדרור עבד במסך הצבעים.
+touch(`open-${target}`);
 const logger = new RunLogger(`open-${target}`);
 const s = await attachBrowser({ logger });
 if (!s) { console.log('אין חלון פתוח'); process.exit(1); }

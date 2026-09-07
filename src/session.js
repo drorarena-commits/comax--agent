@@ -59,6 +59,23 @@ function dialogSince(page, mark) {
   return d && d.at >= mark ? d : null;
 }
 
+/**
+ * Picks whichever of a pair of selectors is actually visible right now.
+ *
+ * The login form carries **two** sets of credential inputs — `User_Pass` /
+ * `Password_Pass` and `User` / `Password` — and only one set is ever visible.
+ * Which one depends on the state the page came up in, and the hidden twin
+ * still matches by name, so a fixed selector waits 30s on an element that will
+ * never show. Measured 07/09/2026: after a `npm run open` window the visible
+ * pair was `User` / `Password`, while the config named the other.
+ */
+async function visibleField(page, selectors) {
+  for (const sel of selectors) {
+    if (await page.locator(sel).first().isVisible().catch(() => false)) return sel;
+  }
+  return selectors[0];
+}
+
 /** One sign-in attempt. Returns 'ok' | 'busy' | 'failed'. */
 async function loginOnce({ page, human, logger, cfg, creds, fresh = false }) {
   // `fresh` forces a reload even though we are already on the login URL. After
@@ -69,11 +86,13 @@ async function loginOnce({ page, human, logger, cfg, creds, fresh = false }) {
     await human.goto(cfg.loginUrl);
   }
 
-  await human.type(cfg.login.orgField, creds.org, { label: 'ארגון' });
-  await human.type(cfg.login.userField, creds.user, { label: 'משתמש' });
+  await human.type(cfg.login.orgField, creds.org, { label: 'ארגון', clear: true });
+  const userSel = await visibleField(page, [cfg.login.userField, ...(cfg.login.userFieldAlt ?? [])]);
+  const passSel = await visibleField(page, [cfg.login.passField, ...(cfg.login.passFieldAlt ?? [])]);
+  await human.type(userSel, creds.user, { label: 'משתמש', clear: true });
   // `secret` keeps the value out of runs/<run>/steps.log, which is a plain file
   // that stays on disk. Without it the password would be written in the clear.
-  await human.type(cfg.login.passField, creds.pass, { label: 'סיסמה', secret: true });
+  await human.type(passSel, creds.pass, { label: 'סיסמה', secret: true, clear: true });
 
   // Anything the page said before this click is stale; only alerts raised by
   // the submit itself tell us how this attempt went.

@@ -11,7 +11,11 @@
  */
 import { ensureComax, clearBlock } from '../src/ensure-comax.js';
 import { RunLogger } from '../src/logger.js';
+import { touch } from '../src/activity.js';
 
+// הכנת קומקס היא שימוש לכל דבר — בלי החותמת `idle-logoff` מנתק תוך דקות על
+// סמך חותמת ישנה של `run.js`, גם כשעובדים מול החלון ממש עכשיו.
+touch('ensure');
 const logger = new RunLogger('ensure');
 
 if (process.argv.includes('--reset')) {
