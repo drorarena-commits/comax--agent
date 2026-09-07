@@ -105,10 +105,43 @@ export const padColor = (c) => {
 /**
  * כל קטלוגי ארנה איטליה שיושבים על הדיסק, מכל העונות.
  *
- * מזוהים לפי התוכן ולא לפי שם הקובץ — כל CSV שיש בכותרת שלו גם `EAN` וגם
- * `Colorway Description` הוא קטלוג ארנה. כך קטלוג של עונה נוספת שיומר ב-
- * `tools/xlsx.js` נכנס לתמונה בלי לגעת בקוד.
+ * מזוהים לפי התוכן ולא לפי שם הקובץ — כל CSV שיש בכותרת שלו עמודת ברקוד
+ * ועמודת תיאור צבע. כך קובץ נוסף שיומר ב-`tools/xlsx.js` נכנס לתמונה בלי
+ * לגעת בקוד.
+ *
+ * ⚠️ שני דברים שנמדדו 07/09/2026 ושיחזרו בכל קובץ עתידי:
+ *
+ * 1. **לכל מקור שמות עמודות משלו.** הקטלוג העונתי של ארנה כותב
+ *    `EAN` / `Colorway Description`, ודוח ההזמנות של אליסה כותב
+ *    `EAN/UPC` / `Color Description`. לכן מחפשים נרדפים ולא מחרוזת אחת.
+ * 2. **שורת הכותרת אינה תמיד הראשונה.** ב-`AINT_FW26_Master Data` שורה 1
+ *    היא שם הקובץ ושורת העמודות היא השנייה. קובץ כזה נבלע בשקט אם בודקים
+ *    רק את השורה הראשונה.
  */
+export const CATALOG_COLS = {
+  ean: ['EAN', 'EAN/UPC'],
+  desc: ['Colorway Description', 'Color Description'],
+  style: ['Style', 'Style code'],
+  color: ['Colorway', 'Color Code'],
+};
+
+/** האינדקס של העמודה הראשונה מבין הנרדפים, או -1. */
+const colOf = (head, names) => {
+  for (const n of names) {
+    const i = head.indexOf(n);
+    if (i >= 0) return i;
+  }
+  return -1;
+};
+
+/** שורת הכותרת בקובץ — הראשונה מבין שלוש שיש בה גם ברקוד וגם תיאור צבע. */
+export function headerRow(rows) {
+  for (let i = 0; i < Math.min(3, rows.length); i++) {
+    if (colOf(rows[i], CATALOG_COLS.ean) >= 0 && colOf(rows[i], CATALOG_COLS.desc) >= 0) return i;
+  }
+  return -1;
+}
+
 export function arenaCatalogs(dir = resolve(ROOT, 'data/exports')) {
   const out = [];
   const walk = (d, depth) => {
@@ -118,8 +151,10 @@ export function arenaCatalogs(dir = resolve(ROOT, 'data/exports')) {
       if (e.isDirectory()) { walk(p, depth + 1); continue; }
       if (!e.name.toLowerCase().endsWith('.csv')) continue;
       try {
-        const head = readFileSync(p, 'utf8').slice(0, 4000).split('\r\n')[0];
-        if (head.includes('EAN') && head.includes('Colorway Description')) out.push(p);
+        const head = readFileSync(p, 'utf8').slice(0, 8000).split(/\r?\n/).slice(0, 3);
+        const hasEan = head.some((l) => CATALOG_COLS.ean.some((n) => l.includes(n)));
+        const hasDesc = head.some((l) => CATALOG_COLS.desc.some((n) => l.includes(n)));
+        if (hasEan && hasDesc) out.push(p);
       } catch { /* קובץ שאי אפשר לקרוא אינו קטלוג */ }
     }
   };
@@ -137,9 +172,18 @@ export function colorIndex(files = arenaCatalogs()) {
   const byEan = new Map(), byStyleColor = new Map();
   for (const f of files) {
     const A = loadCsv(f);
-    const i = (n) => A.head.indexOf(n);
-    const [ean, cwd, st, cw] = [i('EAN'), i('Colorway Description'), i('Style'), i('Colorway')];
-    for (const r of A.rows) {
+    // שורת הכותרת אינה תמיד הראשונה — ראו `headerRow`. כשהיא למטה, השורות
+    // שמעליה הן חלק מה"נתונים" של loadCsv וצריך לדלג עליהן.
+    const all = [A.head, ...A.rows];
+    const hi = headerRow(all);
+    if (hi < 0) continue;
+    const head = all[hi];
+    const data = all.slice(hi + 1);
+    const [ean, cwd, st, cw] = [
+      colOf(head, CATALOG_COLS.ean), colOf(head, CATALOG_COLS.desc),
+      colOf(head, CATALOG_COLS.style), colOf(head, CATALOG_COLS.color),
+    ];
+    for (const r of data) {
       const desc = String(r[cwd] ?? '').trim();
       if (!desc) continue;
       const e = String(r[ean] ?? '').trim();
