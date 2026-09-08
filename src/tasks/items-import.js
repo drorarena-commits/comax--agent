@@ -78,6 +78,7 @@ export const meta = {
   input: {
     file: 'נתיב לקובץ ההקמה (xlsx), יחסי ל-root או מוחלט',
     probe: 'true — למפות את הדיאלוג ולעצור בלי לגעת בכלום',
+    impType: 'קוד סוג היבוא בבורר SwImpType. ברירת המחדל "0" — פריטים. סוג אחר נתמך ב-probe בלבד עד שהמיפוי שלו נמדד',
     columns: 'מיפוי ידני {chkId: "A"}, אופציונלי — ברירת המחדל נגזרת מכותרות הקובץ',
     allowUpdate: 'true — לאפשר גם עדכון פריטים קיימים ("הקמת פריט" ריק). ברירת המחדל: הקמה בלבד',
     priceDate: 'תאריך "מחיר מכירה נכון לתאריך" בפורמט dd/mm/yyyy. ברירת המחדל: היום',
@@ -91,7 +92,7 @@ const PICKER = /MiunSwImp/i;
 /** `#ImpExl` קיים בכל הלשוניות ונראה רק ב"נוספים". קליק על מוסתר לא נוחת. */
 const EXTRAS_TAB = 'Row3';
 /** `0 · פריטים` — הכרעת דרור 07/09/2026. שאר 19 הסוגים לא בשימוש. */
-const IMP_TYPE = '0';
+const DEFAULT_IMP_TYPE = '0';
 
 /**
  * כותרת בקובץ ההקמה ⇒ השדה במסך היבוא.
@@ -156,6 +157,59 @@ function readImportFile(file) {
  */
 const IDENTIFIER_HEADERS = ['מק"ט', 'ברקוד', 'קוד חלופי', 'דגם', 'צבע', 'מידה'];
 
+/**
+ * סוג יבוא **3 — "נתוני אתר לפריט"**. נמדד חי 08/09/2026 ב-`probe`, לא נוחש:
+ * הבורר החזיר `title="3"` · `value="נתוני אתר לפריט"`, וכתובת `FMiun` אישרה
+ * `SwImpType=3` עם 36 שדות. המתכון המלא: `knowledge/screens/items-import-type3.json`.
+ *
+ * ⛔ **המזהים כאן אינם המזהים של סוג 0, וגם אינם רציפים לפי הסדר שנראה במסך.**
+ * בין `ברקוד` ל`לא להציג פריט` יושב **`chk3` — "פריט בקרור(0/1)"**, ולכן מי
+ * שינחש ש"לא להציג" הוא השדה הרביעי ויכתוב `chk3` ידרוס שדה אחר לגמרי.
+ *
+ * העמודות הן מה שדרור הכתיב: `B` (דרוג תצוגה) נשארת ריקה, ו-`D` היא `0` —
+ * לדבריו ריק ו-0 שקולים בשדה הזה. `chk3` מכוון **לא ממופה**.
+ */
+export const SITE_HEADER_TO_FIELD = {
+  'פריט(קוד)': 'chk0',
+  'דרוג תצוגה': 'chk1',
+  'ברקוד': 'chk2',
+  'לא להציג פריט': 'chk4',
+};
+
+/** עמודות המזהה בסוג 3 — אותה סיבה בדיוק: תא מספרי הורס ברקוד בשקט. */
+const SITE_IDENTIFIER_HEADERS = ['פריט(קוד)', 'ברקוד'];
+
+/**
+ * סוג יבוא ⇒ המיפוי, עמודות המזהה, **ושלושת מסכי התוצאה שלו**.
+ *
+ * ⛔ 💣 **מסכי התוצאה שונים בין סוגי היבוא, וזה לא נראה מהמסך.** נמדד
+ * 08/09/2026: סוג 3 לא פותח `Prt_ImpExlU` בכלל אלא `Prt_Imp_WebExlU`, והרשתות
+ * שלו הן `_Fr`/`_Fr2` — תבנית של `cost-import`, לא של סוג 0 (`_Fr`/`2_Fr`).
+ * קוד שמחפש את שמות סוג 0 נכשל ב"מסך התוצאה לא נפתח" בלי לרמוז למה.
+ *
+ * **סוג שאינו כאן אינו נתמך לכתיבה** — `probe:true` קודם, ואז מוסיפים שורה
+ * ממה שנמדד. הדמפ בנקודת הכישלון הוא שחשף את השמות האלה.
+ */
+const TYPES = {
+  '0': {
+    name: 'פריטים',
+    fields: HEADER_TO_FIELD,
+    ids: IDENTIFIER_HEADERS,
+    result: /Prt_ImpExlU/i,
+    okGrid: /Prt_ImpExl_Fr\.asp/i,
+    badGrid: /Prt_ImpExl2_Fr\.asp/i,
+  },
+  '3': {
+    name: 'נתוני אתר לפריט',
+    fields: SITE_HEADER_TO_FIELD,
+    ids: SITE_IDENTIFIER_HEADERS,
+    result: /Prt_Imp_WebExlU/i,
+    okGrid: /Prt_Imp_WebExl_Fr\.asp/i,
+    badGrid: /Prt_Imp_WebExl_Fr2\.asp/i,
+  },
+};
+
+
 /** כל שורה ב-FMiun: ה-id, התווית, אות העמודה (`value`) והסידורי (`title`). */
 async function readPicker(picker) {
   return picker.evaluate(() => {
@@ -194,16 +248,23 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   if (!dlg) throw new Error('דיאלוג היבוא לא נפתח.');
   logger.step('dialog', 'דיאלוג היבוא פתוח');
 
+  // ⚠️ **שער הסוג מאמת את הסוג שנתבקש, לא את 0 קשיח.** נמדד 07/09/2026:
+  //    בקשה ל"פריטים" החזירה את רשימת השדות של "נתוני אתר לפריט" בלי
+  //    שגיאה, ולכן הכתובת של `FMiun` — ולא השדה בדיאלוג — היא ההצהרה
+  //    הקובעת. פרמוט השער אינו ריכוך שלו: הוא עדיין משווה מה שנטען למה
+  //    שביקשנו, רק שעכשיו "מה שביקשנו" יכול להיות גם סוג אחר מ-0.
+  const impType = String(input.impType ?? DEFAULT_IMP_TYPE);
+
   // ---- סוג היבוא: פריטים ----------------------------------------------
   // הקוד ב-`title`, השם ב-`value`, ורק `SwImpType_onchange` טוען מחדש את FMiun.
   const currentType = await dlg.evaluate(() => document.getElementById('SwImpType')?.title ?? '');
-  if (String(currentType) !== IMP_TYPE) {
+  if (String(currentType) !== impType) {
     await dlg.evaluate((v) => {
       const el = document.getElementById('SwImpType');
       el.title = v;
       el.value = '';
       window.SwImpType_onchange?.();
-    }, IMP_TYPE);
+    }, impType);
     await human.settle('טעינת רשימת השדות');
   }
 
@@ -212,10 +273,10 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   // השער: כתובת הפריים היא ההצהרה של קומקס עצמו על הסוג שנטען. השדה בדיאלוג
   // יכול להראות "פריטים" בזמן ש-FMiun עדיין מציג את הסוג הקודם.
   const loadedType = (picker.url().match(/SwImpType=(\d+)/) ?? [])[1];
-  if (loadedType !== IMP_TYPE) {
-    throw new Error(`רשימת השדות נטענה לסוג ${loadedType} ולא לסוג ${IMP_TYPE} (פריטים). לא ממשיכים.`);
+  if (loadedType !== impType) {
+    throw new Error(`רשימת השדות נטענה לסוג ${loadedType} ולא לסוג ${impType}. לא ממשיכים.`);
   }
-  logger.step('type', `סוג יבוא ${IMP_TYPE} · פריטים — אומת מכתובת FMiun`);
+  logger.step('type', `סוג יבוא ${impType} — אומת מכתובת FMiun`);
 
   // ---- probe: למפות ולעצור --------------------------------------------
   if (input.probe) {
@@ -227,14 +288,21 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
         checked: el.type === 'checkbox' ? el.checked : undefined,
         options: el.tagName === 'SELECT' ? [...el.options].map((o) => `${o.value}=${o.text.trim()}`) : undefined,
       })));
-    const dest = resolve(ROOT, 'knowledge/screens/items-import-dialog.json');
+    const dest = resolve(ROOT, impType === DEFAULT_IMP_TYPE ? 'knowledge/screens/items-import-dialog.json' : `knowledge/screens/items-import-type${impType}.json`);
     writeFileSync(dest, JSON.stringify({
-      capturedAt: new Date().toISOString(), impType: IMP_TYPE,
+      capturedAt: new Date().toISOString(), impType,
       dialogUrl: dlg.url(), pickerUrl: picker.url(), options, fields,
     }, null, 2), 'utf8');
     await logger.shot(page, 'import-dialog');
     logger.step('probe', `${fields.length} שדות · ${options.length} אפשרויות → ${dest}`);
     return { probe: true, fields: fields.length, options: options.length, file: dest };
+  }
+
+  // הסוג קובע גם את מיפוי העמודות וגם את עמודות המזהה. סוג שאין לו שורה
+  // ב-`TYPES` לא נתמך לכתיבה — `probe:true` קודם, ואז מוסיפים אותו ממדידה.
+  const spec = TYPES[impType];
+  if (!spec && !input.probe) {
+    throw new Error(`מיפוי העמודות לסוג יבוא ${impType} טרם נמדד. הרץ probe:true עם אותו impType, והוסף את הטבלה ל-TYPES.`);
   }
 
   // ---- הקובץ ----------------------------------------------------------
@@ -249,7 +317,7 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   // ומחזיר `"002507"` גם מתא **מספרי**, ולכן שער המאסטר עובר בשמחה — בזמן
   // שאקסל, וכל מי שקורא דרכו, רואה `2507`. נמדד 07/09/2026: כל 175 השורות
   // נשאו דגם כזה. מה שבודקים כאן הוא **סוג התא**, לא הערך.
-  const idCols = IDENTIFIER_HEADERS.map((h) => head.indexOf(h)).filter((i) => i >= 0);
+  const idCols = spec.ids.map((h) => head.indexOf(h)).filter((i) => i >= 0);
   const numeric = numericCells(file, sheetPath, idCols);
   if (numeric.length) {
     const byCol = new Map();
@@ -290,7 +358,7 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   const wanted = new Map(); // chkId → {letter, ordinal, header}
   const unmapped = [];
   head.forEach((h, i) => {
-    const chk = HEADER_TO_FIELD[h];
+    const chk = spec.fields[h];
     if (chk) wanted.set(chk, { letter: colLetter(i), ordinal: i, header: h });
     else if (h) unmapped.push(h);
   });
@@ -298,7 +366,7 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
     const i = head.findIndex((_, n) => colLetter(n) === letter);
     wanted.set(chk, { letter, ordinal: i >= 0 ? i : null, header: head[i] ?? '(ידני)' });
   }
-  const missingHeaders = Object.keys(HEADER_TO_FIELD).filter((h) => !head.includes(h));
+  const missingHeaders = Object.keys(spec.fields).filter((h) => !head.includes(h));
   if (missingHeaders.length) {
     throw new Error(`כותרות חסרות בקובץ: ${missingHeaders.join(' · ')}. הקובץ אינו תוצר של items-import-file.`);
   }
@@ -338,61 +406,70 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   const mapped = [...wanted].map(([id, v]) => `${v.letter}=${byId.get(id).label}`);
   logger.step('columns-final', `אומת: ${mapped.join(' · ')}`);
 
-  // ---- שני השדות שדרור כן ביקש לגעת בהם --------------------------------
-  // כלל הבסיס נשאר "היבוא רץ עם מה שקומקס טעון בו", ומהמעבר המשותף על המסך
-  // (07/09/2026) יצאו בדיוק שני חריגים — כאן, ורק כאן.
+  // ---- שדות של סוג 0 בלבד ----------------------------------------------
+  // ⚠️ "מחיר מכירה נכון לתאריך", "הקמת פריט" ו"פריט חדש" הם שדות של יבוא
+  //    **פריטים**. במסך "נתוני אתר לפריט" הם אינם קיימים — ולגעת בהם שם
+  //    ייכשל, או גרוע יותר, ייגע בשדה אחר שיושב באותו id.
+  let priceDate = null;
+  let opts = null;
+  if (impType === DEFAULT_IMP_TYPE) {
+    // ---- שני השדות שדרור כן ביקש לגעת בהם --------------------------------
+    // כלל הבסיס נשאר "היבוא רץ עם מה שקומקס טעון בו", ומהמעבר המשותף על המסך
+    // (07/09/2026) יצאו בדיוק שני חריגים — כאן, ורק כאן.
 
-  // 1. `מחיר מכירה נכון לתאריך` — היום. הוא נטען ריק בכל פתיחה, וזה השדה
-  //    שמתאים ליבוא שלנו: הקובץ מזין `מחיר צרכן` לשדה `מחיר מכירה` (chk113)
-  //    ואין בו עמודת מחיר קניה, ולכן `#MhrNachonL` נשאר ריק בכוונה.
-  const priceDate = input.priceDate ?? todayInIsrael(cfg.timezone);
-  await human.type('#MhrNachonM', priceDate, { scope: dlg, label: 'מחיר מכירה נכון לתאריך', clear: true });
-  await dlg.evaluate(() => document.getElementById('MhrNachonM')?.blur()); // onblur הוא שמאמת
-  await human.settle('אימות התאריך');
-  const dateBack = await dlg.evaluate(() => document.getElementById('MhrNachonM')?.value ?? '');
-  if (dateBack !== priceDate) throw new Error(`שדה התאריך מחזיק "${dateBack}" ולא "${priceDate}". עוצר.`);
-  logger.step('date', `מחיר מכירה נכון לתאריך = ${priceDate}`);
+    // 1. `מחיר מכירה נכון לתאריך` — היום. הוא נטען ריק בכל פתיחה, וזה השדה
+    //    שמתאים ליבוא שלנו: הקובץ מזין `מחיר צרכן` לשדה `מחיר מכירה` (chk113)
+    //    ואין בו עמודת מחיר קניה, ולכן `#MhrNachonL` נשאר ריק בכוונה.
+    priceDate = input.priceDate ?? todayInIsrael(cfg.timezone);
+    await human.type('#MhrNachonM', priceDate, { scope: dlg, label: 'מחיר מכירה נכון לתאריך', clear: true });
+    await dlg.evaluate(() => document.getElementById('MhrNachonM')?.blur()); // onblur הוא שמאמת
+    await human.settle('אימות התאריך');
+    const dateBack = await dlg.evaluate(() => document.getElementById('MhrNachonM')?.value ?? '');
+    if (dateBack !== priceDate) throw new Error(`שדה התאריך מחזיק "${dateBack}" ולא "${priceDate}". עוצר.`);
+    logger.step('date', `מחיר מכירה נכון לתאריך = ${priceDate}`);
 
-  // 2. `הקמת פריט` — "בלבד" הוא ברירת המחדל וההגנה: מק"ט שגוי בשורה אחת
-  //    יידחה במקום לדרוס בשקט פריט קיים. `allowUpdate` הוא הבקשה המפורשת
-  //    של דרור להרצת תיקון על פריטים שכבר קיימים (מאפיינים, קבוצות), ואז
-  //    השדה נשאר ריק — כלומר הקמה **ו/או** עדכון. שתי פעולות נפרדות בכוונה.
-  if (input.allowUpdate) {
-    await dlg.evaluate(() => {
-      const el = document.getElementById('SwHkPrt');
-      el.value = '0';                       // הערך הריק — הקמה ו/או עדכון
-      el.dispatchEvent(new Event('change', { bubbles: true }));
-      window.SwHkPrt_onclick?.();
+    // 2. `הקמת פריט` — "בלבד" הוא ברירת המחדל וההגנה: מק"ט שגוי בשורה אחת
+    //    יידחה במקום לדרוס בשקט פריט קיים. `allowUpdate` הוא הבקשה המפורשת
+    //    של דרור להרצת תיקון על פריטים שכבר קיימים (מאפיינים, קבוצות), ואז
+    //    השדה נשאר ריק — כלומר הקמה **ו/או** עדכון. שתי פעולות נפרדות בכוונה.
+    if (input.allowUpdate) {
+      await dlg.evaluate(() => {
+        const el = document.getElementById('SwHkPrt');
+        el.value = '0';                       // הערך הריק — הקמה ו/או עדכון
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        window.SwHkPrt_onclick?.();
+      });
+      await human.settle('הקמת פריט = ריק');
+      logger.step('mode', '⚠ allowUpdate — "הקמת פריט" ריק: היבוא יעדכן גם פריטים קיימים');
+    }
+
+    // ---- שאר תיבות ההתנהגות — נקראות, לא נוגעים ---------------------------
+    // המשימה מדווחת, וחוסמת רק על ההגנות שבלעדיהן היבוא עושה משהו אחר ממה
+    // שביקשנו.
+    opts = await dlg.evaluate(() => {
+      const g = (id) => document.getElementById(id);
+      const sel = (id) => { const e = g(id); return e ? { value: e.value, text: e.options?.[e.selectedIndex]?.text.trim() } : null; };
+      const chk = (id) => g(id)?.checked ?? null;
+      return {
+        SwHkPrt: sel('SwHkPrt'), SwPrtKod: sel('SwPrtKod'), SwByGrp: sel('SwByGrp'),
+        SwBiuldEfyun: sel('SwBiuldEfyun'), Kupa_SwDis: sel('Kupa_SwDis'),
+        Snif: g('Snif')?.value ?? '',
+        SwNew: chk('SwNew'), SwUpBarKod: chk('SwUpBarKod'), SwHavaraSpk: chk('SwHavaraSpk'),
+        build: { Dep: chk('SwBuildDep'), Grp: chk('SwBuildGrp'), GrpTt: chk('SwBuildGrpTt'), Spk: chk('SwBuildSpk') },
+        del: [...document.querySelectorAll('input[id^="SwDel_"]')].filter((e) => e.checked).map((e) => e.id),
+      };
     });
-    await human.settle('הקמת פריט = ריק');
-    logger.step('mode', '⚠ allowUpdate — "הקמת פריט" ריק: היבוא יעדכן גם פריטים קיימים');
-  }
+    logger.step('options', `הקמת פריט=${opts.SwHkPrt?.text} · פריט לפי=${opts.SwPrtKod?.text} · פריט חדש=${opts.SwNew ? 'V' : '—'} · הקמת מאפיינים=${opts.SwBiuldEfyun?.text} · סניף=${opts.Snif}`);
+    const wantHk = input.allowUpdate ? '0' : '2';
+    if (opts.SwHkPrt?.value !== wantHk) {
+      throw new Error(input.allowUpdate
+        ? `"הקמת פריט" הוא "${opts.SwHkPrt?.text}" ולא ריק — allowUpdate לא נתפס. עוצר.`
+        : `"הקמת פריט" הוא "${opts.SwHkPrt?.text}" ולא "בלבד" — היבוא עלול לדרוס פריטים קיימים. עוצר, או הוסף allowUpdate אם זו הכוונה.`);
+    }
+    if (!opts.SwNew) throw new Error('"פריט חדש" אינו מסומן — היבוא לא יקים פריטים. עוצר.');
+    if (opts.del.length) logger.step('options', `⚠ תיבות איפוס מסומנות: ${opts.del.join(', ')}`);
 
-  // ---- שאר תיבות ההתנהגות — נקראות, לא נוגעים ---------------------------
-  // המשימה מדווחת, וחוסמת רק על ההגנות שבלעדיהן היבוא עושה משהו אחר ממה
-  // שביקשנו.
-  const opts = await dlg.evaluate(() => {
-    const g = (id) => document.getElementById(id);
-    const sel = (id) => { const e = g(id); return e ? { value: e.value, text: e.options?.[e.selectedIndex]?.text.trim() } : null; };
-    const chk = (id) => g(id)?.checked ?? null;
-    return {
-      SwHkPrt: sel('SwHkPrt'), SwPrtKod: sel('SwPrtKod'), SwByGrp: sel('SwByGrp'),
-      SwBiuldEfyun: sel('SwBiuldEfyun'), Kupa_SwDis: sel('Kupa_SwDis'),
-      Snif: g('Snif')?.value ?? '',
-      SwNew: chk('SwNew'), SwUpBarKod: chk('SwUpBarKod'), SwHavaraSpk: chk('SwHavaraSpk'),
-      build: { Dep: chk('SwBuildDep'), Grp: chk('SwBuildGrp'), GrpTt: chk('SwBuildGrpTt'), Spk: chk('SwBuildSpk') },
-      del: [...document.querySelectorAll('input[id^="SwDel_"]')].filter((e) => e.checked).map((e) => e.id),
-    };
-  });
-  logger.step('options', `הקמת פריט=${opts.SwHkPrt?.text} · פריט לפי=${opts.SwPrtKod?.text} · פריט חדש=${opts.SwNew ? 'V' : '—'} · הקמת מאפיינים=${opts.SwBiuldEfyun?.text} · סניף=${opts.Snif}`);
-  const wantHk = input.allowUpdate ? '0' : '2';
-  if (opts.SwHkPrt?.value !== wantHk) {
-    throw new Error(input.allowUpdate
-      ? `"הקמת פריט" הוא "${opts.SwHkPrt?.text}" ולא ריק — allowUpdate לא נתפס. עוצר.`
-      : `"הקמת פריט" הוא "${opts.SwHkPrt?.text}" ולא "בלבד" — היבוא עלול לדרוס פריטים קיימים. עוצר, או הוסף allowUpdate אם זו הכוונה.`);
   }
-  if (!opts.SwNew) throw new Error('"פריט חדש" אינו מסומן — היבוא לא יקים פריטים. עוצר.');
-  if (opts.del.length) logger.step('options', `⚠ תיבות איפוס מסומנות: ${opts.del.join(', ')}`);
 
   // ---- בחירת הקובץ ------------------------------------------------------
   await dlg.locator('#File').setInputFiles(file);
@@ -405,8 +482,12 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   console.log(`\n  קובץ:    ${file}`);
   console.log(`  שורות:   ${dataRows}`);
   console.log(`  עמודות:  ${mapped.join(' · ')}`);
-  console.log(`  התנהגות: הקמת פריט=${opts.SwHkPrt?.text || '(ריק — גם עדכון)'} · פריט לפי=${opts.SwPrtKod?.text} · הקמת מאפיינים=${opts.SwBiuldEfyun?.text}`);
-  console.log(`  תאריך:   מחיר מכירה נכון ל-${priceDate}\n`);
+  console.log(`  סוג:     ${impType} · ${spec.name}`);
+  if (opts) {
+    console.log(`  התנהגות: הקמת פריט=${opts.SwHkPrt?.text || '(ריק — גם עדכון)'} · פריט לפי=${opts.SwPrtKod?.text} · הקמת מאפיינים=${opts.SwBiuldEfyun?.text}`);
+    console.log(`  תאריך:   מחיר מכירה נכון ל-${priceDate}`);
+  }
+  console.log('');
 
   if (dryRun) {
     logger.step('dryrun', 'עוצר לפני הקליטה. להרצה אמיתית: הוסף --confirm');
@@ -420,8 +501,28 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   //    המשימה חשבה שסיימה, ובקומקס לא נוצר עדיין דבר.
   await human.click('#ok', { scope: dlg, label: 'אישור — בניית התצוגה המקדימה' });
   await human.settle('מסך התוצאה');
-  const result = page.frames().find((f) => /Prt_ImpExlU/i.test(f.url()));
-  if (!result) throw new Error('מסך תוצאת היבוא לא נפתח. לא נקלט דבר — תבדוק בקומקס לפני שתריץ שוב.');
+  // ⚠️ **מסך התוצאה של סוג 0 אינו בהכרח מסך התוצאה של סוג אחר.** נמדד
+  //    08/09/2026: יבוא "נתוני אתר לפריט" (סוג 3) לא פתח `Prt_ImpExlU`
+  //    בכלל. לכן כשהמסך לא נמצא — מצלמים ומדפיסים את הפריימים שכן פתוחים,
+  //    במקום להיכשל בלי ראיה. `tools/run.js` יעשה לוגין מחדש מיד אחרי
+  //    הזריקה והמסך ילך לאיבוד, ולכן הראיה נאספת **כאן**.
+  let result = page.frames().find((f) => spec.result.test(f.url()));
+  if (!result) {
+    for (let i = 0; i < 5 && !result; i++) {
+      await page.waitForTimeout(2000);
+      result = page.frames().find((f) => spec.result.test(f.url()));
+    }
+  }
+  if (!result) {
+    await logger.shot(page, 'no-result-screen');
+    const frames = page.frames().map((f) => '  ' + f.url().replace(/\?.*/, '')).join('\n');
+    const body = await page.evaluate(() => (document.body?.innerText ?? '').replace(/\s+/g, ' ').trim()).catch(() => '');
+    throw new Error(
+      `מסך תוצאת היבוא (${spec.result}) לא נפתח בסוג יבוא ${impType} — גם אחרי 10 שניות.\n` +
+      `הפריימים שהיו פתוחים:\n${frames}\n` +
+      `טקסט העמוד: ${body.slice(0, 300)}`,
+    );
+  }
 
   // ⛔ 💣 **מסך התוצאה נבנה אסינכרונית, ופריימי הרשתות נולדים אחרי הקליק.**
   //    נמדד 08/09/2026 על באצ' של 10: חמש הרצות רצופות נכשלו כאן עם
@@ -439,49 +540,64 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   //    התיקון, בדיוק כמו ב-`cost-import` שעובד: ממתינים ל**מונה** שבמסך
   //    התוצאה (`סה"כ פריטים: N מתוך M`), שנקרא מחדש בכל סיבוב, ורק אז
   //    מחפשים את פריימי הרשתות — גם אותם מחדש, ולא מ-snapshot ישן.
-  // ⚠️ **הפורמט כאן אינו זה של `cost-import`.** נמדד חי 08/09/2026: מסך
-  //    התוצאה של יבוא פריטים כתוב `יבוא תקין: סה"כ פריטים: 10 · יבוא לא
-  //    תקין: סה"כ פריטים: 0` — **בלי "מתוך"**. `מתוך` מופיע רק כשנחצתה
-  //    תקרת התצוגה של הרשת ("100 מתוך 175"), ואז `m[1]` הוא מה שמוצג
-  //    ו-`m[2]` הוא מה שקומקס באמת קרא. ביטוי שדורש `מתוך` תמיד — כפי
-  //    שהועתק מ-`cost-import` — לא מתאים לעולם, והמתנה של 3 דקות נכשלת
-  //    בדיוק כמו המתנה של 6 שניות.
-  const readCounters = () => result.evaluate(() => {
-    const t = (document.body?.innerText ?? '').replace(/\s+/g, ' ');
-    const n = [...t.matchAll(/סה"כ פריטים:\s*(\d+)(?:\s*מתוך\s*(\d+))?/g)]
-      .map((m) => ({ shown: +m[1], total: m[2] ? +m[2] : +m[1] }));
-    return n.length >= 2 ? { ok: n[0], bad: n[1] } : null;
-  }).catch(() => null);
+  // ⛔ 💣 **אין לשייך מונה לרשת לפי סדר הטקסט בעמוד. נמדד 08/09/2026 והוביל
+  //    למסקנה הפוכה לחלוטין.** במסך של סוג 3 הטקסט השטוח קורא
+  //    `יבוא תקין … סה"כ שורות: 0 · יבוא לא תקין: סה"כ שורות: 10`, בעוד
+  //    **התמונה מראה את ההפך** — 10 תקינות ו-0 דחיות. הקוד "זיהה" 10 דחיות,
+  //    עצר, והדגימה מרשת הדחיות חזרה ריקה — כי הרשת באמת הייתה ריקה. אילו
+  //    השער היה בכיוון ההפוך, הוא היה מאשר קליטה על סמך קריאה שגויה.
+  //
+  //    לכן **הסמכות היא ספירת השורות בתוך פריים כל רשת**, שהוא מסמך נפרד
+  //    ואינו תלוי בסדר טקסט או בכיוון כתיבה. הטקסט נשמר ללוג כראיה בלבד.
+  //
+  //    ⚠️ והפריימים נשלפים **מחדש בכל סיבוב** — הם נולדים אחרי הקליק, וזו
+  //    בדיוק המלכודת שעלתה כאן קודם.
+  const countFrame = async (re) => {
+    const f = page.frames().find((x) => re.test(x.url()));
+    if (!f) return null;
+    return f.evaluate(() => {
+      const tr = [...document.querySelectorAll("tr")];
+      const cell = (r) => [...r.cells].map((c) => c.innerText.trim()).join(" | ");
+      return { rows: tr.length, first: tr[0] ? cell(tr[0]) : "", last: tr.at(-1) ? cell(tr.at(-1)) : "" };
+    }).catch(() => null);
+  };
 
-  // התייצבות = שני המונים קיימים **וגם** סכומם שווה למספר השורות בקובץ.
-  // רשת באמצע רינדור מראה פחות, ולכן זה גם תנאי הסיום וגם השער.
-  let c = null;
+  // התייצבות = אותה ספירה פעמיים ברציפות, ולפחות שורה אחת באחת הרשתות.
+  let shown = null, rejected = null, okG = null, badG = null, prev = '';
   for (let i = 0; i < 40; i++) {
-    c = await readCounters();
-    if (c && c.ok.total + c.bad.total === dataRows) break;
     await page.waitForTimeout(1500);
+    okG = await countFrame(spec.okGrid);
+    badG = await countFrame(spec.badGrid);
+    shown = okG?.rows ?? null;
+    rejected = badG?.rows ?? null;
+    const now = `${shown}/${rejected}`;
+    if (shown !== null && rejected !== null && shown + rejected > 0 && now === prev) break;
+    prev = now;
   }
 
   const frameDump = () => page.frames().map((f) => '  ' + f.url().replace(/\?.*/, '')).join('\n');
   const summary = (await result.evaluate(() => (document.body?.innerText ?? '').replace(/\s+/g, ' ').trim()).catch(() => '')).slice(0, 400);
   logger.step('preview', summary || '(מסך התוצאה עדיין ריק)');
 
-  if (!c) {
-    throw new Error(`⛔ לא נמצאו שני המונים "סה"כ פריטים" במסך התוצאה אחרי דקה. לא קולטים בלי לדעת כמה שורות קומקס קרא.\nהפריימים שהיו פתוחים:\n${frameDump()}`);
+  if (shown === null || rejected === null) {
+    throw new Error(`⛔ רשת תוצאה לא נמצאה (תקין=${shown} · לא תקין=${rejected}). לא קולטים בלי לראות את שתי הרשתות.\nהפריימים שהיו פתוחים:\n${frameDump()}`);
   }
-  if (c.ok.total + c.bad.total !== dataRows) {
-    throw new Error(`⛔ קומקס קרא ${c.ok.total} תקינות + ${c.bad.total} לא תקינות = ${c.ok.total + c.bad.total}, והקובץ מכיל ${dataRows}. התצוגה לא התייצבה — לא קולטים.`);
+  logger.step('grids', `נספר מתוך הפריימים — יבוא תקין: ${shown} · יבוא לא תקין: ${rejected} · בקובץ: ${dataRows}`);
+  logger.step('grid-rows', `תקין[0]: ${okG?.first ?? '—'}`);
+  logger.step('grid-rows', `תקין[N]: ${okG?.last ?? '—'}`);
+
+  // ⚠️ "סה"כ פריטים: 100 מתוך 175" הוא **תקרת תצוגה** ברשת התקינה, ולכן
+  //    ההשוואה למספר השורות בקובץ תקפה רק עד 100. מעל זה — הסמכות היחידה
+  //    שנשארת היא רשת הדחיות.
+  if (dataRows <= 100 && shown + rejected !== dataRows) {
+    throw new Error(`⛔ הרשתות מציגות ${shown} תקין + ${rejected} לא תקין = ${shown + rejected}, והקובץ מכיל ${dataRows}. התצוגה לא התייצבה — לא קולטים.`);
   }
 
-  // ⚠️ "סה"כ פריטים: 100 מתוך 175" הוא **תקרת תצוגה**, לא דחייה. נמדד: 100
-  //    השורות המוצגות היו בדיוק 100 הברקודים הראשונים בסדר עולה. לכן השער
-  //    לעיל נשען על `total` ולא על מספר השורות ברשת, ו**אסור** להשוות את
-  //    ספירת השורות ברשת ל-`dataRows` — היא תיכשל תמיד מעל 100 שורות.
-  //    הסמכות על דחיות היא "יבוא לא תקין", והיא בלבד.
-  const rejected = c.bad.total;
-  const shown = c.ok.total;
+  // הצילום לפני השערים, לא אחריהם: אחרי הזריקה run.js עושה לוגין
+  // מחדש ומסך התוצאה נעלם. תמונה של הדחיות היא לרוב הראיה היחידה.
+  await logger.shot(page, 'import-preview');
   if (rejected > 0) {
-    const bad = page.frames().find((x) => /Prt_ImpExl2_Fr\.asp/i.test(x.url()));
+    const bad = page.frames().find((x) => spec.badGrid.test(x.url()));
     const rows = bad
       ? await bad.evaluate(() => (document.body?.innerText ?? '').trim().split('\n').filter((l) => l.trim()).slice(0, 11).join('\n')).catch(() => '')
       : '(רשת "יבוא לא תקין" לא נמצאה כדי לדגום ממנה)';
@@ -492,7 +608,6 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   }
   logger.step('preview', `יבוא תקין: ${shown} · יבוא לא תקין: 0 · מול ${dataRows} שורות בקובץ — התייצב`);
 
-  await logger.shot(page, 'import-preview');
 
   // ---- previewOnly: עוצרים כאן, לפני הכפתור השני -------------------------
   // בקשה מפורשת של דרור (08/09/2026): לראות רק את מסך התצוגה המקדימה
@@ -509,7 +624,7 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   await logger.shot(page, 'after-import');
   const bodyText = await page.evaluate(() => document.body?.innerText ?? '').catch(() => '');
   const dupError = /כפילות בנתונים/.test(bodyText);
-  const stillOpen = page.frames().some((f) => /Prt_ImpExlU/i.test(f.url()));
+  const stillOpen = page.frames().some((f) => spec.result.test(f.url()));
   if (dupError) {
     throw new Error('⛔ קומקס הציג "כפילות בנתונים !" אחרי הקליק על אישור — הקליטה נדחתה. לא נוצר דבר (מאומת ב-08/09/2026 מול items-export). אל תריץ שוב עם אותו קובץ בלי לבדוק למה — כנראה נלחץ אישור לפני שהתצוגה התייצבה.');
   }

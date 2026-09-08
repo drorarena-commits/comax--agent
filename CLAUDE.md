@@ -248,6 +248,7 @@ src/items/                        בניית קובץ ההקמה + שער הדג
 src/tasks/items-import.js         היבוא מאקסל — a84 → נוספים → #ImpExl, עם שלושה שערים
 src/items/build-cost.js           מחירי עלות מדוח רכישות — מספרי המחירונים והשערים
 src/tasks/cost-import.js          יבוא מחירון — a6 → יבוא מאקסל → CSV בן 3 עמודות
+tools/site-data-file.js           קובץ "נתוני אתר" — מבטל "לא להציג", בלעדיו פריט לא מסונכרן
 knowledge/screens/               מתכון הסלקטורים לכל מסך שמופה
 config/comax.config.json         כתובות, קצב אנושי, timeouts, מחסני הדוח
 content/                         הייצוא המקומי — מלאי ולקוחות

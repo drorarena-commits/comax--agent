@@ -1,0 +1,706 @@
+{
+  "capturedAt": "2026-09-08T08:27:46.587Z",
+  "impType": "3",
+  "dialogUrl": "https://www.comax.co.il/Max2000/Erp/Prt/Prt_ImpExl_New.asp?FromFrame=%27FramePrtV%27&NoUp=%270%27&SwPG=0&swVisit=0&swEngl=&SwSQL=113&UserBooker=0&Prt_Company=1&SaveLine=1&CurrCompanyNoMaam=0&SwEnter=1&FullGraf=5&FrameName=%27FramePrt_ImpExl_New%27&UserAdmin=1&CurrSnif=0&CurrCompany=1&CurrYear=2026&ZorbaLk=4396&ZorbaApp=51&UserCounter=2&Odbc=Max2000_4396&SSID_p=996214450&LogC_p=187752514&Host=https://www.comax.co.il/&LCforPC=1&SwWC_test=0&SwWC_test=0&Sw_CHROME=1&swMLangJson=0&UsrSafa=0&Safa_LTR=0&SwUse_UI=0&NOWW=8/9/2026%2011:27:40",
+  "pickerUrl": "https://www.comax.co.il/Max2000/Erp/Prt/MiunSwImp.asp?ArrChoose=Prt,DeRogAtr,PrtBarkod,SwNoShow&SwImpType=3&Usr=2&SwTblBorder=1&Prt_Company=1&SwSQL=113&CurrCompany=1&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&D=08/09/2026%2011:27:40",
+  "options": [
+    {
+      "id": "FileValue",
+      "tag": "input",
+      "type": "text",
+      "value": "s",
+      "title": ""
+    },
+    {
+      "id": "File",
+      "tag": "input",
+      "type": "file",
+      "value": "",
+      "title": ""
+    },
+    {
+      "id": "SwPrtRequiredFeaturesCheck",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "בדיקת מאפייני חובה לפריט",
+      "checked": false
+    },
+    {
+      "id": "SwNew",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": true
+    },
+    {
+      "id": "SwBuildGrpTt",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwBuildGrp",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwBuildDep",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwBuildSpk",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwBiuldByNm",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwBiuldByNm1",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwShiuchEfyun",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": true
+    },
+    {
+      "id": "SwUpGrpTt",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": true
+    },
+    {
+      "id": "SwUpGrp",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": true
+    },
+    {
+      "id": "SwUpDep",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": true
+    },
+    {
+      "id": "SwDel_ArchiveDate",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_DateStop_Sell",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_DateStop_Buy",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_DateStartPrt",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_GrpT",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_Grp",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_Dep",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_DateStop_HzmBuy",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_Tav",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_Degem",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_Izran",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_Efyun5",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_Efyun4",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDel_Efyun3",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwByGrp",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=פריטים",
+        "1=קבוצת משנה",
+        "2=קבוצה"
+      ]
+    },
+    {
+      "id": "SwHavaraSpk",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "Kupa_SwDis",
+      "tag": "select",
+      "type": "select-one",
+      "value": "3",
+      "title": "",
+      "options": [
+        "3=לא לעדכן",
+        "0=ללא שינוי - 0",
+        "1=בר הנחה - 1",
+        "2=חסימת הנחה - 2"
+      ]
+    },
+    {
+      "id": "PrtFrom",
+      "tag": "input",
+      "type": "text",
+      "value": "",
+      "title": ""
+    },
+    {
+      "id": "SwShiucDr",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "CheckAmara",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwBiuldEfyun",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=לא",
+        "1=כן"
+      ]
+    },
+    {
+      "id": "CheckHkOnly",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwPrtKod",
+      "tag": "select",
+      "type": "select-one",
+      "value": "1",
+      "title": "",
+      "options": [
+        "0=ברקוד",
+        "1=קוד",
+        "2=חלופי"
+      ]
+    },
+    {
+      "id": "SwPrtKodIns",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=פריט",
+        "1=מק\"ט"
+      ]
+    },
+    {
+      "id": "SwPrtKodB",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=ברקוד",
+        "1=קוד"
+      ]
+    },
+    {
+      "id": "SwUpBarKod",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwUpKod",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwUpBarKodNosaf",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "בדיקה נעשית רק עבור ברקודים נומרים",
+      "checked": false
+    },
+    {
+      "id": "SwWebGrpTt_2",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwWebGrpTt_1",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDelMishkalim",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "בסימון איפוס, יאופסו שדות המשקל לחישוב משקל ממוצע שהוזנו בעבר",
+      "checked": false
+    },
+    {
+      "id": "DelPrm",
+      "tag": "input",
+      "type": "text",
+      "value": "",
+      "title": ""
+    },
+    {
+      "id": "SwDelPrm",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwHkPrt",
+      "tag": "select",
+      "type": "select-one",
+      "value": "1",
+      "title": "",
+      "options": [
+        "0=",
+        "1=ללא",
+        "2=בלבד"
+      ]
+    },
+    {
+      "id": "SwNoUpdPrtNm",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwMhrByDegem",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "",
+      "title": "עדכון מחיר מכירה לפריט לפי מחיר  הדגם בתת הרשת",
+      "checked": false
+    },
+    {
+      "id": "MhrNachonL",
+      "tag": "input",
+      "type": "text",
+      "value": "",
+      "title": ""
+    },
+    {
+      "id": "MhrNachonM",
+      "tag": "input",
+      "type": "text",
+      "value": "",
+      "title": ""
+    },
+    {
+      "id": "SugBarzel",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=תת רשת",
+        "1=סיווג 2 של סניף"
+      ]
+    },
+    {
+      "id": "BarzelBizua",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=הקמה בלבד",
+        "1=עדכון בלבד",
+        "2=הקמה ו/או עדכון בלבד"
+      ]
+    },
+    {
+      "id": "Snif",
+      "tag": "input",
+      "type": "text",
+      "value": "ראשי",
+      "title": ""
+    },
+    {
+      "id": "SwImpType",
+      "tag": "input",
+      "type": "text",
+      "value": "נתוני אתר לפריט",
+      "title": "3"
+    },
+    {
+      "id": "ArrChoose",
+      "tag": "input",
+      "type": "text",
+      "value": "Prt,DeRogAtr,PrtBarkod,SwNoShow",
+      "title": ""
+    }
+  ],
+  "fields": [
+    {
+      "id": "chk0",
+      "letter": "A",
+      "ordinal": "0",
+      "label": "פריט(קוד)"
+    },
+    {
+      "id": "chk1",
+      "letter": "B",
+      "ordinal": "1",
+      "label": "דרוג תצוגה"
+    },
+    {
+      "id": "chk2",
+      "letter": "C",
+      "ordinal": "2",
+      "label": "ברקוד"
+    },
+    {
+      "id": "chk3",
+      "letter": "",
+      "ordinal": "",
+      "label": "פריט בקרור(0/1)"
+    },
+    {
+      "id": "chk4",
+      "letter": "D",
+      "ordinal": "3",
+      "label": "לא להציג פריט(0/1)"
+    },
+    {
+      "id": "chk5",
+      "letter": "",
+      "ordinal": "",
+      "label": "הצגה במחסנים"
+    },
+    {
+      "id": "chk6",
+      "letter": "",
+      "ordinal": "",
+      "label": "תאור קצר"
+    },
+    {
+      "id": "chk7",
+      "letter": "",
+      "ordinal": "",
+      "label": "תאור"
+    },
+    {
+      "id": "chk8",
+      "letter": "",
+      "ordinal": "",
+      "label": "שם האתר"
+    },
+    {
+      "id": "chk9",
+      "letter": "",
+      "ordinal": "",
+      "label": "תאור משלוח"
+    },
+    {
+      "id": "chk10",
+      "letter": "",
+      "ordinal": "",
+      "label": "הוראות שימוש"
+    },
+    {
+      "id": "chk11",
+      "letter": "",
+      "ordinal": "",
+      "label": "מכירה ללא מלאי(0/1)"
+    },
+    {
+      "id": "chk12",
+      "letter": "",
+      "ordinal": "",
+      "label": "קישור לאתר"
+    },
+    {
+      "id": "chk13",
+      "letter": "",
+      "ordinal": "",
+      "label": "תכולה(כמות)"
+    },
+    {
+      "id": "chk14",
+      "letter": "",
+      "ordinal": "",
+      "label": "תכולה(תכולה)"
+    },
+    {
+      "id": "chk15",
+      "letter": "",
+      "ordinal": "",
+      "label": "תכולה(מידה)"
+    },
+    {
+      "id": "chk16",
+      "letter": "",
+      "ordinal": "",
+      "label": "יצרן אתר"
+    },
+    {
+      "id": "chk17",
+      "letter": "",
+      "ordinal": "",
+      "label": "ק. משנה אתר"
+    },
+    {
+      "id": "chk18",
+      "letter": "",
+      "ordinal": "",
+      "label": "תת ק.נוספת"
+    },
+    {
+      "id": "chk19",
+      "letter": "",
+      "ordinal": "",
+      "label": "תת ק.נוספת 2"
+    },
+    {
+      "id": "chk20",
+      "letter": "",
+      "ordinal": "",
+      "label": "חופשי"
+    },
+    {
+      "id": "chk21",
+      "letter": "",
+      "ordinal": "",
+      "label": "הצגת מחיר(0/1)"
+    },
+    {
+      "id": "chk22",
+      "letter": "",
+      "ordinal": "",
+      "label": "חדש(0/1)"
+    },
+    {
+      "id": "chk23",
+      "letter": "",
+      "ordinal": "",
+      "label": "משומש(0/1)"
+    },
+    {
+      "id": "chk24",
+      "letter": "",
+      "ordinal": "",
+      "label": "מלאי מינימום"
+    },
+    {
+      "id": "chk25",
+      "letter": "",
+      "ordinal": "",
+      "label": "תגיות חיפוש"
+    },
+    {
+      "id": "chk26",
+      "letter": "",
+      "ordinal": "",
+      "label": "(אספקה ישירה(0/1"
+    },
+    {
+      "id": "chk27",
+      "letter": "",
+      "ordinal": "",
+      "label": "ללא בדיקת מלאי(0/1)"
+    },
+    {
+      "id": "chk28",
+      "letter": "",
+      "ordinal": "",
+      "label": "תאור נוסף"
+    },
+    {
+      "id": "chk29",
+      "letter": "",
+      "ordinal": "",
+      "label": "אזהרות שימוש ובטיחות"
+    },
+    {
+      "id": "chk30",
+      "letter": "",
+      "ordinal": "",
+      "label": "צבע"
+    },
+    {
+      "id": "chk31",
+      "letter": "",
+      "ordinal": "",
+      "label": "אחריות"
+    },
+    {
+      "id": "chk32",
+      "letter": "",
+      "ordinal": "",
+      "label": "מחלקה אתר"
+    },
+    {
+      "id": "chk33",
+      "letter": "",
+      "ordinal": "",
+      "label": "קבוצה אתר"
+    },
+    {
+      "id": "chk34",
+      "letter": "",
+      "ordinal": "",
+      "label": "תת קבוצה אתר"
+    },
+    {
+      "id": "chk35",
+      "letter": "",
+      "ordinal": "",
+      "label": "נוסף 2 אתר"
+    }
+  ]
+}
