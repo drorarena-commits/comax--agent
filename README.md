@@ -21,6 +21,8 @@ npm run run -- <משימה> --json '{...}' --confirm  # הרצה אמיתית
 npm run run -- stock-matrix        # מטריצת מחסנים -> data/exports/
 npm run run -- items-export --json '{"fields":"all"}'  # כל הפריטים לאקסל -> data/exports/
 npm run run -- customer-history --json '{"customer":"112447","item":"שנורקל"}'
+npm run run -- quote-read --json '{"customer":"בני הרצליה"}'          # רשימת ההצעות של לקוח
+npm run run -- quote-read --json '{"docNo":"6120029","customer":"בני הרצליה"}'  # וקריאת שורותיה
 npm run payroll -- --to <כתובת>    # דוח נוכחות חודשי לשכר -> מייל מקומקס
 npm run items-file                 # בונה את קובץ ההקמה + מריץ את שערי האימות
 npm run items-import -- --json '{"file":"data/exports/הקמה-קומקס-175.xlsx"}'  # יבוא פריטים (יבש)
@@ -38,6 +40,28 @@ npm run run -- cost-import --json '{"file":"...csv","list":9}'   # יבוא מח
 המחסנים לפי `reports.stockMatrix.warehouses` בקונפיג, **קורא את השדות בחזרה
 מהמסך ומשווה**, ועוצר בלי ללחוץ אישור אם משהו לא תואם. לדריסה חד-פעמית:
 `--json '{"warehouses":["1","3"],"date":"31/08/2026"}'`.
+
+## קריאת הצעת מחיר קיימת — `quote-read`
+
+```bash
+npm run run -- quote-read --json '{"customer":"בני הרצליה"}'
+npm run run -- quote-read --json '{"docNo":"6120029","customer":"בני הרצליה"}'
+npm run run -- quote-read --json '{"customer":"בני הרצליה","item":"backpack"}'
+```
+
+קריאה בלבד (`writes: false`) — פותחת את המסמך, קוראת את **כל** שורותיו ויוצאת
+ב-`#DoExit` → `#Cancel`, לעולם לא `#OK`. רשימה בלבד עולה כ-50 שניות; כל מסמך
+שנפתח מוסיף כ-25.
+
+שני דברים שהיא אוכפת, ושניהם נמדדו חי:
+
+- **מספר מסמך אינו ייחודי.** 6120029 קיים גם לעמותת בני הרצליה (20/05/2026,
+  16,284) וגם לעיריית רמלה (16/07/2025, 531). המסמך נפתח לפי **השורה** ברשת,
+  ומספר בלי לקוח שמכריע גורם לעצירה — לא לבחירה בראשונה.
+- **הוכחת שלמות (כלל 16).** הרשת מחולקת ל-10 שורות בעמוד, ועמוד ראשון נראה כמו
+  מסמך שלם. [`src/documents/read-lines.js`](src/documents/read-lines.js) מדפדף
+  ומוכיח את מה שקרא מול סיכום המסמך — `סה"כ כמות` בתעודת העברה, וסכום השורות
+  מול `סה"כ` בהצעת מחיר, שאין בה סיכום כמות בכלל.
 
 ## סשן אחד בלבד
 
