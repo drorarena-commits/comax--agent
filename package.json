@@ -28,6 +28,7 @@
     "items-file": "node tools/items-import-file.js",
     "cost-file": "node tools/cost-import-file.js",
     "site-file": "node tools/site-data-file.js",
+    "memory-backup": "node tools/memory-backup.js",
     "items-import": "node tools/run.js items-import"
   },
   "dependencies": {

@@ -71,7 +71,7 @@
 
 | מה שאני אומר | מה שרץ |
 |---|---|
-| `push-comax` · "סיימתי תגבה" | `git add . && git commit -m "<עדכון>" && git push` |
+| `push-comax` · "סיימתי תגבה" | **`npm run memory-backup`** ואז `git add . && git commit -m "<עדכון>" && git push` |
 | `pull-comax` · "תמשוך גיבוי" | `git pull` |
 
 הפרויקט עובד משני מחשבים ומסונכרן דרך
@@ -249,6 +249,8 @@ src/tasks/items-import.js         היבוא מאקסל — a84 → נוספים
 src/items/build-cost.js           מחירי עלות מדוח רכישות — מספרי המחירונים והשערים
 src/tasks/cost-import.js          יבוא מחירון — a6 → יבוא מאקסל → CSV בן 3 עמודות
 tools/site-data-file.js           קובץ "נתוני אתר" — מבטל "לא להציג", בלעדיו פריט לא מסונכרן
+memory/                           הזיכרון של הסוכן — גיבוי בלבד. המקור הוא ~/.claude/…/memory
+tools/memory-backup.js            מסנכרן אותו לכאן. כיוון אחד: מקור ⇒ ריפו, ולא מוחק
 knowledge/screens/               מתכון הסלקטורים לכל מסך שמופה
 config/comax.config.json         כתובות, קצב אנושי, timeouts, מחסני הדוח
 content/                         הייצוא המקומי — מלאי ולקוחות
