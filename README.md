@@ -223,6 +223,7 @@ node tools/items-import-file.js יעד.xlsx --comax קטלוג-ישן.csv   # ל
 npm run items-import -- --json '{"probe":true}'                       # מיפוי הדיאלוג בלבד
 npm run items-import -- --json '{"file":"data/exports/הקמה-קומקס-175.xlsx"}'            # יבש
 npm run items-import -- --json '{"file":"data/exports/הקמה-קומקס-175.xlsx"}' --confirm  # קולט
+npm run items-import -- --json '{"file":"...xlsx","previewOnly":true}' --confirm  # מסך התוצאה בלבד — לא קולט
 ```
 
 `a84` → לשונית **"נוספים"** → **`#ImpExl`**, סוג יבוא `0 · פריטים`. המשימה
