@@ -38,6 +38,7 @@ export const meta = {
     customer: 'string, אופציונלי — קוד או שם לקוח לסינון הרשימה',
     docNo: 'string/number, אופציונלי — מספר הצעה מדויק. אחד מהשניים חובה',
     item: 'string, אופציונלי — ברקוד / מק"ט חלופי / חלק משם, לאיתור ההצעה הנכונה מבין כמה',
+    year: 'string/number, אופציונלי — להגביל לשנה אחת (2026). המספור הרץ מתאפס בין שנים, וזה מה שמכריע כפילות. "all" = בלי סינון',
     all: 'boolean, אופציונלי — לקרוא את שורות כל ההצעות ברשימה ולא רק לרשום אותן',
     maxDocs: 'number, אופציונלי — תקרת מסמכים שנפתחים. ברירת המחדל 10',
   },
@@ -249,9 +250,35 @@ export async function run(ctx) {
   await human.press('Enter', { label: 'החלת הסינון' });
   await human.think('filter applied');
 
-  const { rows } = await readList(list);
-  logger.step('list', `${rows.length} הצעות תואמות`);
+  const { rows: allRows } = await readList(list);
+  logger.step('list', `${allRows.length} הצעות תואמות`);
   await logger.shot(page, 'quote-list').catch(() => {});
+
+  /*
+   * סינון לפי שנה — הפתרון לשורש הכפילות.
+   *
+   * The running document number **restarts each year**, so 6120029 exists both
+   * as a 2026 quote and as a 2025 one. What makes that visible here rather than
+   * harmless is an asymmetry Dror pointed out (08/09/2026): the quote list
+   * shows documents from 2025 while the working year is 2026, whereas seeing an
+   * invoice of the same age needs a company switch. So this screen, uniquely,
+   * hands back two different documents under one number.
+   *
+   * `year` is opt-in rather than a default, because filtering by default would
+   * silently hide a genuinely old quote — which is the same class of mistake as
+   * reading page one and calling it the document. Filtered rows are counted and
+   * reported, never dropped in silence.
+   */
+  const yearOf = (d) => (String(d ?? '').split('/')[2] ?? '').trim();
+  const wantYear = input.year == null || String(input.year).toLowerCase() === 'all'
+    ? null
+    : String(input.year).trim();
+  const rows = wantYear ? allRows.filter((r) => yearOf(r.date) === wantYear) : allRows;
+  const hidden = allRows.length - rows.length;
+  if (hidden) {
+    const years = [...new Set(allRows.filter((r) => yearOf(r.date) !== wantYear).map((r) => yearOf(r.date)))];
+    logger.step('year', `סינון שנת ${wantYear} — ${hidden} הצעות הוסתרו (${years.join(' · ')})`);
+  }
 
   /* -- which of them to actually open ---------------------------------- */
 
@@ -327,18 +354,27 @@ export async function run(ctx) {
 
   if (!rows.length) {
     console.log('\n   לא נמצאו הצעות מחיר בסינון הזה.');
+    if (hidden) console.log(`   ⚠️ שים לב: ${hidden} הצעות סוננו החוצה על ידי year=${wantYear}. בלי הסינון היו תוצאות.`);
     console.log('   שים לב: טיוטה שלא נקלטה אינה מופיעה בחיפוש (כלל 15), והצעה משנת כספים קודמת לא תיראה בלי שינוי שנת העבודה.');
   } else {
-    console.log(`\n── ${rows.length} הצעות ברשימה`);
+    console.log(`\n── ${rows.length} הצעות ברשימה${wantYear ? ` (שנת ${wantYear})` : ''}`);
     for (const r of rows) {
       console.log(`   ${r.docNo}  ${r.date}  ${r.customerCode} ${r.customer}  ${r.amount}`);
+    }
+    // Never a silent filter: a hidden row is stated, with its year, so "אין לו
+    // הצעות" can't be an artefact of the filter the caller forgot they passed.
+    if (hidden) {
+      const older = allRows.filter((r) => yearOf(r.date) !== wantYear);
+      console.log(`\n   (${hidden} הצעות נוספות הוסתרו על ידי סינון השנה: ${older.map((r) => `${r.docNo}/${r.date}`).join(' · ')})`);
     }
   }
 
   if (!targets.length && rows.length > 1) {
     if (input.docNo) {
+      const years = [...new Set(rows.map((r) => yearOf(r.date)))];
       console.log(`\n   ⚠️  מספר ${input.docNo} אינו חד-משמעי — ${rows.length} מסמכים נושאים אותו, ללקוחות שונים.`);
-      console.log('   מספר הצעה בקומקס חוזר על עצמו בין לקוחות ובין שנים. להוסיף customer כדי להכריע.');
+      console.log('   המספור הרץ מתאפס בין שנים, ורשימת ההצעות מציגה גם שנים קודמות.');
+      console.log(`   להוסיף customer, או year (${years.join(' · ')}), כדי להכריע.`);
     } else {
       console.log('\n   יותר מהצעה אחת — לא בוחר לבד.');
       console.log('   להריץ שוב עם docNo מדויק (יחד עם customer), או עם item כדי לסנן לפי פריט, או all:true לקרוא את כולן.');
@@ -380,5 +416,5 @@ export async function run(ctx) {
   }
 
   await logger.shot(page, 'done').catch(() => {});
-  return { customer: input.customer ?? null, docNo: input.docNo ?? null, list: rows, docs, matches };
+  return { customer: input.customer ?? null, docNo: input.docNo ?? null, year: wantYear, list: rows, hiddenByYear: hidden, docs, matches };
 }
