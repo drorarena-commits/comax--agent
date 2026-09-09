@@ -134,7 +134,7 @@ async function fillLine(ctx, { grid, item, index, of, commit, last }) {
   await fillLookup(ctx, { frame, field: '#Prt', value: String(item.code), what: 'פריט' });
   await dismissPopups(ctx);
 
-  await human.type('#Cmt', String(item.qty ?? 1), { scope: frame, label: 'כמות' });
+  await human.type('#Cmt', String(item.qty ?? 1), { scope: frame, label: 'כמות', free: true });
   await human.press('Tab', { label: 'יציאה משדה הכמות' });
   await human.think('price recalculation');
 
@@ -165,19 +165,19 @@ async function fillLine(ctx, { grid, item, index, of, commit, last }) {
   });
 
   if (price != null) {
-    await human.type('#Mhr', String(price), { scope: frame, label: 'מחיר' });
+    await human.type('#Mhr', String(price), { scope: frame, label: 'מחיר', free: true });
     await human.press('Tab', { label: 'יציאה משדה המחיר' });
     await human.think('amount recalculation');
   }
   if (discount != null) {
-    await human.type('#AczDis', String(discount), { scope: frame, label: '% הנחה' });
+    await human.type('#AczDis', String(discount), { scope: frame, label: '% הנחה', free: true });
     await human.press('Tab');
     await human.think('discount applied');
   }
   // Paste rather than type: this is long free text, and typing it costs
   // ~121ms per character (measured 05/09/2026). Dates, quantities and
   // prices deliberately keep typing — see the note in human.type().
-  if (item.remark) await human.type('#Remark', item.remark, { scope: frame, label: 'הערה' });
+  if (item.remark) await human.type('#Remark', item.remark, { scope: frame, label: 'הערה', free: true });
 
   const line = {
     item: await frame.locator('#Prt').inputValue().catch(() => null),

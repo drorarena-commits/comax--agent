@@ -109,12 +109,12 @@ export async function run(ctx) {
   }
 
   // 6. The remaining optional header fields.
-  if (input.date) await human.type('#DateDoc', input.date, { scope: formFrame, label: 'תאריך' });
+  if (input.date) await human.type('#DateDoc', input.date, { scope: formFrame, label: 'תאריך', free: true });
   if (input.agent) await fillLookup(ctx, { frame: formFrame, field: '#Sochen', value: input.agent, what: 'סוכן' });
   // Paste rather than type: this is long free text, and typing it costs
   // ~121ms per character (measured 05/09/2026). Dates, quantities and
   // prices deliberately keep typing — see the note in human.type().
-  if (input.details) await human.type('#Pratim', input.details, { scope: formFrame, label: 'פרטים', paste: true });
+  if (input.details) await human.type('#Pratim', input.details, { scope: formFrame, label: 'פרטים', free: true });
   await dismissPopups(ctx);
 
   // 6. Show the finished header before anything is committed.
@@ -207,10 +207,10 @@ async function addLine(ctx, { item, index, last }) {
   });
   await dismissPopups(ctx);
 
-  await human.type('#Cmt', String(item.qty ?? 1), { scope: frame, label: 'כמות' });
-  if (item.price != null) await human.type('#Mhr', String(item.price), { scope: frame, label: 'מחיר' });
-  if (item.discount != null) await human.type('#AczDis', String(item.discount), { scope: frame, label: '% הנחה' });
-  if (item.remark) await human.type('#Remark', item.remark, { scope: frame, label: 'הערה' });
+  await human.type('#Cmt', String(item.qty ?? 1), { scope: frame, label: 'כמות', free: true });
+  if (item.price != null) await human.type('#Mhr', String(item.price), { scope: frame, label: 'מחיר', free: true });
+  if (item.discount != null) await human.type('#AczDis', String(item.discount), { scope: frame, label: '% הנחה', free: true });
+  if (item.remark) await human.type('#Remark', item.remark, { scope: frame, label: 'הערה', free: true });
 
   const line = {
     item: await frame.locator('#Prt').inputValue().catch(() => null),

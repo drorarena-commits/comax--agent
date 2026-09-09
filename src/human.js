@@ -18,11 +18,32 @@ export class Human {
     this.lastActionAt = 0;
   }
 
-  /** Never let two actions land closer together than pace.minGapMs. */
-  async gate() {
+  /**
+   * Never let two actions land closer together than pace.minGapMs.
+   *
+   * `free` marks a field Comax does not have to think about. Dror's distinction,
+   * 09/09/2026:
+   *
+   *   "על מה שהוא 'הקלדה חופשית' — תאריך, פרטים, הערה בשורה, מחיר, כמות —
+   *    שאין בהם שום צורך לקומקס למשוך נתון משלים ממסד הנתונים שלו, אלו פעולות
+   *    שלא צריכות כמעט בכלל זמן המתנה."
+   *
+   * A barcode in `#Prt` sends Comax to the catalogue and the answer comes back
+   * into the form; a quantity of "2" is stored as typed. Both used to pay the
+   * same two seconds. Measured on quote 6120056: 15 of 22 filled fields were
+   * free ones, so the flat gate spent ~30s waiting for a lookup that never
+   * happened.
+   *
+   * ⚠️ This is only about the pause **before** typing. The pause **after**
+   * leaving a field stays untouched — Dror was explicit that Comax does take
+   * time on transitions ("לוקח לו זמן לעבד לפעמים מעברים, בזה לא ניגע"), and
+   * the price/amount recalculations after quantity and price are exactly that.
+   */
+  async gate({ free = false } = {}) {
+    const min = free ? (this.pace.minGapFreeMs ?? 250) : this.pace.minGapMs;
     const since = Date.now() - this.lastActionAt;
-    if (this.lastActionAt && since < this.pace.minGapMs) {
-      await sleep(this.pace.minGapMs - since);
+    if (this.lastActionAt && since < min) {
+      await sleep(min - since);
     }
     this.lastActionAt = Date.now();
   }
@@ -102,9 +123,17 @@ export class Human {
    * @param {boolean} [opts.secret] Log a mask instead of the value. Required for
    *   the password field — the run log is a plain file kept on disk.
    */
-  async type(target, text, { scope = null, label = null, clear = true, secret = false, paste = false } = {}) {
+  /**
+   * `paste` defaults to true — see the block below. Pass `paste: false` to force
+   * real key-by-key typing for a field that genuinely needs key events.
+   *
+   * `free: true` marks a field Comax stores as typed, with no lookup behind it
+   * (quantity, price, discount, remark, details, date) — it skips the two-second
+   * gate. See `gate()` for the rule and why the pause *after* the field stays.
+   */
+  async type(target, text, { scope = null, label = null, clear = true, secret = false, paste = true, free = false } = {}) {
     const el = this.#loc(target, scope);
-    await this.gate();
+    await this.gate({ free });
     await el.waitFor({ state: 'visible', timeout: this.pace.actionTimeoutMs });
     await el.scrollIntoViewIfNeeded();
     await el.click();
@@ -121,16 +150,22 @@ export class Human {
     // copy-paste is human too, and it is one input event instead of dozens of
     // key events. `insertText` is exactly that shape.
     //
-    // ⚠️ Not the default. A field whose value is rebuilt by an onkeypress
-    // handler — Comax reformats dates as you type — can end up holding
-    // something else, and pasting would hide that. Only callers that read the
-    // field back and compare should ask for it. `customer-movements` does.
-    const t0 = Date.now();
-    if (paste) {
-      await this.page.keyboard.insertText(String(text));
-      await sleep(rand(120, 280));
-    } else {
-      for (const ch of String(text)) {
+    // Since 09/09/2026 this is the **default**, on Dror's instruction: "רק
+    // בהקלדה האנושית ובמקומה נדביק מהיר את התאים... נצא מנקודת הנחה שלקומקס
+    // אין סיבה ואין מנגנון בדיקה לזה. הדבר היחיד הוא שלוקח לו זמן לעבד לפעמים
+    // מעברים — בזה לא ניגע." So the per-character delay goes and the pacing
+    // around actions (`minGapMs`, `think`) stays exactly as it was.
+    //
+    // ⚠️ The old warning was right and is now handled here instead of being
+    // pushed onto callers: a field rebuilt by an onkeypress handler — Comax
+    // reformats dates as you type — can hold something other than what was
+    // pasted. So every paste is **read back and compared**, and a mismatch
+    // falls back to real typing rather than being reported as success. That is
+    // the one failure mode that looks identical to success, which is exactly
+    // the kind this codebase refuses to leave silent.
+    const want = String(text);
+    const typeOut = async () => {
+      for (const ch of want) {
         await this.page.keyboard.type(ch);
         const base = rand(this.pace.typeMinMs, this.pace.typeMaxMs);
         const extra = this.pace.typePauseChars.includes(ch)
@@ -138,11 +173,39 @@ export class Human {
           : 0;
         await sleep(base + extra);
       }
+    };
+
+    const t0 = Date.now();
+    let how = 'paste';
+    if (paste === false) {
+      how = 'type';
+      await typeOut();
+    } else {
+      await this.page.keyboard.insertText(want);
+      await sleep(rand(120, 280));
+      // `inputValue` only works on real form controls; anything else (a
+      // contenteditable, a div) reports nothing and must not be treated as a
+      // mismatch — we simply cannot verify it, so we say so.
+      const got = await el.inputValue().catch(() => null);
+      if (got === null) {
+        how = 'paste?';
+      } else if (got.trim() !== want.trim()) {
+        this.logger?.step(
+          'paste',
+          `${label ?? String(target)}: ההדבקה נתנה "${got}" במקום "${want}" — מקליד במקום`,
+        );
+        await this.page.keyboard.press('Control+A');
+        await sleep(rand(80, 200));
+        await this.page.keyboard.press('Delete');
+        await sleep(rand(150, 350));
+        how = 'type↩';
+        await typeOut();
+      }
     }
     const took = Date.now() - t0;
 
-    const shown = secret ? '•'.repeat(Math.min(String(text).length, 8)) : `"${text}"`;
-    this.logger?.step(paste ? 'paste' : 'type', `${label ?? String(target)} = ${shown} (${took}ms)`);
+    const shown = secret ? '•'.repeat(Math.min(want.length, 8)) : `"${text}"`;
+    this.logger?.step(how, `${label ?? String(target)} = ${shown} (${took}ms)`);
     this.lastActionAt = Date.now();
   }
 
