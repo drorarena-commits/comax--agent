@@ -3,3 +3,7 @@ node_modules/
 runs/
 .env
 data/
+
+# ספורט אנד מור — קבצי עבודה. הייחוס ב-sportmore/reference/ כן נשמר.
+sportmore/in/
+sportmore/out/
