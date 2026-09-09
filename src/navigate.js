@@ -127,17 +127,19 @@ async function resolveShortcut({ nav, logger }, sc) {
 /**
  * Opens a program from the desktop shortcut strip and waits for it to render.
  * Returns the frames that came alive, so a task can pick its working frame.
+ *
+ * `program` is an optional Max2000 path (e.g. `Kupa/Kab/Osh/Kabala_OshV.aspx`)
+ * to fall back to when the icon is not on the desktop. Comax rearranges the
+ * desktop without warning — `a146` was there at 13:26 on 03/09/2026 and gone by
+ * 14:44, when the view switched to categories — and a caller that knows the
+ * path should not have to wait out `actionTimeoutMs` to discover that.
  */
-export async function openProgram({ page, human, logger, cfg }, nameOrId, { expect = null } = {}) {
+export async function openProgram({ page, human, logger, cfg }, nameOrId, { expect = null, program = null } = {}) {
   const sc = findShortcut(nameOrId);
   const nav = navFrame(page, cfg);
   const wanted = expect ?? (sc.urlPattern ? new RegExp(sc.urlPattern, 'i') : null);
 
   const before = new Set((await activeFrames(page)).map((f) => f.name + f.url));
-
-  // An open program covers the desktop, and a double-click aimed at an icon
-  // underneath simply never lands. Raise the desktop first, every time.
-  await showDesktop({ page, human, logger, cfg });
 
   const selector = await resolveShortcut({ nav, logger }, sc);
   // Desktop icons select on a single click; only a double-click launches them.
@@ -151,10 +153,66 @@ export async function openProgram({ page, human, logger, cfg }, nameOrId, { expe
     frames.some((f) => !before.has(f.name + f.url)) ||
     (wanted && frames.some((f) => wanted.test(f.url)));
 
-  let after = await activeFrames(page);
-  for (let i = 0; i < 4 && !settled(after); i++) {
-    await human.think(`waiting for "${sc.label}"`);
-    after = await activeFrames(page);
+  const waitForProgram = async () => {
+    await human.settle(`program "${sc.label}" loading`);
+    let frames = await activeFrames(page);
+    for (let i = 0; i < 4 && !settled(frames); i++) {
+      await human.think(`waiting for "${sc.label}"`);
+      frames = await activeFrames(page);
+    }
+    return frames;
+  };
+
+  /**
+   * The fast path: when the caller knows the program's own path, ask Max2000
+   * to run it directly.
+   *
+   * This skips raising the desktop and hunting for an icon — three clicks with
+   * their gates and settles, measured 05/09/2026 at ~18s of an 87s run. The
+   * mechanism is not new: `top.S.runProgram` was already here as the fallback
+   * for when Comax takes an icon off the desktop. It is only being promoted.
+   *
+   * The desktop route stays as the fallback rather than being deleted, because
+   * a path can go stale exactly the way an icon can, and failing over costs one
+   * settle while failing outright costs the whole task.
+   */
+  let after = null;
+  if (program) {
+    logger?.step('program', `${sc.label} (${sc.id}) — לפי נתיב, בלי מעבר בשולחן`);
+    await nav.evaluate((path) => top.S.runProgram(path), program);
+    after = await waitForProgram();
+    if (!settled(after)) {
+      logger?.step('program', `הנתיב לא פתח את ${sc.label} — נופל חזרה לשולחן העבודה`);
+      after = null;
+    }
+  }
+
+  if (!after) {
+    // An open program covers the desktop, and a double-click aimed at an icon
+    // underneath simply never lands. Raise the desktop first.
+    await showDesktop({ page, human, logger, cfg });
+
+    // `count()` asks the DOM as it stands rather than waiting for the element to
+    // appear, so an icon Comax has taken off the desktop costs nothing to rule
+    // out. Measured 04/09/2026 — `a157` is gone from a 51-icon desktop, and
+    // `customer-history` died on 30s of "waiting for locator('#a157')" with
+    // nothing saying the icon simply is not there any more.
+    if ((await nav.locator(selector).count()) > 0) {
+      // Desktop icons select on a single click; only a double-click launches them.
+      await human.doubleClick(selector, { scope: nav, label: `${sc.label} (${sc.id})` });
+    } else if (program) {
+      throw new Error(
+        `"${sc.label}" (${sc.id}) לא נפתח: הנתיב ${program} לא הביא תוכנית, והאייקון לא בשולחן.\n` +
+          'שני המסלולים נוסו. בדוק את הנתיב, או הרץ `node tools/_smoke/desktop-probe.mjs`.',
+      );
+    } else {
+      throw new Error(
+        `"${sc.label}" (${sc.id}) לא נמצא בשולחן העבודה, ואין נתיב חלופי.\n` +
+          'קומקס מסדר מחדש את השולחן בלי להודיע. הוסף `program` לקריאה ל-openProgram,\n' +
+          'או הרץ `node tools/_smoke/desktop-probe.mjs` כדי לראות אילו אייקונים כן קיימים.',
+      );
+    }
+    after = await waitForProgram();
   }
   const opened = after.filter((f) => !before.has(f.name + f.url));
 

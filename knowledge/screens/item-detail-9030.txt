@@ -1,0 +1,580 @@
+URL:   https://www.comax.co.il/Max2000/Max2000_run_G.asp?p=0|wmkffzmyb|zdbg|03/09/2026_18:20:18
+Title: דרור ספורט arena
+Frames: 59
+
+── frame "S"  https://www.comax.co.il/Max2000/MainNew_G.asp?CSID=&d1=03/09/2026%2018:20:19&Date=Thu%20Sep%2003%202026%2018:20:19%20GMT+0300%20(%F9%F2%E5%EF%20%E9%F9%F8%E0%EC%20(%F7%E9%F5))&SwQ_T=1&swQ_Run=&LogInC=187554829&CSID_OLD=&QS=043960%20%20%20%20%20%20%20%20%202%20%20%20%20%20%20%20%20%2011%20%20%20%20%20%20%20%20%20113%20%20%205%20%200%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20187554829%20%20%20%20%20%201025302331%20%20%20%200%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%E3%F8%E5%F8%20%F1%F4%E5%F8%E8%20ARENA&UsrSafa=0&Sw_CHROME=1&UsrSafa=0
+     1. img            החלפת מערכת                                   img:text-is("החלפת מערכת")
+     2. td             BI                                            td:text-is("BI")
+     3. td             ניווט תהליכים                                 td:text-is("ניווט תהליכים")
+     4. td             שולחן עבודה                                   td:text-is("שולחן עבודה")
+     5. tr             שולחן עבודה                                   tr:text-is("שולחן עבודה")
+     6. tr             מאפיינים                                      tr:text-is("מאפיינים")
+     7. tr             משימות                                        tr:text-is("משימות")
+     8. tr             שונות                                         tr:text-is("שונות")
+     9. tr             קישוריות                                      tr:text-is("קישוריות")
+    10. tr             עזרת מערכת                                    tr:text-is("עזרת מערכת")
+    11. tr             התראות                                        tr:text-is("התראות")
+    12. tr             סיום צ'אט עם נציג                             tr:text-is("סיום צ'אט עם נציג")
+    13. span           החלפת מערכת                                   span:text-is("החלפת מערכת")
+    14. span           החלפת חברה ושנה                               span:text-is("החלפת חברה ושנה")
+    15. span           החלפת חברה ושנה                               span:text-is("החלפת חברה ושנה")
+    16. td             התנתקות                                       td:text-is("התנתקות")
+    17. td             הצג שולחן עבודה                               td:text-is("הצג שולחן עבודה")
+    18. td             מעבר בין תוכניות בעבודה                       td:text-is("מעבר בין תוכניות בעבודה")
+    19. td             מאגר הדפסות                                   td:text-is("מאגר הדפסות")
+    20. td             בחירת חברה ושנה לעבודה                        td:text-is("בחירת חברה ושנה לעבודה")
+    21. td             בחירת מערכת לעבודה                            td:text-is("בחירת מערכת לעבודה")
+    22. td             שאילתא לתנועות חשבון                          td:text-is("שאילתא לתנועות חשבון")
+    23. td             מקס                                           td:text-is("מקס")
+    24. td             תפריט תוכניות מלא                             td:text-is("תפריט תוכניות מלא")
+    25. td             תפריט תוכניות                                 td:text-is("תפריט תוכניות")
+    26. button         צ'אט                                          getByRole('button', { name: "צ'אט" })
+    27. a              דיווח נוכחות                                  a:text-is("דיווח נוכחות")
+    28. a              דו"ח מכירות תקופתי לפריט                      a:text-is("דו\"ח מכירות תקופתי לפריט")
+    29. a              כרטסת הנהלת חשבונות                           a:text-is("כרטסת הנהלת חשבונות")
+    30. a              ריכוז דוחות Z                                 a:text-is("ריכוז דוחות Z")
+    31. a              דו"ח מכירות תקופתי לפריט                      a:text-is("דו\"ח מכירות תקופתי לפריט")
+    32. a              ניהול דגם                                     a:text-is("ניהול דגם")
+    33. a              מחסנים                                        a:text-is("מחסנים")
+    34. a              ניהול מחולל טפסים                             a:text-is("ניהול מחולל טפסים")
+    35. a              הזמנות לקוחות                                 a:text-is("הזמנות לקוחות")
+    36. a              דו"ח קופה מרוכז לחשבון                        a:text-is("דו\"ח קופה מרוכז לחשבון")
+    37. a              פריטים                                        a:text-is("פריטים")
+    38. a              חשבונית מס/קבלה מכירות                        a:text-is("חשבונית מס/קבלה מכירות")
+    39. a              יצוא לקוחות לאקסל                             a:text-is("יצוא לקוחות לאקסל")
+    40. a              Log עסקאות שב"א                               a:text-is("Log עסקאות שב\"א")
+    41. a              ניהול מבצעים                                  a:text-is("ניהול מבצעים")
+    42. a              הצעות מחיר ללקוחות                            a:text-is("הצעות מחיר ללקוחות")
+    43. a              יצוא פיתקיות לאקסל                            a:text-is("יצוא פיתקיות לאקסל")
+    44. a              שווי מלאי                                     a:text-is("שווי מלאי")
+    45. a              ניהול מבצעים                                  a:text-is("ניהול מבצעים")
+    46. a              לקוחות                                        a:text-is("לקוחות")
+    47. a              תעודות העברה                                  a:text-is("תעודות העברה")
+    48. a              ניתוח מכירות תקופתי                           a:text-is("ניתוח מכירות תקופתי")
+    49. a              ניהול סוגי צבע                                a:text-is("ניהול סוגי צבע")
+    50. a              מטריצת דגמים- יתרות מלאי                      a:text-is("מטריצת דגמים- יתרות מלאי")
+    51. a              דו"ח תנועות מכירה ללקוח                       a:text-is("דו\"ח תנועות מכירה ללקוח")
+    52. a              חשבוניות עסקה - שרותים                        a:text-is("חשבוניות עסקה - שרותים")
+    53. a              קליטת הצעת מחיר                               a:text-is("קליטת הצעת מחיר")
+    54. a              פרוט נוכחות לעובד לפי תקן - מחולל             a:text-is("פרוט נוכחות לעובד לפי תקן - מחולל")
+    55. a              חשבוניות עסקה - שרותים                        a:text-is("חשבוניות עסקה - שרותים")
+    56. a              שאילתא למכירות וריווחיות                      a:text-is("שאילתא למכירות וריווחיות")
+    57. a              עובדים                                        a:text-is("עובדים")
+    58. a              SETUP                                         a:text-is("SETUP")
+    59. a              מחירונים                                      a:text-is("מחירונים")
+    60. a              גיול חובות                                    a:text-is("גיול חובות")
+    61. a              חשבונות                                       a:text-is("חשבונות")
+    62. a              תעודות משלוח                                  a:text-is("תעודות משלוח")
+    63. a              הזמנות ספקים                                  a:text-is("הזמנות ספקים")
+    64. a              חשבוניות ספקים (מלאי)                         a:text-is("חשבוניות ספקים (מלאי)")
+    65. a              ספקים                                         a:text-is("ספקים")
+    66. a              ניהול קבוצות                                  a:text-is("ניהול קבוצות")
+    67. a              ספירות מלאי                                   a:text-is("ספירות מלאי")
+    68. a              תעודות כניסה                                  a:text-is("תעודות כניסה")
+    69. a              קבלות                                         a:text-is("קבלות")
+    70. a              מטריצת מחסנים                                 a:text-is("מטריצת מחסנים")
+    71. a              ייצוא פריטים מורחב                            a:text-is("ייצוא פריטים מורחב")
+    72. a              ניהול שונות 3                                 a:text-is("ניהול שונות 3")
+    73. a              גיול חובות                                    a:text-is("גיול חובות")
+    74. a              תקבולים לקופה לפי דוח Z                       a:text-is("תקבולים לקופה לפי דוח Z")
+    75. a              כרטיס לקוח                                    a:text-is("כרטיס לקוח")
+    76. a              ניתוח פיתקיות                                 a:text-is("ניתוח פיתקיות")
+    77. a              מסרונים                                       a:text-is("מסרונים")
+   TABLE Buttons_Bar 24x1: 
+
+── frame "FrameAtraa"  https://www.comax.co.il/Max2000/Atraa.asp?FullGraf=5
+     1. img            (no label)                                    #DoHelp
+     2. img            (no label)                                    #DoExit
+
+── frame "FrameCompany"  https://www.comax.co.il/Max2000/Company_G.asp?swVisit=0&SwSQL=113&FullGraf=5&UserCounter=2&Odbc=Max2000_4396&OdbcUserName=&OdbcPassword=&Sw_CHROME=1&UsrSafa=0
+     1. img            (no label)                                    #DoHelp
+     2. img            (no label)                                    #DoExit
+     3. td             אין עבודה עם סניפים                           td:text-is("אין עבודה עם סניפים")
+     4. input:text     1                                             getByLabel("1")  = "דרור ספורט  arena                               "
+     5. input:text     (no label)                                    #Snif
+     6. input:text     2026                                          getByLabel("2026")  = "2026"
+     7. img            ביטול                                         img:text-is("ביטול")
+     8. img            אישור                                         img:text-is("אישור")
+     9. button         (no label)                                    #CcomboButCompany
+    10. button         (no label)                                    #CcomboButYear
+    11. button         (no label)                                    #CcomboButSnif
+   TABLE tbl 3x2:  | :חברה
+
+── frame "FrameActivXCalender"  https://www.comax.co.il/Max2000/ActivXCalender_G.asp?FullGraf=5
+     1. img            (no label)                                    #DoHelp
+     2. img            (no label)                                    #DoExit
+     3. td             חג ומועד                                      td:text-is("חג ומועד")
+     4. td             מחר                                           td:text-is("מחר")
+     5. td             בעוד יומיים                                   td:text-is("בעוד יומיים")
+     6. td             שבוע הבא                                      td:text-is("שבוע הבא")
+     7. td             חודש הבא                                      td:text-is("חודש הבא")
+     8. td             שנה הבאה                                      td:text-is("שנה הבאה")
+     9. td             היום                                          td:text-is("היום")
+    10. td             אתמול                                         td:text-is("אתמול")
+    11. td             שלשום                                         td:text-is("שלשום")
+    12. td             שבוע שעבר                                     td:text-is("שבוע שעבר")
+    13. td             חודש קודם                                     td:text-is("חודש קודם")
+    14. td             שנה שעברה                                     td:text-is("שנה שעברה")
+    15. span           הצג חודשיים                                   span:text-is("הצג חודשיים")
+    16. img            חודש קודם                                     img:text-is("חודש קודם")
+    17. select         ינואר פברואר מרץ אפריל מאי יוני יולי אוגוסט ס getByLabel("ינואר פברואר מרץ אפריל מאי יוני יולי אוגוסט ספטמבר אוקטובר נובמבר דצמבר")  = "9"  [12 options]
+    18. select         2050 2049 2048 2047 2046 2045 2044 2043 2042  getByLabel("2050 2049 2048 2047 2046 2045 2044 2043 2042 2041 2040 2039 2038 2037 2036 2035 2034 2033 2032 2031 2030 2029 2028 2027 ")  = "2026"  [40 options]
+    19. img            חודש הבא                                      img:text-is("חודש הבא")
+    20. td             4                                             td:text-is("4")
+    21. font           4                                             font:text-is("4")
+    22. td             5                                             td:text-is("5")
+    23. font           5                                             font:text-is("5")
+    24. td             4                                             td:text-is("4")
+    25. font           4                                             font:text-is("4")
+    26. td             3                                             td:text-is("3")
+    27. font           3                                             font:text-is("3")
+    28. td             2                                             td:text-is("2")
+    29. font           2                                             font:text-is("2")
+    30. td             1                                             td:text-is("1")
+    31. td             (no label)                                    #calCell1
+    32. td             11                                            td:text-is("11")
+    33. font           11                                            font:text-is("11")
+    34. td             12                                            td:text-is("12")
+    35. font           12                                            font:text-is("12")
+    36. td             11                                            td:text-is("11")
+    37. font           11                                            font:text-is("11")
+    38. td             10                                            td:text-is("10")
+    39. font           10                                            font:text-is("10")
+    40. td             9                                             td:text-is("9")
+    41. font           9                                             font:text-is("9")
+    42. td             8                                             td:text-is("8")
+    43. font           8                                             font:text-is("8")
+    44. td             7                                             td:text-is("7")
+    45. font           7                                             font:text-is("7")
+    46. td             18                                            td:text-is("18")
+    47. font           18                                            font:text-is("18")
+    48. td             19                                            td:text-is("19")
+    49. font           19                                            font:text-is("19")
+    50. td             18                                            td:text-is("18")
+    51. font           18                                            font:text-is("18")
+    52. td             17                                            td:text-is("17")
+    53. font           17                                            font:text-is("17")
+    54. td             16                                            td:text-is("16")
+    55. font           16                                            font:text-is("16")
+    56. td             15                                            td:text-is("15")
+    57. font           15                                            font:text-is("15")
+    58. td             14                                            td:text-is("14")
+    59. font           14                                            font:text-is("14")
+    60. td             25                                            td:text-is("25")
+    61. font           25                                            font:text-is("25")
+    62. td             26                                            td:text-is("26")
+    63. font           26                                            font:text-is("26")
+    64. td             25                                            td:text-is("25")
+    65. font           25                                            font:text-is("25")
+    66. td             24                                            td:text-is("24")
+    67. font           24                                            font:text-is("24")
+    68. td             23                                            td:text-is("23")
+    69. font           23                                            font:text-is("23")
+    70. td             22                                            td:text-is("22")
+    71. font           22                                            font:text-is("22")
+    72. td             21                                            td:text-is("21")
+    73. font           21                                            font:text-is("21")
+    74. td             (no label)                                    #calCell1
+    75. td             (no label)                                    #calCell1
+    76. td             30                                            td:text-is("30")
+    77. td             29                                            td:text-is("29")
+    78. font           29                                            font:text-is("29")
+    79. td             30                                            td:text-is("30")
+    80. font           30                                            font:text-is("30")
+    81. td             29                                            td:text-is("29")
+    82. font           29                                            font:text-is("29")
+    83. td             28                                            td:text-is("28")
+    84. font           28                                            font:text-is("28")
+    85. td             (no label)                                    #calCell1
+    86. td             (no label)                                    #calCell1
+    87. td             (no label)                                    #calCell1
+    88. td             (no label)                                    #calCell1
+    89. td             (no label)                                    #calCell1
+    90. td             (no label)                                    #calCell1
+    91. td             (no label)                                    #calCell1
+    92. td             2                                             td:text-is("2")
+    93. font           2                                             font:text-is("2")
+    94. td             3                                             td:text-is("3")
+    95. font           3                                             font:text-is("3")
+    96. td             2                                             td:text-is("2")
+    97. font           2                                             font:text-is("2")
+    98. td             1                                             td:text-is("1")
+    99. td             (no label)                                    #calCell2
+   100. td             (no label)                                    #calCell2
+   101. td             (no label)                                    #calCell2
+   102. td             9                                             td:text-is("9")
+   103. font           9                                             font:text-is("9")
+   104. td             10                                            td:text-is("10")
+   105. font           10                                            font:text-is("10")
+   106. td             9                                             td:text-is("9")
+   107. font           9                                             font:text-is("9")
+   108. td             8                                             td:text-is("8")
+   109. font           8                                             font:text-is("8")
+   110. td             7                                             td:text-is("7")
+   111. font           7                                             font:text-is("7")
+   112. td             6                                             td:text-is("6")
+   113. font           6                                             font:text-is("6")
+   114. td             5                                             td:text-is("5")
+   115. font           5                                             font:text-is("5")
+   116. td             16                                            td:text-is("16")
+   117. font           16                                            font:text-is("16")
+   118. td             17                                            td:text-is("17")
+   119. font           17                                            font:text-is("17")
+   120. td             16                                            td:text-is("16")
+   121. font           16                                            font:text-is("16")
+   122. td             15                                            td:text-is("15")
+   123. font           15                                            font:text-is("15")
+   124. td             14                                            td:text-is("14")
+   125. font           14                                            font:text-is("14")
+   126. td             13                                            td:text-is("13")
+   127. font           13                                            font:text-is("13")
+   128. td             12                                            td:text-is("12")
+   129. font           12                                            font:text-is("12")
+   130. td             23                                            td:text-is("23")
+   131. font           23                                            font:text-is("23")
+   132. td             24                                            td:text-is("24")
+   133. font           24                                            font:text-is("24")
+   134. td             23                                            td:text-is("23")
+   135. font           23                                            font:text-is("23")
+   136. td             22                                            td:text-is("22")
+   137. font           22                                            font:text-is("22")
+   138. td             21                                            td:text-is("21")
+   139. font           21                                            font:text-is("21")
+   140. td             20                                            td:text-is("20")
+   141. font           20                                            font:text-is("20")
+   142. td             19                                            td:text-is("19")
+   143. font           19                                            font:text-is("19")
+   144. td             30                                            td:text-is("30")
+   145. font           30                                            font:text-is("30")
+   146. td             31                                            td:text-is("31")
+   147. font           31                                            font:text-is("31")
+   148. td             30                                            td:text-is("30")
+   149. font           30                                            font:text-is("30")
+   150. td             29                                            td:text-is("29")
+   151. font           29                                            font:text-is("29")
+   152. td             28                                            td:text-is("28")
+   153. font           28                                            font:text-is("28")
+   154. td             27                                            td:text-is("27")
+   155. font           27                                            font:text-is("27")
+   156. td             26                                            td:text-is("26")
+   157. font           26                                            font:text-is("26")
+   158. td             (no label)                                    #calCell2
+   159. td             (no label)                                    #calCell2
+   160. td             (no label)                                    #calCell2
+   161. td             (no label)                                    #calCell2
+   162. td             (no label)                                    #calCell2
+   163. td             (no label)                                    #calCell2
+   164. td             (no label)                                    #calCell2
+   TABLE  6x1: חג ומועד
+   TABLE  7x1: היום
+   TABLE  2x1: ינואר פברואר מרץ אפריל מאי יוני יולי אוגוסט ספטמבר אוקטובר נובמבר דצמבר 2050 2049 2048 2047 2046 2045 2044 2043 2042 204
+   TABLE  7x7: ש | ו | ה | ד | ג | ב | א
+   TABLE  7x7: ש | ו | ה | ד | ג | ב | א
+
+── frame "FrameCalenderMonth"  https://www.comax.co.il/Max2000/CalenderMonth.asp?FullGraf=5
+     1. img            (no label)                                    #DoExit
+     2. button         החודש                                         getByRole('button', { name: "החודש" })
+     3. select         1901 1902 1903 1904 1905 1906 1907 1908 1909  getByLabel("1901 1902 1903 1904 1905 1906 1907 1908 1909 1910 1911 1912 1913 1914 1915 1916 1917 1918 1919 1920 1921 1922 1923 1924 ")  = "1901"  [40 options]
+     4. button         ינואר                                         getByRole('button', { name: "ינואר" })
+     5. button         פברואר                                        getByRole('button', { name: "פברואר" })
+     6. button         מרץ                                           getByRole('button', { name: "מרץ" })
+     7. button         אפריל                                         getByRole('button', { name: "אפריל" })
+     8. button         מאי                                           getByRole('button', { name: "מאי" })
+     9. button         יוני                                          getByRole('button', { name: "יוני" })
+    10. button         יולי                                          getByRole('button', { name: "יולי" })
+    11. button         אוגוסט                                        getByRole('button', { name: "אוגוסט" })
+    12. button         ספטמבר                                        getByRole('button', { name: "ספטמבר" })
+    13. button         אוקטובר                                       getByRole('button', { name: "אוקטובר" })
+    14. button         נובמבר                                        getByRole('button', { name: "נובמבר" })
+    15. button         דצמבר                                         getByRole('button', { name: "דצמבר" })
+   TABLE  2x1: החודש 1901 1902 1903 1904 1905 1906 1907 1908 1909 1910 1911 1912 1913 1914 1915 1916 1917 1918 1919 1920 1921 1922 1923
+
+── frame "FramePrintSend"  https://www.comax.co.il/Max2000/System/Spool/PrintSend_New_G.asp?FullGraf=5&Host=https://www.comax.co.il/&SwEnter=1
+     1. img            (no label)                                    #DoExit
+     2. input:checkbox :דף מקדים                                     getByLabel(":דף מקדים")  = "on"
+     3. select         :מסגרות                                       getByLabel(":מסגרות")  = "0"  [3 options]
+     4. input:text     :שעה                                          getByLabel(":שעה")
+     5. button         לוח שנה                                       getByRole('button', { name: "לוח שנה" })
+     6. input:text     :שעה                                          getByLabel(":שעה")
+     7. img            ביטול                                         img:text-is("ביטול")
+     8. img            אישור                                         img:text-is("אישור")
+   TABLE  3x2:  | :דף מקדים
+
+── frame "f0"  https://www.comax.co.il/Max2000_NET_2022/Erp/Prt/PrtV.aspx?&SwVO=0&MCGLOBAL=2345&SwPG=0&swVisit=0&swEngl=&SwSQL=113&UserBooker=0&Prt_Company=1&SaveLine=1&CurrCompanyNoMaam=0&SwEnter=1&FullGraf=5&FrameName=%27FramePrtV%27&UserAdmin=1&CurrSnif=0&CurrCompany=1&CurrYear=2026&ZorbaLk=4396&ZorbaApp=48&UserCounter=2&Odbc=Max2000_4396&SSID_p=102530233&LogC_p=187554829&Host=https%3A//www.comax.co.il/&LCforPC=1&SwWC_test=0%2C%200&Sw_CHROME=1&swMLangJson=0&UsrSafa=0&Safa_LTR=0&SwUse_UI=0&NOWW=3/9/2026%2018%3A21%3A30
+     1. td             שיוכים                                        td:text-is("שיוכים")
+     2. td             כללי                                          td:text-is("כללי")
+     3. td             שיוכים                                        td:text-is("שיוכים")
+     4. button         הוספה (Alt+v)                                 getByRole('button', { name: "הוספה (Alt+v)" })
+     5. button         עדכון (Alt+g)                                 getByRole('button', { name: "עדכון (Alt+g)" })
+     6. button         העתקה (Alt+,)                                 getByRole('button', { name: "העתקה (Alt+,)" })
+     7. button         הערות (Alt+/)                                 getByRole('button', { name: "הערות (Alt+/)" })
+     8. button         תמונה (Alt+p)                                 getByRole('button', { name: "תמונה (Alt+p)" })
+     9. button         תימחור                                        getByRole('button', { name: "תימחור" })
+    10. button         פרוט (Alt+פ)                                  getByRole('button', { name: "פרוט (Alt+פ)" })
+    11. button         יתרות במחסנים (Alt+r)                         getByRole('button', { name: "יתרות במחסנים (Alt+r)" })
+    12. button         שאילתא למכירות + מלאי                         getByRole('button', { name: "שאילתא למכירות + מלאי" })
+    13. button         תגמולי מוכרנים                                getByRole('button', { name: "תגמולי מוכרנים" })
+    14. button         היסטוריית עדכונים (Alt+v)                     getByRole('button', { name: "היסטוריית עדכונים (Alt+v)" })
+    15. button         היסטוריית עדכונים                             getByRole('button', { name: "היסטוריית עדכונים" })
+    16. select         :קוד                                          getByLabel(":קוד")  = "1"  [3 options]
+    17. span           :קוד                                          span:text-is(":קוד")
+    18. select         :קוד                                          getByLabel(":קוד")  = "0"  [4 options]
+    19. span           :קוד                                          span:text-is(":קוד")
+    20. input:text     :קוד                                          getByLabel(":קוד")  = "3468336696118"
+    21. span           :קוד                                          span:text-is(":קוד")
+    22. input:text     :קוד                                          getByLabel(":קוד")
+    23. span           :קוד                                          span:text-is(":קוד")
+    24. input:text     :קוד                                          getByLabel(":קוד")  = " "
+    25. span           :קוד                                          span:text-is(":קוד")
+    26. input:text     :קוד                                          getByLabel(":קוד")
+    27. td             :קוד                                          td:text-is(":קוד")
+    28. img            חיתוכים                                       img:text-is("חיתוכים")
+    29. img            חיתוכים                                       img:text-is("חיתוכים")
+    30. order:o        דגם                                           order:o:text-is("דגם")
+    31. order:o        ק. משנה                                       order:o:text-is("ק. משנה")
+    32. order:o        קבוצה                                         order:o:text-is("קבוצה")
+    33. order:o        מיון לפי                                      order:o:text-is("מיון לפי")
+    34. order:o        מיון לפי                                      order:o:text-is("מיון לפי")
+    35. order:o        מיון לפי                                      order:o:text-is("מיון לפי")
+    36. order:o        מיון לפי                                      order:o:text-is("מיון לפי")
+    37. td             9030                                          td:text-is("9030")
+    38. td             בגדי ים                                       td:text-is("בגדי ים")
+    39. td             בגדי ים שלמים                                 td:text-is("בגדי ים שלמים")
+    40. td             בגדי ים                                       td:text-is("בגדי ים")
+    41. td             נשים                                          td:text-is("נשים")
+    42. td             3468336696118                                 td:text-is("3468336696118")
+    43. td             WOMEN'S TEAM SWIMSUIT WATERPOLO S             td:text-is("WOMEN'S TEAM SWIMSUIT WATERPOLO S")
+    44. td             3468336696118                                 td:text-is("3468336696118")
+    45. td             WOMEN'S TEAM SWIMSUIT WATERPOLO S             td:text-is("WOMEN'S TEAM SWIMSUIT WATERPOLO S")
+    46. td             (no label)                                    td.2
+    47. td             (no label)                                    td.2
+    48. td             (no label)                                    td.2
+    49. td             (no label)                                    td.2
+    50. td             (no label)                                    td.2
+    51. td             (no label)                                    td.2
+    52. td             (no label)                                    td.2
+    53. td             (no label)                                    td.2
+    54. td             (no label)                                    td.2
+    55. td             (no label)                                    td.3
+    56. td             (no label)                                    td.3
+    57. td             (no label)                                    td.3
+    58. td             (no label)                                    td.3
+    59. td             (no label)                                    td.3
+    60. td             (no label)                                    td.3
+    61. td             (no label)                                    td.3
+    62. td             (no label)                                    td.3
+    63. td             (no label)                                    td.3
+    64. td             (no label)                                    td.4
+    65. td             (no label)                                    td.4
+    66. td             (no label)                                    td.4
+    67. td             (no label)                                    td.4
+    68. td             (no label)                                    td.4
+    69. td             (no label)                                    td.4
+    70. td             (no label)                                    td.4
+    71. td             (no label)                                    td.4
+    72. td             (no label)                                    td.4
+    73. td             (no label)                                    td.5
+    74. td             (no label)                                    td.5
+    75. td             (no label)                                    td.5
+    76. td             (no label)                                    td.5
+    77. td             (no label)                                    td.5
+    78. td             (no label)                                    td.5
+    79. td             (no label)                                    td.5
+    80. td             (no label)                                    td.5
+    81. td             (no label)                                    td.5
+    82. td             (no label)                                    td.6
+    83. td             (no label)                                    td.6
+    84. td             (no label)                                    td.6
+    85. td             (no label)                                    td.6
+    86. td             (no label)                                    td.6
+    87. td             (no label)                                    td.6
+    88. td             (no label)                                    td.6
+    89. td             (no label)                                    td.6
+    90. td             (no label)                                    td.6
+    91. td             (no label)                                    td.7
+    92. td             (no label)                                    td.7
+    93. td             (no label)                                    td.7
+    94. td             (no label)                                    td.7
+    95. td             (no label)                                    td.7
+    96. td             (no label)                                    td.7
+    97. td             (no label)                                    td.7
+    98. td             (no label)                                    td.7
+    99. td             (no label)                                    td.7
+   100. td             (no label)                                    td.8
+   101. td             (no label)                                    td.8
+   102. td             (no label)                                    td.8
+   103. td             (no label)                                    td.8
+   104. td             (no label)                                    td.8
+   105. td             (no label)                                    td.8
+   106. td             (no label)                                    td.8
+   107. td             (no label)                                    td.8
+   108. td             (no label)                                    td.8
+   109. td             (no label)                                    td.9
+   110. td             (no label)                                    td.9
+   111. td             (no label)                                    td.9
+   112. td             (no label)                                    td.9
+   113. td             (no label)                                    td.9
+   114. td             (no label)                                    td.9
+   115. td             (no label)                                    td.9
+   116. td             (no label)                                    td.9
+   117. td             (no label)                                    td.9
+   118. td             (no label)                                    td.10
+   119. td             (no label)                                    td.10
+   120. td             (no label)                                    td.10
+   121. td             (no label)                                    td.10
+   122. td             (no label)                                    td.10
+   123. td             (no label)                                    td.10
+   124. td             (no label)                                    td.10
+   125. td             (no label)                                    td.10
+   126. td             (no label)                                    td.10
+   127. img            (no label)                                    #DoExit
+   128. img            (no label)                                    #DoMinMax
+   129. img            (no label)                                    #DoClose
+   130. img            (no label)                                    #DoHelp
+   131. img            (no label)                                    #DoPrint
+   132. img            דף אחרון                                      img:text-is("דף אחרון")
+   133. img            דף הבא                                        img:text-is("דף הבא")
+   134. img            רשומה הבאה                                    img:text-is("רשומה הבאה")
+   135. img            סטטיסטיקה                                     img:text-is("סטטיסטיקה")
+   136. img            רשומה קודמת                                   img:text-is("רשומה קודמת")
+   137. img            דף קודם                                       img:text-is("דף קודם")
+   138. img            דף ראשון                                      img:text-is("דף ראשון")
+   TABLE tbl 11x29: קבוע | .פ | נוסף | דגם | ק. משנה | קבוצה | מחלקה | ברקוד | .ה | מידה | שם | קוד |  |  |  |  |  |  | דגם | ק. משנה
+
+── frame "FrameRunPrograms"  https://www.comax.co.il/Max2000/System/RunPgm/RunPrograms_G.asp?FullGraf=5&SwStoreNext=0&Date=Thu%20Sep%2003%202026%2018:20:35%20GMT+0300%20(%F9%F2%E5%EF%20%E9%F9%F8%E0%EC%20(%F7%E9%F5))&Sw_CHROME=1
+     1. img            (no label)                                    #DoHelp
+     2. img            (no label)                                    #DoExit
+
+── frame "f1"  https://www.comax.co.il/Max2000/Erp/Prt/PrtU.asp?wNm=&wGrp=null&wGrpTt=null&wBk=3468336696118&wSpk=&Dep=null&Counter=9030&Mode=%27UPDATE%27&FromFrame=%27FramePrtV%27&SwPG=0&swVisit=0&swEngl=&SwSQL=113&UserBooker=0&Prt_Company=1&SaveLine=1&CurrCompanyNoMaam=0&SwEnter=1&FullGraf=5&FrameName=%27FramePrtU%27&UserAdmin=1&CurrSnif=0&CurrCompany=1&CurrYear=2026&ZorbaLk=4396&ZorbaApp=48&UserCounter=2&Odbc=Max2000_4396&SSID_p=102530233&LogC_p=187554829&Host=https://www.comax.co.il/&LCforPC=1&SwWC_test=0&SwWC_test=0&Sw_CHROME=1&swMLangJson=0&UsrSafa=0&Safa_LTR=0&SwUse_UI=0&NOWW=3/9/2026%2018:24:32
+     1. img            חישוב סיפרת ביקורת                            img:text-is("חישוב סיפרת ביקורת")
+     2. input:text     :פריט                                         getByLabel(":פריט")  = "3468336696118"
+     3. input:checkbox :פריט                                         getByLabel(":פריט")  = "on"
+     4. span           :פריט                                         span:text-is(":פריט")
+     5. input:text     :פריט                                         getByLabel(":פריט")  = "3468336696118"
+     6. input:text     :שם                                           getByLabel(":שם")  = "AR0053394500038"
+     7. textarea       :שם                                           getByLabel(":שם")  = "WOMEN'S TEAM SWIMSUIT WATERPOLO SOLID RED-WHITE"
+     8. span           :מחלקה                                        span:text-is(":מחלקה")
+     9. td             :נגרר אריזה 201                               td:text-is(":נגרר אריזה 201")
+    10. span           :קבוצה                                        span:text-is(":קבוצה")
+    11. td             20001 :ק. משנה 2001                           td:text-is("20001 :ק. משנה 2001")
+    12. input:text     :המרה                                         getByLabel(":המרה")
+    13. input:text     :המרה                                         getByLabel(":המרה")
+    14. input:text     :המרה                                         getByLabel(":המרה")
+    15. input:text     :ספק ראשי                                     getByLabel(":ספק ראשי")
+    16. td             :ספק ראשי                                     td:text-is(":ספק ראשי")
+    17. span           :איפיונים                                     span:text-is(":איפיונים")
+    18. span           צבע:                                          span:text-is("צבע:")
+    19. span           מידה:                                         span:text-is("מידה:")
+    20. span           חופשי                                         span:text-is("חופשי")
+    21. td             1נוסף:                                        td:text-is("1נוסף:")
+    22. span           נוספים                                        span:text-is("נוספים")
+    23. td             101שונות:                                     td:text-is("101שונות:")
+    24. button         לוח שנה                                       getByRole('button', { name: "לוח שנה" })
+    25. input:text     :יצרן                                         getByLabel(":יצרן")
+    26. td             :יצרן                                         td:text-is(":יצרן")
+    27. td             קבוצת היטל                                    td:text-is("קבוצת היטל")
+    28. input:checkbox (no label)                                    #SwChkTz_ForSell  = "on"
+    29. button         לוח שנה                                       getByRole('button', { name: "לוח שנה" })
+    30. input:text     (no label)                                    #ArchiveDateOut
+    31. input:checkbox (no label)                                    #SwKlali  = "on"
+    32. input:checkbox (no label)                                    #SwDateTokef  = "on"
+    33. input:text     (no label)                                    #ExpirationDays
+    34. input:checkbox (no label)                                    #SwSidra  = "on"
+    35. button         לוח שנה                                       getByRole('button', { name: "לוח שנה" })
+    36. input:text     :חסימת רכש                                    getByLabel(":חסימת רכש")
+    37. button         לוח שנה                                       getByRole('button', { name: "לוח שנה" })
+    38. input:text     :חסימת רכש                                    getByLabel(":חסימת רכש")
+    39. button         לוח שנה                                       getByRole('button', { name: "לוח שנה" })
+    40. input:text     :חסימת רכש                                    getByLabel(":חסימת רכש")
+    41. button         לוח שנה                                       getByRole('button', { name: "לוח שנה" })
+    42. input:text     :חסימת רכש                                    getByLabel(":חסימת רכש")
+    43. input:text     (no label)                                    #MonthsAchraiot
+    44. input:checkbox בדיקת סדרות בפריט אב ראשי ללא שיוך לעץ מוצר   getByLabel("בדיקת סדרות בפריט אב ראשי ללא שיוך לעץ מוצר")  = "on"
+    45. button         לוח שנה                                       getByRole('button', { name: "לוח שנה" })
+    46. input:text     (no label)                                    #DateStop_HzmBuy
+    47. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    48. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    49. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    50. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    51. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    52. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    53. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    54. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    55. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    56. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    57. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    58. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    59. span           שמות נוספים                                   span:text-is("שמות נוספים")
+    60. input:text     (no label)                                    #sMidaKod
+    61. input:text     124                                           getByLabel("124")  = "בגדי ים"
+    62. input:text     36                                            getByLabel("36")  = "בגדי ים שלמים"
+    63. input:text     81                                            getByLabel("81")  = "MGS"
+    64. input:text     (no label)                                    #sMidaAmrInKod
+    65. input:text     (no label)                                    #sMidaAmrInKod_N
+    66. input:text     (no label)                                    #Amara2_N
+    67. input:text     4722                                          getByLabel("4722")  = "בגד ים נשים שכבה כפולה + רוכסן   Water Polo One-piece"
+    68. input:text     283                                           getByLabel("283")  = "450"
+    69. input:text     94                                            getByLabel("94")  = "38"
+    70. input:text     1                                             getByLabel("1")  = "אימונים"
+    71. input:text     2                                             getByLabel("2")  = "בריכה"
+    72. input:text     12                                            getByLabel("12")  = "נשים"
+    73. input:text     (no label)                                    #Izran
+    74. input:text     (no label)                                    #GrpHetel
+    75. input:text     (no label)                                    #PrtCmb
+    76. input:text     (no label)                                    #Prt_AvC
+    77. img            ביטול                                         img:text-is("ביטול")
+    78. img            אישור                                         img:text-is("אישור")
+    79. img            אישור+הבא                                     img:text-is("אישור+הבא")
+    80. button         (Alt+p) תמונה                                 getByRole('button', { name: "(Alt+p) תמונה" })
+    81. img            (no label)                                    #DoExit
+    82. img            (no label)                                    #DoClose
+    83. img            (no label)                                    #DoHelp
+    84. img            (no label)                                    #DoPrint
+    85. button         (no label)                                    #CcomboButGrp
+    86. button         (no label)                                    #CcomboButGrpTt
+    87. button         (no label)                                    #CcomboButsMidaAmrInKod
+    88. button         (no label)                                    #CcomboButsMidaAmrInKod_N
+    89. button         (no label)                                    #CcomboButAmara2_N
+    90. button         (no label)                                    #CcomboButsMidaKod
+    91. button         (no label)                                    #CcomboButDep
+    92. button         (no label)                                    #CcomboButPrt_Degem
+    93. button         (no label)                                    #CcomboButPrt_Godel
+    94. button         (no label)                                    #CcomboButPrt_Gimor
+    95. button         (no label)                                    #CcomboButPrt_Shonot
+    96. button         (no label)                                    #CcomboButPrt_Nosaf
+    97. button         (no label)                                    #CcomboButPrt_AvC
+    98. button         (no label)                                    #CcomboButGrpHetel
+    99. button         (no label)                                    #CcomboButPrtCmb
+   100. button         (no label)                                    #CcomboButIzran
+   101. button         (no label)                                    #CcomboButSpk
+   TABLE tbl 19x2: :ברקוד :שקיל :מידה | :פריט
+
+── frame "T"  https://www.comax.co.il/Max2000/Code_Table_New_G.htm?CSID=
+     1. img            דף אחרון                                      img:text-is("דף אחרון")
+     2. img            דף הבא                                        img:text-is("דף הבא")
+     3. img            רשומה הבאה                                    img:text-is("רשומה הבאה")
+     4. img            סטטיסטיקה                                     img:text-is("סטטיסטיקה")
+     5. img            רשומה קודמת                                   img:text-is("רשומה קודמת")
+     6. img            דף קודם                                       img:text-is("דף קודם")
+     7. img            דף ראשון                                      img:text-is("דף ראשון")
+
+── frame "Tranzila"  https://www.comax.co.il/Max2000/Server/Tranzila/send_Tranzila.asp
+     1. input:text     (no label)                                    input[name="supplier"]
+     2. input:text     (no label)                                    input[name="sum"]
+     3. input:text     (no label)                                    input[name="ccno"]
+     4. input:text     (no label)                                    input[name="track2"]
+     5. input:text     (no label)                                    input[name="expmonth"]
+     6. input:text     (no label)                                    input[name="expyear"]
+     7. input:text     (no label)                                    input[name="cred_type"]
+     8. input:text     (no label)                                    input[name="currency"]  = "1"
+     9. input:submit   submit                                        getByLabel("submit")  = "submit"
+    10. input:text     (no label)                                    input[name="fpay"]
+    11. input:text     (no label)                                    input[name="spay"]
+    12. input:text     (no label)                                    input[name="npay"]
+    13. input:text     (no label)                                    input[name="task"]
+    14. input:text     (no label)                                    input[name="tranmode"]
+
+── frame "Hov"  https://www.comax.co.il/Max2000/Server/Hov_MsgScreen.asp
+     1. img            (no label)                                    #DoExit
+     2. b              המשך עבודה                                    b:text-is("המשך עבודה")
+   TABLE  3x1: :מתאריך לכבוד א.ג.נ הנידון: הודעת חוב שלום רב, לפי רישומינו, יש לחברתכם חוב פתוח שטרם שולם. אבקשכם להסדיר את התשלום במיי

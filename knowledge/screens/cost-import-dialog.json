@@ -1,0 +1,247 @@
+{
+  "capturedAt": "2026-09-07T18:48:43.176Z",
+  "dialogUrl": "https://www.comax.co.il/Max2000/Erp/Mhr/Imp_MhrTogether/Imp_MhrTogether_Exl.asp?FromFrame=%27FrameMhrV%27&SwPG=0&swVisit=0&swEngl=&SwSQL=113&UserBooker=0&Prt_Company=1&SaveLine=1&CurrCompanyNoMaam=0&SwEnter=1&FullGraf=5&FrameName=%27FrameImp_MhrTogether_Exl%27&UserAdmin=1&CurrSnif=0&CurrCompany=1&CurrYear=2026&ZorbaLk=4396&ZorbaApp=51&UserCounter=2&Odbc=Max2000_4396&SSID_p=879170337&LogC_p=187722084&Host=https://www.comax.co.il/&LCforPC=1&SwWC_test=0&SwWC_test=0&Sw_CHROME=1&swMLangJson=0&UsrSafa=0&Safa_LTR=0&SwUse_UI=0&NOWW=7/9/2026%2021:48:40",
+  "text": "CSV יבוא מחירונים מקובץ\n\t:מחירון\n\t:ברקוד\n\t:מחיר\n\t:אחוז הנחה\n\t: 2 אחוז הנחה\n\t:מחיר לכמות\n\t:נכון לתאריך\n\t:אין הנחות נוספות\n\t:קוד מטבע\n  \n  \nרגיל\nמטריצה\n\t:מבנה\n\t:נכון מתאריך\nברקוד\nקוד פריט\nקוד חלופי\n\t:לפי\n\t:עדכון בלבד\n :מחיקת מחירים עתידיים  \t:כולל מחיר 0\n :עדכון ברקע   :שמירת % הנחה  \t:הוצאת פריט מארכיון\n    \nכן\nכן+ חסרי דגם\n\t:תמחור דגם\n(פריטים שלא בקובץ) \t:חסימה למכר\n\t:ב.תמחור בן בעץ מוצר\n \n\"הערה: לסימון העמודה \"אין הנחות נוספות\n.נא לרשום 1 בקובץ              \nCSV מדריך להמרת קובץ\nחובת כותרת לכל עמודה בקובץ\n:שדות ליבוא",
+  "fields": [
+    {
+      "id": "FileValue",
+      "tag": "input",
+      "type": "text",
+      "value": "s",
+      "title": ""
+    },
+    {
+      "id": "SwMhrKod",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": true
+    },
+    {
+      "id": "SwBarCode",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": true
+    },
+    {
+      "id": "SwBarCode_Mat",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": true
+    },
+    {
+      "id": "SwMhrKod_Mat",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": true
+    },
+    {
+      "id": "SwMhr",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": true
+    },
+    {
+      "id": "SwAczDic",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwAczDic2",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwMhrCmt",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwDate",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwNeto",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwMt",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "File",
+      "tag": "input",
+      "type": "file",
+      "value": "",
+      "title": ""
+    },
+    {
+      "id": "CntMhr",
+      "tag": "input",
+      "type": "text",
+      "value": "",
+      "title": ""
+    },
+    {
+      "id": "SwImpType",
+      "tag": "select",
+      "type": "select-one",
+      "value": "1",
+      "title": "",
+      "options": [
+        "1=רגיל",
+        "2=מטריצה"
+      ]
+    },
+    {
+      "id": "CdrFromDate",
+      "tag": "button",
+      "type": "button",
+      "value": "",
+      "title": "לוח שנה"
+    },
+    {
+      "id": "FromDate",
+      "tag": "input",
+      "type": "text",
+      "value": "",
+      "title": ""
+    },
+    {
+      "id": "Sug",
+      "tag": "select",
+      "type": "select-one",
+      "value": "1",
+      "title": "",
+      "options": [
+        "1=ברקוד",
+        "2=קוד פריט",
+        "3=קוד חלופי"
+      ]
+    },
+    {
+      "id": "SwUpExistingPrt",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "פריטים קיימים במחירון",
+      "checked": false
+    },
+    {
+      "id": "swDeleteFuturePrices",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "מחיקת כל המחירים שבתאריך מאוחר יותר מתאריך המבוקש בקובץ היבוא או במסך היבוא",
+      "checked": false
+    },
+    {
+      "id": "swWithMhrZero",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwSpoolMhr_Kesher",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "עדכון מחירונים תלויים יתבצע ברקע לפי תור",
+      "checked": false
+    },
+    {
+      "id": "swDisPrecent",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "שמירת % הנחה שקיים במחיר הפריט במחירון",
+      "checked": false
+    },
+    {
+      "id": "swOutFromArchive",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "TmhrDegem",
+      "tag": "select",
+      "type": "select-one",
+      "value": "1",
+      "title": "",
+      "options": [
+        "1=אחיד לדגם",
+        "2=מחיר נמוך"
+      ]
+    },
+    {
+      "id": "swTmhrDegem",
+      "tag": "select",
+      "type": "select-one",
+      "value": "0",
+      "title": "",
+      "options": [
+        "0=",
+        "1=כן",
+        "2=כן+ חסרי דגם"
+      ]
+    },
+    {
+      "id": "SwStop_Sell",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "SwPricing_tree",
+      "tag": "input",
+      "type": "checkbox",
+      "value": "on",
+      "title": "",
+      "checked": false
+    },
+    {
+      "id": "button1",
+      "tag": "button",
+      "type": "submit",
+      "value": "",
+      "title": ""
+    }
+  ]
+}

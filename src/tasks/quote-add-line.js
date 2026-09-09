@@ -10,8 +10,8 @@
  * price list", since the catalog holds the net price, not the gross.
  */
 import { dismissPopups, fillLookup } from '../navigate.js';
-import { readFileSync } from 'node:fs';
-import { wholesaleFromGross, wholesaleDiscountPct, withVat, WHOLESALE_FACTOR, DEFAULT_VAT_RATE } from '../catalog/pricing.js';
+import { withVat, DEFAULT_VAT_RATE } from '../catalog/pricing.js';
+import { resolveWholesale, assertWholesaleLanded } from '../documents/wholesale.js';
 import { readTotals } from '../document-totals.js';
 
 export const meta = {
@@ -24,7 +24,7 @@ export const meta = {
     items: 'array — [{ code, qty, price?, discount?, remark? }] לכמה שורות ברצף',
     price: 'number, אופציונלי — מחיר ידני',
     discount: 'number, אופציונלי — % הנחה',
-    wholesale: 'boolean — מחיר סיטונאי: נטו חצי מהברוטו. דרך ההזנה נקבעת לפי משטר המע\"מ של המסמך',
+    wholesale: 'boolean, אופציונלי — מחיר סיטונאי: נטו חצי מהברוטו. **ברירת המחדל היא true תחת מחירון שמסומן wholesale ב-knowledge/lists.json** (מחירון קבוצות). להעביר false כדי לבטל. דרך ההזנה נקבעת לפי משטר המע\"מ של המסמך',
     remark: 'string, אופציונלי',
   },
 };
@@ -33,11 +33,6 @@ const num = (v) => {
   const n = Number(String(v ?? '').replace(/[^\d.-]/g, ''));
   return Number.isFinite(n) ? n : null;
 };
-
-/** Price lists whose VAT behaviour we have actually observed - see knowledge/lists.json. */
-function knownPriceLists() {
-  return JSON.parse(readFileSync(new URL('../../knowledge/lists.json', import.meta.url), 'utf8')).priceLists ?? [];
-}
 
 const lineDialogOf = (page) => page.frames().find((f) => /Doc612LinesU\.asp/i.test(f.url()));
 
@@ -156,60 +151,18 @@ async function fillLine(ctx, { grid, item, index, of, commit, last }) {
   // discount. The catalog holds the *net* (289.90 × 0.8275 = 239.89), so
   // halving the catalog price would under-quote by that discount. Reading the
   // gross off the live form stays correct even when the catalog is stale.
-  let price = item.price;
-  let discount = item.discount;
-  const gross = num(auto.price);
-  let wholesalePlan = null;
-  if (item.wholesale) {
-    if (gross == null) throw new Error('לא הצלחתי לקרוא את מחיר הברוטו מקומקס.');
-
-    // Ask the document, do not assume. Writing the halved price into a
-    // VAT-inclusive document has Comax read 145 as gross — net 122.88 instead
-    // of 145.00, ~15% under-charged, on a document that looks fine afterwards.
-    const totals = await readTotals(grid);
-
-    // The **price list** is what decides the regime — that is the mechanism, not
-    // an inference from it. Reading it off the footer works on an empty document
-    // too, where there are no totals to compare against yet. `vatRegime()` is
-    // the reader's tool, for documents whose lines already exist.
-    //
-    // Comax's own label wins: the footer says "מכירה ראשי (כולל מע"מ)", which is
-    // the price list declaring itself and stays right for one nobody recorded.
-    // knowledge/lists.json is the fallback for a price list that says nothing.
-    const known = knownPriceLists().find((pl) => pl.name === totals.priceList);
-    const declared = totals.vatIncludedLabel ?? known?.vatIncluded ?? null;
-    const mode = declared === true ? 'included' : declared === false ? 'excluded' : 'unknown';
-    // An empty document states no rate — there is nothing to derive it from
-    // until a line exists. The default is used, said out loud, and checked
-    // against the document's real rate once the line is in (see `run`).
-    const rate = totals.vatRate ?? DEFAULT_VAT_RATE * 100;
-    if (totals.vatRate == null) {
-      logger.step('warn', `המסמך עוד לא מצהיר על שיעור מע"מ — מניח ${rate}% ומאמת מול הסיכום אחרי השמירה`);
-    }
-
-    if (mode === 'unknown') {
-      throw new Error(
-        `לא הצלחתי לקבוע אם המחירון "${totals.priceList ?? '?'}" כולל מע"מ.\n` +
-        'מחיר סיטונאי מוזן אחרת בכל אחד מהמקרים, והפער הוא כ-18% על מסמך אמיתי — ' +
-        'אז אני עוצר במקום לנחש.\n' +
-        'תזין מחיר או הנחה מפורשים, או תוסיף vatIncluded למחירון ב-knowledge/lists.json ' +
-        'אחרי שראית מסמך אמיתי שמוכיח את זה.',
-      );
-    }
-
-    const target = wholesaleFromGross(gross);
-    if (mode === 'included') {
-      // Leave the price Comax offered; the discount does the work. This is how
-      // Dror does it by hand, and it is what invoice 1014444 shows.
-      discount = wholesaleDiscountPct(gross, rate);
-      logger.step('wholesale', `${totals.priceList ?? 'מחירון'} כולל מע"מ (${rate}%) — משאיר מחיר ${gross}, הנחה ${discount}% ⇒ נטו ${target}`);
-    } else {
-      price = target;
-      discount = 0; // otherwise Comax applies its discount to the halved price
-      logger.step('wholesale', `מחירון לפני מע"מ — ברוטו ${gross} × ${WHOLESALE_FACTOR} → ${price} (הנחה מאופסת)`);
-    }
-    wholesalePlan = { mode, rate, gross, target, priceList: totals.priceList };
-  }
+  //
+  // The rule itself moved to `src/documents/wholesale.js` (06/09/2026) so the
+  // invoice could use it too — it had no wholesale pricing at all, and a tax
+  // invoice on מחירון קבוצות was taking Comax's own offer. Two copies of this
+  // would have drifted, and the one that drifts is always the one on the
+  // document that moves stock.
+  const { price, discount, plan: wholesalePlan } = await resolveWholesale({
+    logger,
+    grid,
+    gross: num(auto.price),
+    item,
+  });
 
   if (price != null) {
     await human.type('#Mhr', String(price), { scope: frame, label: 'מחיר' });
@@ -221,6 +174,9 @@ async function fillLine(ctx, { grid, item, index, of, commit, last }) {
     await human.press('Tab');
     await human.think('discount applied');
   }
+  // Paste rather than type: this is long free text, and typing it costs
+  // ~121ms per character (measured 05/09/2026). Dates, quantities and
+  // prices deliberately keep typing — see the note in human.type().
   if (item.remark) await human.type('#Remark', item.remark, { scope: frame, label: 'הערה' });
 
   const line = {
@@ -229,7 +185,7 @@ async function fillLine(ctx, { grid, item, index, of, commit, last }) {
     price: await frame.locator('#Mhr').inputValue().catch(() => null),
     discount: await frame.locator('#AczDis').inputValue().catch(() => null),
     amount: await frame.locator('#Scm').inputValue().catch(() => null),
-    gross: item.wholesale ? auto.price : null,
+    gross: wholesalePlan ? auto.price : null,
     wholesale: wholesalePlan,
   };
 
@@ -237,20 +193,7 @@ async function fillLine(ctx, { grid, item, index, of, commit, last }) {
   // still land wrong — Comax recalculates on Tab and can reinstate a standard
   // discount — and a wholesale line that is 18% off looks entirely normal in
   // the document afterwards. So the arithmetic is confirmed, not assumed.
-  if (wholesalePlan) {
-    const p = num(line.price);
-    const d = num(line.discount) ?? 0;
-    if (p == null) throw new Error('לא הצלחתי לקרוא בחזרה את המחיר מהשורה.');
-    const charged = p * (1 - d / 100);
-    const net = wholesalePlan.mode === 'included' ? charged / (1 + wholesalePlan.rate / 100) : charged;
-    if (Math.abs(net - wholesalePlan.target) > 0.05) {
-      throw new Error(
-        `מחיר סיטונאי לא נחת נכון: יצא נטו ${net.toFixed(2)} במקום ${wholesalePlan.target}.\n` +
-        `בשדות: מחיר ${line.price} · הנחה ${line.discount} · משטר ${wholesalePlan.mode} · מע"מ ${wholesalePlan.rate}%`,
-      );
-    }
-    logger.step('wholesale', `אומת: נטו ${net.toFixed(2)} = היעד ${wholesalePlan.target}`);
-  }
+  assertWholesaleLanded(wholesalePlan, line, logger);
 
   if (!commit) return line;
 

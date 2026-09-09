@@ -84,7 +84,51 @@ const SUPPRESS_PRINT = () => {
   const noop = () => { try { console.info('[agent] window.print suppressed'); } catch { /* ignore */ } };
   try { Object.defineProperty(window, 'print', { value: noop, writable: true, configurable: true }); }
   catch { window.print = noop; }
+  // Lets a later attach see that this window is already covered. See `harden`.
+  try { window.__comaxHardened = true; } catch { /* ignore */ }
 };
+
+/**
+ * The protections that must hold on every session, however it was reached.
+ *
+ * These used to live only in `openBrowser`, which was safe exactly as long as
+ * `npm run open` was the thing that launched the window. It no longer is: the
+ * window is now started detached so it can outlive the process that asked for
+ * it, and every other tool arrives through `attachBrowser`. With nobody holding
+ * the launching context, nothing would register `SUPPRESS_PRINT` — and a flow
+ * that reaches Comax's print step would park on `chrome://print`, which cannot
+ * be screenshotted, clicked or closed. That is survivable with someone sitting
+ * at the machine and fatal when the request came from a phone.
+ *
+ * `addInitScript` only affects documents loaded from here on, so a window
+ * already sitting inside the Max2000 frameset would keep its real
+ * `window.print`. Hence the second pass over the frames that are already up.
+ */
+async function harden(context, page, cfg) {
+  if (cfg.suppressPrintDialog === false) {
+    await context.addInitScript(HIDE_AUTOMATION);
+    await allowDownloads(context, resolve(ROOT, 'runs/downloads'));
+    return;
+  }
+
+  // The window is now detached and long-lived, so the same Chrome is attached to
+  // many times over its life. `addInitScript` registrations are not removed when
+  // a Playwright client disconnects, so registering blindly on every attach would
+  // pile up copies inside that browser. If the current document already carries
+  // the marker, a previous attach registered them and the registration is still
+  // live — only the already-loaded frames need the immediate pass.
+  const registered = await page.evaluate(() => window.__comaxHardened === true).catch(() => false);
+  if (!registered) {
+    await context.addInitScript(HIDE_AUTOMATION);
+    await context.addInitScript(SUPPRESS_PRINT);
+  }
+
+  // `addInitScript` only affects documents loaded from here on, so a window
+  // already sitting inside the Max2000 frameset would keep its real
+  // `window.print` without this.
+  await Promise.all(page.frames().map((f) => f.evaluate(SUPPRESS_PRINT).catch(() => {})));
+  await allowDownloads(context, resolve(ROOT, 'runs/downloads'));
+}
 
 /**
  * Launches the real, installed Google Chrome (not bundled Chromium, never
@@ -137,14 +181,11 @@ export async function openBrowser({ logger = null } = {}) {
     ignoreDefaultArgs: ['--enable-automation'],
   });
 
-  await context.addInitScript(HIDE_AUTOMATION);
-  if (cfg.suppressPrintDialog !== false) await context.addInitScript(SUPPRESS_PRINT);
-  await allowDownloads(context, resolve(ROOT, 'runs/downloads'));
-
   const page = context.pages()[0] ?? (await context.newPage());
   page.setDefaultTimeout(cfg.pace.actionTimeoutMs);
   page.setDefaultNavigationTimeout(cfg.pace.navTimeoutMs);
   handleDialogs(page, logger);
+  await harden(context, page, cfg);
 
   return { context, page, human: new Human(page, cfg.pace, logger), cfg, profileDir, owned: true };
 }
@@ -174,6 +215,9 @@ export async function attachBrowser({ logger = null } = {}) {
   page.setDefaultTimeout(cfg.pace.actionTimeoutMs);
   page.setDefaultNavigationTimeout(cfg.pace.navTimeoutMs);
   handleDialogs(page, logger);
+  // The window we are attaching to may have been launched detached, with no
+  // Playwright process to have installed these. See `harden`.
+  await harden(context, page, cfg);
 
   return { browser, context, page, human: new Human(page, cfg.pace, logger), cfg, owned: false };
 }

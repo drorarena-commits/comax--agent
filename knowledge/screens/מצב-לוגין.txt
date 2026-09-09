@@ -1,0 +1,14 @@
+URL:   https://www.comax.co.il/COMAX_WEB/LogInComax/LogInWeb.aspx
+Title: COMAX
+Frames: 5
+
+── MAIN  https://www.comax.co.il/COMAX_WEB/LogInComax/LogInWeb.aspx
+   headings: לתמיכה מכל טלפון 5885* | חשוב לדעת | מדיניות סיסמאות
+     1. input:text     (no label)                                    input[name="Lk"]  = "דרורספו"
+     2. i              (no label)                                    #User_toggle
+     3. input:password (no label)                                    input[name="User"]
+     4. i              (no label)                                    #Password_toggle
+     5. input:password (no label)                                    input[name="Password"]
+     6. input:button   כניסה                                         getByLabel("כניסה")  = "כניסה"
+     7. div            שכחתי סיסמה                                   div:text-is("שכחתי סיסמה")
+     8. a              לא מתחבר?                                     a:text-is("לא מתחבר?")

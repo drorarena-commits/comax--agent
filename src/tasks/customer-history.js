@@ -20,12 +20,10 @@
  * is aimed at is a `U.asp` header. The way out of a document is `#DoExit` on the
  * lines screen followed by `#Cancel` on the header, never `#OK`.
  */
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { ROOT } from '../config.js';
 import { ensureLoggedIn } from '../session.js';
 import { openProgram, closePrograms, dismissPopups } from '../navigate.js';
 import { readTotals, vatRegime } from '../document-totals.js';
+import { itemIndex, catalogWarning, catalogState } from '../catalog/enrich.js';
 
 export const meta = {
   name: 'customer-history',
@@ -44,10 +42,17 @@ export const meta = {
  * hint for `openProgram`; the real prefix is read back off the frame URL, so a
  * program that moves does not silently open the wrong screen.
  */
+/**
+ * `program` הוא נתיב הנפילה אחורה כשהאייקון לא בשולחן העבודה.
+ *
+ * קומקס מסדר מחדש את השולחן בלי להודיע. נמדד 04/09/2026: מתוך 51 אייקונים,
+ * `a157` פשוט **לא קיים** יותר — בזמן ש-`a132`, `a164` ו-`a224` כן. בלי הנתיב
+ * הזה `openProgram` היה מחכה 30 שניות לאייקון שלא יגיע ואז נופל.
+ */
 const PROGRAMS = [
-  { id: 'a157', label: 'חשבונית מס', doc: 'Doc650' },
-  { id: 'a132', label: 'חשבונית מס/קבלה', doc: 'Doc652' },
-  { id: 'a164', label: 'הצעת מחיר', doc: 'Doc612' },
+  { id: 'a157', label: 'חשבונית מס', doc: 'Doc650', program: 'Erp/Mehirot/Doc650/Inv_Mlay/Doc650V.asp' },
+  { id: 'a132', label: 'חשבונית מס/קבלה', doc: 'Doc652', program: 'Erp/Mehirot/Doc650/InvKab_Mlay/Doc652V.asp' },
+  { id: 'a164', label: 'הצעת מחיר', doc: 'Doc612', program: 'Erp/Mehirot/Doc612/AzaaMhr/Doc612V.asp' },
 ];
 
 /** Header labels that carry the document number, across the three programs. */
@@ -57,20 +62,8 @@ const clean = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
 
 /* ---------------------------------------------------------------- catalog -- */
 
-let catalog = null;
-/** barcode/code → catalog record, for showing מק"ט חלופי instead of a code. */
-function itemsByCode() {
-  if (catalog) return catalog;
-  const file = resolve(ROOT, 'data/catalog/items.json');
-  catalog = new Map();
-  if (existsSync(file)) {
-    for (const r of JSON.parse(readFileSync(file, 'utf8')).records) {
-      catalog.set(String(r.code), r);
-      if (r.barcode) catalog.set(String(r.barcode), r);
-    }
-  }
-  return catalog;
-}
+// ההעשרה עברה ל-src/catalog/enrich.js — כלל 5 במקום אחד, משותף עם
+// customer-movements. היה כאן עותק פרטי, והדוח השני לא העשיר בכלל.
 
 /** Does this line match what the caller asked about? Code, alt code, or name. */
 function lineMatches(line, needle) {
@@ -266,7 +259,10 @@ export async function run(ctx) {
     // once failed a run with "iframe intercepts pointer events".
     await closePrograms(ctx).catch(() => {});
 
-    const { frame: list } = await openProgram(ctx, prog.id, { expect: new RegExp(`${prog.doc}V\\.asp`, 'i') });
+    const { frame: list } = await openProgram(ctx, prog.id, {
+      expect: new RegExp(`${prog.doc}V\\.asp`, 'i'),
+      program: prog.program,
+    });
     const prefix = (/\/(Doc\d+)V\.asp/i.exec(list.url()) ?? [])[1];
     if (!prefix) throw new Error(`${prog.label}: לא זיהיתי את קידומת המסמך מתוך ${list.url()}`);
     if (prefix !== prog.doc) logger.step('warn', `${prog.label}: ציפיתי ל-${prog.doc} וקיבלתי ${prefix}`);
@@ -293,7 +289,7 @@ export async function run(ctx) {
 
   /* ---- report ---------------------------------------------------------- */
 
-  const cat = itemsByCode();
+  const cat = itemIndex();
   const num = (s) => Number(String(s ?? '').replace(/,/g, '')) || 0;
 
   /**
@@ -351,6 +347,15 @@ export async function run(ctx) {
   };
 
   console.log(`\n════ היסטוריית רכש — ${input.customer} ════`);
+
+  // כלל 5: פריטים מוצגים לפי מק"ט חלופי, לעולם לא ברקוד. אם הקטלוג לא נטען,
+  // הדוח מפר את הכלל — ואומר את זה בקול, במקום להדפיס ברקודים בשקט.
+  itemIndex();
+  const catWarn = catalogWarning();
+  if (catWarn) {
+    logger.step('warn', `הקטלוג לא נטען — הפריטים מוצגים לפי ברקוד (${catalogState().reason})`);
+    console.log(`\n${catWarn}`);
+  }
   for (const p of found) {
     console.log(`\n── ${p.program} (${p.id})`);
     if (!p.docs.length) { console.log('   אין מסמכים'); continue; }

@@ -11,8 +11,20 @@
 import { attachBrowser } from '../src/browser.js';
 import { RunLogger } from '../src/logger.js';
 import { isLoggedIn, logoff } from '../src/session.js';
+import { acquire, busyMessage } from '../src/lock.js';
 
 const logger = new RunLogger('logoff');
+
+// לוקח את אותה נעילה כמו משימה רגילה. בלי זה, התנתקות ידנית מהמחשב הייתה
+// מושכת את המושב מתחת למשימה שרצה מהאייפון — בדיוק תרחיש "שני מחשבים".
+const lock = await acquire('logoff', { waitMs: 10_000 });
+if (!lock.ok) {
+  console.error(`\n${busyMessage(lock.holder)}\n`);
+  logger.done('failed');
+  process.exit(1);
+}
+process.on('exit', () => lock.release());
+
 const s = await attachBrowser({ logger });
 
 if (!s) {

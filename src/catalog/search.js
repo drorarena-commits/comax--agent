@@ -19,7 +19,15 @@ export function load(name) {
   if (cache.has(name)) return cache.get(name);
   const file = resolve(CATALOG_DIR, `${name}.json`);
   if (!existsSync(file)) {
-    throw new Error(`הקטלוג "${name}" לא נבנה עדיין. תריץ: npm run catalog:build`);
+    throw new Error(
+      [
+        `הקטלוג "${name}" לא קיים ב-${CATALOG_DIR}.`,
+        'data/ לא נשמר ב-git, אז במחשב חדש הוא פשוט חסר.',
+        'הכי מהיר: להעתיק את data/catalog/items.json ממחשב שכבר בנה אותו.',
+        'לחלופין: ייצוא טרי מקומקס ואז  npm run catalog -- build items <קובץ>',
+        '(הבנייה מצפה לייצוא HTML של קומקס, לא ל-CSV שב-content/)',
+      ].join('\n'),
+    );
   }
   const data = JSON.parse(readFileSync(file, 'utf8'));
   cache.set(name, data);

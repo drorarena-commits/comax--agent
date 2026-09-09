@@ -30,6 +30,7 @@ import { resolve } from 'node:path';
 import { ROOT } from '../config.js';
 import { ensureLoggedIn } from '../session.js';
 import { openProgram, closePrograms } from '../navigate.js';
+import { itemLabel, catalogWarning, catalogState } from '../catalog/enrich.js';
 
 export const meta = {
   name: 'customer-movements',
@@ -42,10 +43,19 @@ export const meta = {
     item: 'string, אופציונלי — סינון אחרי הקריאה, לפי ברקוד או חלק משם',
     warehouse: 'string, אופציונלי — סינון מחסן בדוח עצמו',
     raw: 'boolean, אופציונלי — להחזיר גם את השורות הגולמיות בלי צבירה',
+    paste: 'boolean, אופציונלי — ברירת מחדל true. false מחזיר להקלדה תו-תו',
   },
 };
 
 const PROGRAM = 'a224';
+
+/**
+ * a224's own path, so `openProgram` can launch it without walking the desktop.
+ * Read live from the frame URL on 05/09/2026:
+ * `Max2000_NET_2022/Erp/Nituah/MehirotLkTnuaP.aspx`. The desktop icon stays as
+ * the fallback.
+ */
+const PROGRAM_PATH = 'Erp/Nituah/MehirotLkTnuaP.aspx';
 const FILTER_FRAME = /MehirotLkTnuaP/i;
 const RESULT_FRAME = /Rpt_Html_G/i;
 
@@ -183,7 +193,12 @@ export function aggregate(lines) {
     if ((l.qty ?? 0) < 0) e.returns += 1;
     // השם ברשת נחתך; שומרים את הארוך ביותר שראינו.
     if ((l.name ?? '').length > (e.name ?? '').length) e.name = l.name;
-    e.docs.push({ doc: l.doc, date: l.date, qty: l.qty, price: l.price, discount: l.discount, total: l.total, note: l.note });
+    // `price` בדוח הוא **מחיר המחירון**, ו-`total` הוא אחרי הנחה. מה שדרור
+    // צריך לראות הוא מה שהלקוח שילם בפועל — וזה היחס ביניהם, לא העמודה.
+    // כובע ים: 100 × 149 = 14,900 אבל הסכום 9,576.80, כלומר 95.77 ליחידה.
+    const paid = l.qty ? Math.round((l.total / l.qty) * 100) / 100 : null;
+    e.docs.push({ doc: l.doc, date: l.date, qty: l.qty, price: l.price, discount: l.discount, total: l.total, paid, note: l.note });
+    e.total = (e.total ?? 0) + (l.total ?? 0);
     if (l.price != null) e.prices.push(l.price);
   }
 
@@ -191,8 +206,17 @@ export function aggregate(lines) {
     .map((e) => {
       const sorted = [...e.docs].sort((a, b) => sortableDate(a.date).localeCompare(sortableDate(b.date)));
       const last = sorted[sorted.length - 1];
+      // ממוצע משוקלל ולא ממוצע של מחירים: פריט שנקנה 6 יחידות בהנחה אחת
+      // ו-3 באחרת צריך לשקף את מה ששולם, לא את אמצע שתי ההנחות.
+      const paidAvg = e.qty ? Math.round((e.total / e.qty) * 100) / 100 : null;
+      const { label: altCode, enriched } = itemLabel(e.barcode);
       return {
         ...e,
+        altCode,
+        enriched,
+        total: Math.round((e.total ?? 0) * 100) / 100,
+        paidAvg,
+        lastPaid: last?.paid ?? null,
         qty: Math.round(e.qty * 1000) / 1000,
         netZero: Math.abs(e.qty) < 1e-9,
         docs: sorted,
@@ -232,18 +256,50 @@ export async function run({ page, human, logger, input, cfg }) {
   // פתוח מחזיר אותנו אליו במקום להתחיל מחדש.
   await closePrograms({ page, human, logger, cfg }).catch(() => {});
 
-  const { frame } = await openProgram({ page, human, logger, cfg }, PROGRAM, { expect: FILTER_FRAME });
+  const { frame } = await openProgram({ page, human, logger, cfg }, PROGRAM, {
+    expect: FILTER_FRAME,
+    program: PROGRAM_PATH,
+  });
   if (!frame) throw new Error('דו"ח תנועות מכירה ללקוח לא נפתח.');
 
+  // What the form already holds, read before touching it.
+  //
+  // Every range is still written explicitly — rule 3 stands, and a value left
+  // over from a previous run must never join the report in silence. But a
+  // field that already holds exactly what we want does not need retyping, and
+  // each retype costs about 6.6s of human pace (click, clear, type, Tab, and
+  // two 2s gates). Ten of the fourteen fields are usually blanks we are asking
+  // to stay blank.
+  //
+  // This cannot loosen the rule, because the verification gate below reads
+  // every field back and compares it to `wanted` — off the very same
+  // `.value` this check reads. A field skipped here is still proven there.
+  const before = await frame.evaluate((idList) => {
+    const out = {};
+    for (const id of idList) out[id] = document.getElementById(id)?.value ?? null;
+    return out;
+  }, Object.keys(wanted));
+
+  let typed = 0;
+  let kept = 0;
   for (const { ids, label } of RANGES) {
     for (const [i, id] of ids.entries()) {
+      if (clean(before[id]) === clean(wanted[id])) {
+        kept++;
+        continue;
+      }
       await human.type(`#${id}`, wanted[id], {
         scope: frame,
         label: `${label} ${i === 0 ? 'מ-' : 'עד'}`,
+        // Safe here specifically: the verification gate below reads every field
+        // back and refuses to run the report on any mismatch.
+        paste: input.paste !== false,
       });
       await human.press('Tab');
+      typed++;
     }
   }
+  logger.step('filter', `${typed} שדות הוקלדו · ${kept} כבר החזיקו את הערך הנכון`);
   await human.settle('טווחי הסינון');
 
   // ---- השער -----------------------------------------------------------
@@ -311,12 +367,52 @@ export async function run({ page, human, logger, input, cfg }) {
   if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
   const stamp = new Date().toISOString().slice(0, 10);
   const csvPath = resolve(outDir, `תנועות-${customer}-${stamp}.csv`);
-  const header = ['ברקוד', 'שם פריט', 'תאריך', 'מסמך', 'כמות', 'מחיר', '% הנחה', 'סכום', 'פרטים ממסמך'];
-  const body = picked.map((l) => [l.barcode, l.name, l.date, l.doc, l.qty, l.price, l.discount, l.total, l.note]);
+  // 'מחיר' הוא המחירון ו-'שולם ליחידה' הוא מה שהלקוח באמת שילם — ההפרש הוא
+  // ההנחה, וזה מה שמסתכם לסך הדוח.
+  const header = ['מק"ט', 'ברקוד', 'שם פריט', 'תאריך', 'מסמך', 'כמות', 'מחירון', '% הנחה', 'שולם ליחידה', 'סכום', 'פרטים ממסמך'];
+  const body = picked.map((l) => [
+    itemLabel(l.barcode).label,
+    l.barcode,
+    l.name,
+    l.date,
+    l.doc,
+    l.qty,
+    l.price,
+    l.discount,
+    l.qty ? Math.round((l.total / l.qty) * 100) / 100 : null,
+    l.total,
+    l.note,
+  ]);
   writeFileSync(csvPath, '﻿' + [header, ...body].map((r) => r.map(csvCell).join(',')).join('\n'), 'utf8');
   logger.step('export', csvPath);
 
-  await closePrograms({ page, human, logger, cfg }).catch(() => {});
+  // כלל 5: בלי הקטלוג הדוח מציג ברקודים. אומרים את זה בקול ולא בשקט.
+  const catWarn = catalogWarning();
+  if (catWarn) {
+    logger.step('warn', 'הקטלוג לא נטען — הפריטים מוצגים לפי ברקוד');
+    console.log(`
+${catWarn}
+`);
+  }
+
+  // No trailing `closePrograms`. The run opens with one anyway, and measuring
+  // both sides on 05/09/2026 showed the cleanup is far cheaper at the start of
+  // the next run than at the end of this one:
+  //
+  //   closing here, after the answer is already in hand ......... 15.0s
+  //   next run starting with nothing left open ................. 10.0s
+  //   next run starting with this run's spool window open ...... 14.8s
+  //
+  // So the work costs 4.8s where it lands rather than 15.0s where it used to,
+  // and the person waiting for the report stops paying for tidying up after it.
+  // What is left open is the print spool window, and the next run closes every
+  // open program before it does anything — leftovers are bounded at one run's
+  // worth, not accumulating.
+  //
+  // ⚠️ This leans on `openProgram` now launching by path. Rule 10 exists because
+  // an open window swallows the double-click aimed at a desktop icon; we no
+  // longer click icons here. If this task ever goes back to the desktop route,
+  // the trailing close has to come back with it.
 
   return {
     customer,
@@ -326,6 +422,7 @@ export async function run({ page, human, logger, input, cfg }) {
     itemCount: items.length,
     totals,
     csv: csvPath,
+    catalog: catalogState(),
     items,
     ...(input.raw ? { lines: picked } : {}),
   };

@@ -1,0 +1,263 @@
+{
+  "capturedAt": "2026-09-07T09:41:07.920Z",
+  "pageUrl": "https://www.comax.co.il/COMAX_WEB/LogInComax/LogInWeb.aspx",
+  "pageTitle": "COMAX",
+  "frameCount": 5,
+  "frames": [
+    {
+      "name": null,
+      "isMain": true,
+      "frameUrl": "https://www.comax.co.il/COMAX_WEB/LogInComax/LogInWeb.aspx",
+      "url": "https://www.comax.co.il/COMAX_WEB/LogInComax/LogInWeb.aspx",
+      "title": "COMAX",
+      "headings": [
+        "לתמיכה מכל טלפון 5885*",
+        "חשוב לדעת",
+        "מדיניות סיסמאות"
+      ],
+      "elementCount": 8,
+      "elements": [
+        {
+          "n": 1,
+          "tag": "input",
+          "type": null,
+          "role": null,
+          "label": "",
+          "id": "Lk",
+          "name": "Lk",
+          "href": null,
+          "onclick": null,
+          "value": "דרורספו",
+          "options": null,
+          "disabled": false,
+          "box": {
+            "x": 993,
+            "y": 369,
+            "w": 344,
+            "h": 47
+          },
+          "selectors": [
+            "input[name=\"Lk\"]",
+            "#Lk"
+          ]
+        },
+        {
+          "n": 2,
+          "tag": "i",
+          "type": null,
+          "role": null,
+          "label": "",
+          "id": "User_toggle",
+          "name": null,
+          "href": null,
+          "onclick": "togglePasswordVisibility('User')",
+          "value": null,
+          "options": null,
+          "disabled": false,
+          "box": {
+            "x": 1003,
+            "y": 452,
+            "w": 18,
+            "h": 16
+          },
+          "selectors": [
+            "#User_toggle",
+            "i.fas.fa-eye"
+          ]
+        },
+        {
+          "n": 3,
+          "tag": "input",
+          "type": "password",
+          "role": null,
+          "label": "",
+          "id": "User",
+          "name": "User",
+          "href": null,
+          "onclick": null,
+          "value": null,
+          "options": null,
+          "disabled": false,
+          "box": {
+            "x": 993,
+            "y": 436,
+            "w": 344,
+            "h": 47
+          },
+          "selectors": [
+            "input[name=\"User\"]",
+            "#User"
+          ]
+        },
+        {
+          "n": 4,
+          "tag": "i",
+          "type": null,
+          "role": null,
+          "label": "",
+          "id": "Password_toggle",
+          "name": null,
+          "href": null,
+          "onclick": "togglePasswordVisibility('Password')",
+          "value": null,
+          "options": null,
+          "disabled": false,
+          "box": {
+            "x": 1003,
+            "y": 519,
+            "w": 18,
+            "h": 16
+          },
+          "selectors": [
+            "#Password_toggle",
+            "i.fas.fa-eye"
+          ]
+        },
+        {
+          "n": 5,
+          "tag": "input",
+          "type": "password",
+          "role": null,
+          "label": "",
+          "id": "Password",
+          "name": "Password",
+          "href": null,
+          "onclick": null,
+          "value": null,
+          "options": null,
+          "disabled": false,
+          "box": {
+            "x": 993,
+            "y": 503,
+            "w": 344,
+            "h": 47
+          },
+          "selectors": [
+            "input[name=\"Password\"]",
+            "#Password"
+          ]
+        },
+        {
+          "n": 6,
+          "tag": "input",
+          "type": "button",
+          "role": null,
+          "label": "כניסה",
+          "id": "Lbl_Chk",
+          "name": "Lbl_Chk",
+          "href": null,
+          "onclick": "Chk()",
+          "value": "כניסה",
+          "options": null,
+          "disabled": false,
+          "box": {
+            "x": 993,
+            "y": 570,
+            "w": 344,
+            "h": 47
+          },
+          "selectors": [
+            "getByLabel(\"כניסה\")",
+            "getByRole('button', { name: \"כניסה\" })",
+            "input[name=\"Lbl_Chk\"]",
+            "#Lbl_Chk"
+          ]
+        },
+        {
+          "n": 7,
+          "tag": "div",
+          "type": null,
+          "role": null,
+          "label": "שכחתי סיסמה",
+          "id": "Lbl_IpusPass",
+          "name": null,
+          "href": null,
+          "onclick": "IpusPass()",
+          "value": null,
+          "options": null,
+          "disabled": false,
+          "box": {
+            "x": 1110,
+            "y": 632,
+            "w": 110,
+            "h": 14
+          },
+          "selectors": [
+            "div:text-is(\"שכחתי סיסמה\")",
+            "#Lbl_IpusPass",
+            "div.forgot-password"
+          ]
+        },
+        {
+          "n": 8,
+          "tag": "a",
+          "type": null,
+          "role": null,
+          "label": "לא מתחבר?",
+          "id": null,
+          "name": null,
+          "href": "",
+          "onclick": "window.open('https://comaxerp.com/%d7%aa%d7%9e%d7%99%d7%9b%d7%94/')",
+          "value": null,
+          "options": null,
+          "disabled": false,
+          "box": {
+            "x": 580,
+            "y": 600,
+            "w": 350,
+            "h": 17
+          },
+          "selectors": [
+            "a:text-is(\"לא מתחבר?\")",
+            "a.not-login"
+          ]
+        }
+      ],
+      "tables": []
+    },
+    {
+      "name": "frmD",
+      "isMain": false,
+      "frameUrl": "https://www.comax.co.il/COMAX_WEB/LogInComax/Captcha/validate.asp",
+      "url": "https://www.comax.co.il/COMAX_WEB/LogInComax/Captcha/validate.asp",
+      "title": "CAPTCHA Example",
+      "headings": [],
+      "elementCount": 0,
+      "elements": [],
+      "tables": []
+    },
+    {
+      "name": "frm",
+      "isMain": false,
+      "frameUrl": "https://www.comax.co.il/COMAX_WEB/LogInComax/ChkPassWord_s.asp?CountErr=0&SwForgotPass=0&Date=7/9/2026%2012:39:38&CSID=NULL&SwSendAgain=0",
+      "url": "https://www.comax.co.il/COMAX_WEB/LogInComax/ChkPassWord_s.asp?CountErr=0&SwForgotPass=0&Date=7/9/2026%2012:39:38&CSID=NULL&SwSendAgain=0",
+      "title": "comax",
+      "headings": [],
+      "elementCount": 0,
+      "elements": [],
+      "tables": []
+    },
+    {
+      "name": "ChkF",
+      "isMain": false,
+      "frameUrl": "https://www.comax.co.il/COMAX_WEB/Blank.asp",
+      "url": "https://www.comax.co.il/COMAX_WEB/Blank.asp",
+      "title": "",
+      "headings": [],
+      "elementCount": 0,
+      "elements": [],
+      "tables": []
+    },
+    {
+      "name": "frmNotActive",
+      "isMain": false,
+      "frameUrl": "https://www.comax.co.il/COMAX_WEB/LogInComax/Blank.asp",
+      "url": "https://www.comax.co.il/COMAX_WEB/LogInComax/Blank.asp",
+      "title": "",
+      "headings": [],
+      "elementCount": 0,
+      "elements": [],
+      "tables": []
+    }
+  ]
+}

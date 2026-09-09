@@ -1,0 +1,11 @@
+- [מלאי מהייצוא המקומי](stock-from-local-export.md) — לשאלות מלאי לשלוף מ-content/, לא להריץ דוח חדש בקומקס
+- [זיהוי פריטים לפי מק"ט](identify-items-by-sku-not-barcode.md) — להציג מק"ט חלופי או דגם+צבע, לא ברקוד
+- [בדיקת תוכניות פתוחות לפני התחלה](check-open-programs-before-starting.md) — כפתור החצים המעוגלים, לסגור שאריות לפני זרימת מסמך
+- [הצעת מחיר: מייל ולא PDF](quote-send-by-mail-not-pdf.md) — לשלוח דרך קומקס, בלי קובץ מקומי אלא אם ביקשו
+- [ברקוד שחוזר = כמות](barcode-scan-count-is-quantity.md) — דרור סורק כל יחידה, לספור חזרות ולא לשאול כמות
+- [להתנתק מקומקס בסוף](logoff-comax-when-done.md) — מושב יחיד; close all + logoff + לסגור את הכרום של הסוכן
+- [פורמט חשבון בהעברה בנקאית](bank-transfer-account-format.md) — בנק-סניף-חשבון, בלי אפסים מובילים
+- [לא לשאול שוב בתוך זרימה מאושרת](dont-reask-within-approved-flow.md) — בקשה שכוללת "כולל שיוך" מכסה גם את שלבי הביניים
+- ["ראשי" = החנות בוינגייט](rashi-warehouse-is-wingate-store.md) — לא אותו דבר כמו "מכולה וינגייט", מחסן נפרד
+- [סוכן עתידי למשק פריטים](planned-agent-item-master.md) — לא מיפוי חד-פעמי דרך comax-ops, סוכן ייעודי
+- [לאמת תוצאה ולא מנגנון](verify-outcome-not-mechanism.md) — בדיקה חייבת למדוד את מה שהמשתמש יחווה, במסלול האמיתי

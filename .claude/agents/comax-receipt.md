@@ -170,6 +170,13 @@ export const NEVER_FILL = ['#AshraiNum', '#AshraiToDate', '#CvvKab', '#IshurAshr
 לא עוד snapshot. **קבלת מזומן של ₪1, מונעת בקוד, עם דרור צופה בכל שלב.** רק זה
 יהפוך את `driven` ל-`true`.
 
+⚠️ **כשזה קורה — לחווט את שער הלקוח.** `comax-osh-receipt` כבר קורא ל-
+`checkInvoicePresence` מ-[`src/documents/invoice-presence-check.js`](../../src/documents/invoice-presence-check.js)
+לפני `openList` — בודק שלקוח **הקוד הזה** קיבל אי פעם חשבונית מס, לא אם היא
+פתוחה. אותו כלל של דרור חל גם כאן (הגנה מפני שני לקוחות בשם דומה), והחיווט
+הוא העתק-הדבק: הקריאה, `logger.save('invoice-check.json', ...)`, וה-throw אם
+`!any && !input.allowNoInvoice` — כולם לפני `#newRec`.
+
 ⚠️ **`receipt-backout` הכריז פעם אחת "המסך עדיין פתוח" בזמן שהוא כבר נסגר** —
 ה-frame נעלם כמה שניות אחרי הקליק, אותו דפוס כמו `engine.finalize`. לאמת מול
 הצילום או מול רשימת ה-frames לפני שמסיקים שנשארה קבלה פתוחה.

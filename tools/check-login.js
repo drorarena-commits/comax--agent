@@ -8,7 +8,7 @@
  */
 import { comaxCredentials, loadEnv } from '../src/env.js';
 import { attachBrowser, openBrowser } from '../src/browser.js';
-import { isLoggedIn, login } from '../src/session.js';
+import { isLoggedIn, login, logoff } from '../src/session.js';
 import { RunLogger } from '../src/logger.js';
 
 const env = loadEnv();
@@ -34,5 +34,14 @@ if (await isLoggedIn(s.page, s.cfg)) {
   console.log(ok ? '\nההתחברות הצליחה.\n' : '\nההתחברות נכשלה — בדוק את הפרטים ב-.env.\n');
 }
 
-if (!s.owned) await s.browser.close().catch(() => {});
+// Checking the login must not cost the next task its seat: a window this tool
+// opened is signed in, and leaving it to die with the process holds the seat
+// for three minutes. Same split as run.js — never log off a window we attached
+// to, since that one belongs to `npm run open`.
+if (s.owned) {
+  await logoff({ ...s, logger }).catch(() => {});
+  await s.context.close().catch(() => {});
+} else {
+  await s.browser.close().catch(() => {});
+}
 logger.done();

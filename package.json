@@ -6,11 +6,15 @@
   "description": "Browser agent for the Comax ERP portal - human-paced, learned screen by screen",
   "scripts": {
     "open": "node tools/open.js",
+    "ensure": "node tools/ensure-comax.js",
+    "idle-logoff": "node tools/idle-logoff.js",
+    "hold": "node tools/hold.js",
     "snapshot": "node tools/snapshot.js",
     "run": "node tools/run.js",
     "open-program": "node tools/open-program.js",
     "options": "node tools/read-options.js",
     "catalog": "node tools/catalog.js",
+    "catalog-csv": "node tools/catalog-from-csv.cjs",
     "close": "node tools/close-windows.js",
     "check-login": "node tools/check-login.js",
     "logoff": "node tools/logoff.js",
@@ -20,7 +24,14 @@
     "stock": "node tools/stock.js",
     "apply-matrix": "node tools/apply-matrix.js",
     "sm": "node tools/sportmore.js",
-    "sm-test": "node tools/sportmore-selftest.js"
+    "sm-test": "node tools/sportmore-selftest.js",
+    "payroll": "node tools/payroll-report.js",
+    "catalogs-sync": "node tools/catalogs-sync.js",
+    "items-file": "node tools/items-import-file.js",
+    "cost-file": "node tools/cost-import-file.js",
+    "site-file": "node tools/site-data-file.js",
+    "memory-backup": "node tools/memory-backup.js",
+    "items-import": "node tools/run.js items-import"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

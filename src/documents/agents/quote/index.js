@@ -25,6 +25,47 @@ export const profile = {
   shortcut: 'a164',
   doc: 'Doc612',
   path: 'Erp/Mehirot/Doc612/AzaaMhr',
+
+  /**
+   * The program's own path, so `openProgram` can hand it to `top.S.runProgram`
+   * instead of raising the desktop and hunting for the a164 icon. Measured
+   * 06/09/2026: the desktop route cost 40.8s in `quote-new` and 22.3s again in
+   * `quote-email`, on a run that took 457s end to end.
+   *
+   * This is an addition, not a replacement for `path` above: `path` is the
+   * folder and is documentation only — nothing in the code reads it — while
+   * `program` is the file, and it is the only thing that selects the fast route.
+   *
+   * Note the `.asp`, not `.aspx`, exactly as in the invoice profile: that is
+   * what `runProgram` takes, even though the frame it produces is `Doc612V.asp`.
+   *
+   * ⚠️ `?SwVO=0&SwLk=1` is load-bearing — do not "clean up" the query string.
+   * `runProgram` does NOT reproduce the parameters the desktop icon passes, and
+   * the difference does not show up when the program opens. It shows up later:
+   * without `SwLk=1` the screen opens fine, the header dialog opens fine, and
+   * then the customer field `#IdxLk` stays *hidden* — present in the DOM,
+   * never visible — so filling it times out after 30s with no hint of why.
+   * Measured 06/09/2026: reproduced twice on a clean desktop, fixed on the
+   * first run after adding the parameter.
+   *
+   * `Lk` is Comax's abbreviation for customer throughout (`IdxLk`, `LkKod`,
+   * `Idx_Lk`), so `SwLk=1` reads as "this screen has a customer field".
+   * The desktop icon also passes `MCGLOBAL=879`, deliberately left out: it
+   * looks like a menu-instance id, it was not needed, and guessing at it
+   * would be exactly the kind of inference that rule 9 forbids.
+   */
+  program: 'Erp/Mehirot/Doc612/AzaaMhr/Doc612V.asp?SwVO=0&SwLk=1',
+
+  /**
+   * How the mail envelope is reached from the print tab. Declared per document
+   * because it is genuinely different per document, and **must not** be guessed
+   * from which buttons happen to exist — that guess is what broke the invoice.
+   *
+   * The quote has a dedicated `#Email` button ("שליחת דואל מרוכזת") that opens
+   * `Erp/Divor_Doc.asp` directly. The invoice has no such button at all.
+   */
+  mail: { via: 'button', button: '#Email' },
+
   movesStock: false,
   discountColumn: 'הנחה %',
   printView: '/Max2000/Erp/Mehirot/Doc612/AzaaMhr/Doc612_HtmlP_T13.asp',

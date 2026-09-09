@@ -46,6 +46,8 @@
     "orgField": "input[name=\"Lk\"]",
     "userField": "input[name=\"User_Pass\"]",
     "passField": "input[name=\"Password_Pass\"]",
+    "userFieldAlt": ["input[name=\"User\"]"],
+    "passFieldAlt": ["input[name=\"Password\"]"],
     "submitButton": "input[value=\"כניסה\"]",
     "sessionPersists": false,
     "busyRetries": 4,
