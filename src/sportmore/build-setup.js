@@ -15,7 +15,7 @@
 import ExcelJS from 'exceljs';
 import { resolve } from 'node:path';
 import { ROOT } from '../config.js';
-import { parentSku } from './arena-invoice.js';
+import { parentSku, selfBarcode } from './arena-invoice.js';
 
 const TEMPLATE = resolve(ROOT, 'sportmore/reference/template-parent-child.xlsx');
 
@@ -102,9 +102,12 @@ export async function buildSetupFile({ parents, children, seasonYear, codes, out
     r.getCell(C.parent).value = parentSku(row);
     r.getCell(C.color).value = k.color;
     r.getCell(C.size).value = String(row.size).toUpperCase();
-    // Barcodes are 13 digits — as a number Excel shows 3.46834E+12 and the
-    // other side loses the item. Text, always.
-    r.getCell(C.barcode).value = String(row.ean);
+    // A customised row has no barcode of its own; the planner has already ruled
+    // that a derived one is allowed and checked it does not collide.
+    // Either way it goes in as text: as a number Excel renders a 13-digit EAN
+    // as 3.46834E+12 and the other side loses the item.
+    const real = String(row.ean ?? '').trim();
+    r.getCell(C.barcode).value = (row.hasBarcode ?? !!real) ? real : String(selfBarcode(row));
     r.getCell(C.barcode).numFmt = '@';
     r.commit();
   });

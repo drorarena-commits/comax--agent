@@ -19,7 +19,7 @@
  */
 import ExcelJS from 'exceljs';
 import { existsSync, readdirSync, statSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { ROOT } from '../config.js';
 
 export const REFERENCE_DIR = resolve(ROOT, 'sportmore/reference');
@@ -169,7 +169,7 @@ export function norm(s) {
  * name carries no date.
  */
 export function cardAgeDays(file) {
-  const name = file.split(String.fromCharCode(92)).pop().split('/').pop();
+  const name = basename(file);
   const m = /item-card-([0-9]{4})-([0-9]{2})-([0-9]{2})/i.exec(name);
   const when = m ? Date.UTC(+m[1], +m[2] - 1, +m[3]) : statSync(file).mtimeMs;
   return Math.max(0, Math.floor((Date.now() - when) / 86_400_000));

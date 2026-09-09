@@ -24,14 +24,14 @@
  *               genuinely nothing in the card to derive it from.
  */
 import ExcelJS from 'exceljs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { mkdirSync, rmSync } from 'node:fs';
 import { ROOT } from '../src/config.js';
 import { loadItemCard } from '../src/sportmore/item-card.js';
 import { loadCodes } from '../src/sportmore/classify.js';
 import { planBatch } from '../src/sportmore/plan.js';
 import { buildSetupFile, SETUP_PARENT_COLUMNS, SETUP_CHILD_COLUMNS } from '../src/sportmore/build-setup.js';
-import { childSku, parentSku } from '../src/sportmore/arena-invoice.js';
+import { childSku, parentSku, selfBarcode as selfBarcodeOf } from '../src/sportmore/arena-invoice.js';
 import { priceFromCost } from '../src/sportmore/pricing.js';
 
 const FW26 = resolve(ROOT, 'sportmore/reference/template-parent-child.xlsx');
@@ -359,6 +359,106 @@ console.log('\n6. תמחור');
   check('עלות אפס לא מייצרת מחיר', priceFromCost(0, 'x99') === null);
 }
 
+/* 7 — customised products: no barcode from Arena.
+ *
+ * The three federation-cap rows below mirror the ISRAEL FEDERATION CAPS order:
+ * a style and colour, a size of OS, and no EAN at all. Everything here is about
+ * refusing to invent an identifier by accident. */
+console.log('\n7. מוצרים קוסטומייז — בלי ברקוד מארנה');
+{
+  const { loadProfile } = await import('../src/sportmore/classify.js');
+  const { selfBarcode, parentSku: pSku } = await import('../src/sportmore/arena-invoice.js');
+
+  const caps = ['014520', '014521', '014522'].map((style, i) => ({
+    row: 100 + i,
+    ean: '',
+    hasBarcode: false,
+    articleNumber: style + '_100_OS',
+    articleDesc: 'ISRAEL FEDERATION CAP ' + (i + 1),
+    style,
+    colorCode: '100',
+    size: 'OS',
+    styleDesc: 'ISRAEL FEDERATION CAP ' + (i + 1),
+    qty: [300, 200, 200][i],
+    price: 3.5,
+    listPrice: 0,
+    season: '',
+    invoiceNo: '1200003911',
+    date: new Date(Date.UTC(2026, 7, 26)),
+    backbone: [],
+    fiber: '',
+  }));
+  const capInvoice = { file: 'caps-test', rows: caps, problems: [], headers: {} };
+
+  const blocked = planBatch({ invoice: capInvoice, card, codes });
+  check('בלי --self-barcode כל השורות חסומות', blocked.counts.blocked === 3,
+    'blocked=' + blocked.counts.blocked);
+  check('הסיבה מפנה לדגל', /self-barcode/.test(blocked.blocked[0]?.why || ''),
+    blocked.blocked[0]?.why || '');
+
+  const allowed = planBatch({ invoice: capInvoice, card, codes, selfBarcodes: true });
+  check('עם הדגל אף שורה לא חסומה', allowed.counts.blocked === 0, String(allowed.counts.blocked));
+  check('שלוש שורות מסומנות כמקודדות-עצמית', allowed.counts.selfCoded === 3,
+    String(allowed.counts.selfCoded));
+  check('הברקוד הוא המקט הבן בלי AR',
+    allowed.rows.every((r) => r.barcode === selfBarcode(r.row) && r.barcode === pSku(r.row).slice(2) + '00OS'),
+    allowed.rows.map((r) => r.barcode).join(' '));
+
+  // Every one of the four fields must be refused, or the profile is pointless.
+  check('בלי פרופיל הסיווג מסרב על כל האבות',
+    allowed.needsDecision.length === allowed.counts.newParents,
+    allowed.needsDecision.length + '/' + allowed.counts.newParents);
+
+  const profile = loadProfile(codes, 'caps');
+  const withProfile = planBatch({ invoice: capInvoice, card, codes, selfBarcodes: true, profile });
+  check('עם --profile caps אף אב לא מסורב', withProfile.needsDecision.length === 0,
+    withProfile.needsDecision.map((p) => p.sku).join(' '));
+  const first = withProfile.parents[0]?.classification;
+  check('הפרופיל מילא את ארבעת השדות',
+    first?.family.value === '00610' && first?.sizeScale.value === '74'
+      && first?.division.value === '14' && first?.gender.value === '30',
+    [first?.family.value, first?.sizeScale.value, first?.division.value, first?.gender.value].join('/'));
+  check('הפרופיל מסביר את עצמו', /פרופיל/.test(first?.family.why || ''), first?.family.why || '');
+
+  // An override on the same style has to beat the profile.
+  const over = planBatch({
+    invoice: capInvoice, card, codes, selfBarcodes: true, profile,
+    // classify() takes overrides through planBatch's classify call, so exercise
+    // the precedence directly.
+  });
+  const { classify, learnFromInvoice } = await import('../src/sportmore/classify.js');
+  const c2 = classify(caps[0], card, learnFromInvoice(card, caps), { '014520': { family: '00613' } }, profile);
+  check('overrides גובר על פרופיל', c2.family.value === '00613', c2.family.value + ' — ' + c2.family.why);
+  check('ושאר השדות עדיין מהפרופיל', c2.sizeScale.value === '74', c2.sizeScale.value);
+}
+
+/* 8 — a self-coded barcode that already exists must stop the batch.
+ *
+ * `2060000` is one of only two genuinely self-coded children in the card: its
+ * barcode is its own code. A row of style `20`, colour `60`, size `0` derives
+ * exactly that string, which is the collision we are guarding against — the cap
+ * was already set up, possibly with a real EAN, and setting it up again under an
+ * invented code would give Priority two items for one product. */
+console.log('');
+console.log('8. התנגשות — ברקוד מקודד-עצמית שכבר קיים');
+{
+  const target = card.byBarcode.get('2060000');
+  check('הפריט המקודד-עצמית קיים בכרטיס', !!target, target?.sku || 'לא נמצא');
+
+  const row = {
+    row: 1, ean: '', hasBarcode: false, articleNumber: '20_60_0',
+    style: '20', colorCode: '60', size: '0', styleDesc: 'התנגשות בדיקה',
+    qty: 1, price: 1, backbone: [],
+  };
+  check('השורה אכן גוזרת 2060000', selfBarcodeOf(row) === '2060000', selfBarcodeOf(row));
+
+  const plan = planBatch({ invoice: { file: 'collision', rows: [row], problems: [], headers: {} }, card, codes, selfBarcodes: true });
+  const r = plan.rows[0];
+  check('השורה חסומה, לא נדרסת', r.status === 'blocked', r.status);
+  check('הסיבה מזכירה את ההתנגשות', /כבר קיים/.test(r.why), r.why);
+  check('היא לא נכנסת לקובץ ההקמה', plan.children.length === 0 && plan.parents.length === 0,
+    plan.parents.length + ' אבות, ' + plan.children.length + ' בנים');
+}
 rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');
 process.exit(failures ? 1 : 0);

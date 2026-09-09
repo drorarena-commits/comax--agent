@@ -12,11 +12,11 @@
  * follows.
  */
 import { mkdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { ROOT } from '../src/config.js';
 import { loadItemCard } from '../src/sportmore/item-card.js';
 import { readArenaInvoice, childSku } from '../src/sportmore/arena-invoice.js';
-import { loadCodes } from '../src/sportmore/classify.js';
+import { loadCodes, loadProfile } from '../src/sportmore/classify.js';
 import { planBatch } from '../src/sportmore/plan.js';
 import { buildSetupFile } from '../src/sportmore/build-setup.js';
 import { buildIntakeFile, WAREHOUSES } from '../src/sportmore/build-intake.js';
@@ -41,7 +41,7 @@ function parseArgs(argv) {
 const pad = (s, n) => String(s ?? '').padEnd(n);
 const money = (v) => (v === null || v === undefined ? '—' : Number(v).toFixed(2));
 const today = () => new Date().toISOString().slice(0, 10);
-const base = (f) => String(f).split(/[\\/]/).pop();
+const base = (f) => basename(String(f));
 
 function die(msg) {
   console.error('\n' + msg + '\n');
@@ -66,6 +66,11 @@ if (cmd === 'help' || args.help) {
     '  npm run sm -- intake --invoice <קובץ> --warehouse SHIP|DROR [--confirm]',
     '      קובץ קליטת חשבוניות. רץ רק אחרי שספורט אנד מור הקימו הכל',
     '      ושלחו כרטיס פריט מעודכן — כל שורה נבדקת מולו.',
+    '',
+    '  --profile caps       פרופיל סיווג למנה שלמה. לכובעים קוסטומייז אין',
+    '                        אח מאותו דגם, אז הסיווג האוטומטי תמיד יסרב.',
+    '  --self-barcode       מתיר שורות בלי ברקוד. הברקוד יהיה המקט הבן בלי AR.',
+    '                        רק למוצרים קוסטומייז — ראה KNOWLEDGE.md.',
     '',
     '  --item-card <קובץ>   כרטיס פריט מפורש.',
     '                        ברירת המחדל: החדש ביותר ב-sportmore/reference/',
@@ -107,7 +112,14 @@ if (cmd === 'plan') {
   const rounding = args.round || 'x99';
   if (!ROUNDING[rounding]) die('--round חייב להיות x99 או int, לא ' + rounding);
 
-  const plan = planBatch({ invoice, card, codes, rounding });
+  const profile = loadProfile(codes, args.profile === true ? null : args.profile);
+  if (args.profile === true) die('--profile דורש שם, למשל --profile caps');
+  if (profile) {
+    console.log('');
+    console.log('פרופיל: ' + args.profile + '  ->  ' + Object.entries(profile).map(([k, v]) => k + '=' + v).join('  '));
+  }
+
+  const plan = planBatch({ invoice, card, codes, rounding, selfBarcodes: !!args['self-barcode'], profile });
   const c = plan.counts;
 
   console.log('\nמה יש כאן');
@@ -116,6 +128,11 @@ if (cmd === 'plan') {
   console.log('  אב + בן חדשים:   ' + c.newBoth);
   console.log('  חסום:            ' + c.blocked);
   console.log('  אבות להקמה:      ' + c.newParents);
+  if (c.selfCoded) {
+    console.log('');
+    console.log('  ' + c.selfCoded + ' שורות בלי ברקוד מארנה — הברקוד נגזר מהמקט.');
+    console.log('  אם ארנה תנפיק EAN אחר כך, יהיו שני פריטים לאותו מוצר בפריוריטי.');
+  }
 
   if (plan.blocked.length) {
     console.log('\n⛔ שורות חסומות — לא ייכנסו לקובץ ההקמה:');
@@ -191,7 +208,7 @@ if (cmd === 'intake') {
     die('חסר --warehouse. צריך ' + WAREHOUSES.join(' או ') + ' — זו החלטה שלך בכל מנה, אין ברירת מחדל.');
   }
 
-  const plan = planBatch({ invoice, card, codes });
+  const plan = planBatch({ invoice, card, codes, selfBarcodes: !!args['self-barcode'] });
   const notReady = plan.rows.filter((r) => r.status !== 'exists');
   console.log('\nאימות מול כרטיס הפריט');
   console.log('  נמצאו:      ' + plan.counts.exists + ' מתוך ' + plan.counts.total);

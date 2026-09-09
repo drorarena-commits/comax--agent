@@ -7,7 +7,7 @@
  * a status column is enough, and the alignment is worth more.
  */
 import ExcelJS from 'exceljs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { ROOT } from '../config.js';
 
 const STATUS = {
@@ -17,7 +17,7 @@ const STATUS = {
   blocked: 'חסום',
 };
 
-const base = (f) => String(f).split(/[\/]/).pop();
+const base = (f) => basename(String(f));
 
 export async function buildReport({ plan, invoice, card, out }) {
   const wb = new ExcelJS.Workbook();
@@ -27,6 +27,7 @@ export async function buildReport({ plan, invoice, card, out }) {
     { header: 'שורה', key: 'row', width: 7 },
     { header: 'סטטוס', key: 'status', width: 15 },
     { header: 'ברקוד', key: 'ean', width: 16 },
+    { header: 'מקור הברקוד', key: 'barcodeSource', width: 14 },
     { header: 'מקט ארנה', key: 'article', width: 18 },
     { header: 'מקט אב', key: 'parent', width: 16 },
     { header: 'תיאור', key: 'desc', width: 42 },
@@ -41,7 +42,8 @@ export async function buildReport({ plan, invoice, card, out }) {
     const row = ws.addRow({
       row: r.row.row,
       status: STATUS[r.status],
-      ean: String(r.row.ean),
+      ean: String(r.barcode || r.row.ean || ''),
+      barcodeSource: r.selfCoded ? 'מקודד־עצמית' : r.row.hasBarcode ? 'ארנה' : '—',
       article: r.row.articleNumber,
       parent: r.parent || '',
       desc: r.row.styleDesc || r.row.articleDesc,
@@ -52,6 +54,9 @@ export async function buildReport({ plan, invoice, card, out }) {
     });
     row.getCell('ean').numFmt = '@';
     if (r.status === 'blocked') row.getCell('status').font = { bold: true, color: { argb: 'FFB00000' } };
+    // A barcode we invented has to be visible at a glance, not one column of
+    // sameness among a hundred real EANs.
+    if (r.selfCoded) row.getCell('barcodeSource').font = { bold: true, color: { argb: 'FFB00000' } };
   }
 
   const ws2 = wb.addWorksheet('אבות חדשים', { views: [{ rightToLeft: true, state: 'frozen', ySplit: 1 }] });
@@ -97,6 +102,7 @@ export async function buildReport({ plan, invoice, card, out }) {
     ['אב + בן חדשים', plan.counts.newBoth],
     ['חסומות', plan.counts.blocked],
     ['אבות חדשים להקמה', plan.counts.newParents],
+    ['שורות בברקוד מקודד־עצמית', plan.counts.selfCoded || 0],
     ['נוצר בתאריך', new Date().toISOString().slice(0, 16).replace('T', ' ')],
   ].forEach((pair) => ws3.addRow(pair));
   ws3.getColumn(1).width = 26;

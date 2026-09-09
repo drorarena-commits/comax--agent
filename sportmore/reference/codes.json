@@ -208,5 +208,14 @@
       "name": "",
       "seen": 39
     }
+  },
+  "profiles": {
+    "caps": {
+      "family": "00610",
+      "sizeScale": "74",
+      "division": "14",
+      "gender": "30",
+      "note": "כובעי שחייה קוסטומייז. נגזר פה אחד מ-5 הכובעים הקיימים בכרטיס: MOULDED EMEK ISR · MOULDED RISHON ISR · MOULDED IRONI MODIIN · FLAT SILICONE HERZLIYA ISR · 3D SOFT DOLPHIN ISR"
+    }
   }
 }

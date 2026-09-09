@@ -102,10 +102,19 @@ export async function readArenaInvoice(path) {
     if (field && map[field] === undefined) map[field] = col;
   });
 
-  const missing = ['ean', 'articleNumber', 'qty', 'price'].filter((f) => !map[f]);
+  // An identifier can arrive either way: the SAP export packs it into
+  // `SKU/Article number`, while a sheet built by hand for an invoice that came
+  // as a PDF names Style / Color / Size in their own columns. EAN is not
+  // required at all — a customised order has none, and such a row carries
+  // `hasBarcode: false` for the planner to rule on rather than being rejected
+  // here as unparseable.
+  const hasArticle = !!map.articleNumber;
+  const hasParts = !!map.style && !!map.colorCode;
+  const missing = ['qty', 'price'].filter((f) => !map[f]);
+  if (!hasArticle && !hasParts) missing.push('SKU/Article number (או Style code + Color code)');
   if (missing.length) {
     throw new Error(
-      `הקובץ לא נראה כמו ייצוא של ארנה — חסרות עמודות: ${missing.join(', ')}\n` +
+      `הקובץ לא נראה כמו חשבונית של ארנה — חסרות עמודות: ${missing.join(', ')}\n` +
         `הכותרות שנמצאו: ${ws.getRow(1).values.filter(Boolean).slice(0, 12).join(' | ')}`
     );
   }
@@ -116,17 +125,22 @@ export async function readArenaInvoice(path) {
     if (n === 1) return;
     const get = (f) => (map[f] ? text(row.getCell(map[f])) : '');
     const articleNumber = get('articleNumber');
-    if (!articleNumber) return;
-
     const split = splitArticle(articleNumber);
+    const style = split?.style || get('style');
+    const colorCode = split?.color || get('colorCode');
+    const size = split?.size || get('size');
+    if (!articleNumber && !(style && colorCode)) return;
+
+    const ean = String(get('ean')).trim();
     const r = {
       row: n,
-      ean: String(get('ean')).trim(),
-      articleNumber,
+      ean,
+      hasBarcode: !!ean,
+      articleNumber: articleNumber || [style, colorCode, size].filter(Boolean).join('_'),
       articleDesc: get('articleDesc'),
-      style: split?.style || get('style'),
-      colorCode: split?.color || get('colorCode'),
-      size: split?.size || get('size'),
+      style,
+      colorCode,
+      size,
       styleDesc: get('styleDesc'),
       colorDesc: get('colorDesc'),
       qty: Number(get('qty')) || 0,
@@ -139,8 +153,9 @@ export async function readArenaInvoice(path) {
       backbone: [get('bb1'), get('bb2'), get('bb3'), get('bb4'), get('bb5')].filter(Boolean),
       fiber: get('fiber'),
     };
-    if (!split) problems.push({ row: n, articleNumber, why: 'מק"ט ארנה לא מתפצל ל-דגם_צבע_מידה' });
-    if (!r.ean) problems.push({ row: n, articleNumber, why: 'אין ברקוד' });
+    if (!split && !(style && colorCode)) {
+      problems.push({ row: n, articleNumber, why: 'מק"ט ארנה לא מתפצל ל-דגם_צבע_מידה, ואין עמודות נפרדות' });
+    }
     rows.push(r);
   });
 
@@ -163,4 +178,23 @@ export function childSku(row) {
   const parent = parentSku(row);
   if (!parent || !row.size) return null;
   return `${parent}00${row.size}`.toUpperCase();
+}
+
+/**
+ * The barcode for a customised item, which Arena ships without one: the full
+ * child code with the `AR` stripped off.
+ *
+ * This is a convention we are establishing, not one we found. All but two of
+ * the 2,636 children in the 25.8.26 card carry a real 13-digit EAN, and that
+ * includes every customised cap already set up — MOULDED EMEK ISR, MOULDED
+ * RISHON ISR, FLAT SILICONE HERZLIYA ISR and three more, all on Arena`s 346833
+ * prefix. Arena does issue barcodes for these; they just are not printed on the
+ * invoice. So a self-coded barcode is a stand-in, and if Arena later issues the
+ * real EAN the same cap exists twice in Priority. That is why it is never
+ * silent: it takes an explicit flag, it is marked in the report, and a code
+ * that already exists in the card stops the batch.
+ */
+export function selfBarcode(row) {
+  const child = childSku(row);
+  return child ? child.slice(2) : null;
 }

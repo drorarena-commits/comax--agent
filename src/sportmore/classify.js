@@ -67,6 +67,31 @@ const isPlaceholder = (field, v) =>
  * the next colour of the same model will need the same answer. An override
  * always wins; it is the one place a human decision outranks the card.
  */
+/**
+ * A named set of classified-field values for a whole batch, from
+ * `codes.json` → `profiles`. `caps` was lifted from the six customised caps
+ * already in the card, every one of which carries family 00610, size scale 74,
+ * division 14 and gender 30.
+ *
+ * Profiles exist because customised items defeat the style tier completely:
+ * each cap style has exactly one parent, so a new federation order is always a
+ * new style with no sibling to learn from, and the classifier refuses all four
+ * fields. A profile is a declaration about the batch, not a guess about it.
+ */
+export function loadProfile(codes, name) {
+  if (!name) return null;
+  const p = codes?.profiles?.[name];
+  if (!p) {
+    const known = Object.keys(codes?.profiles || {}).join(' · ');
+    throw new Error(
+      `פרופיל לא מוכר: ${name}
+${known ? `הפרופילים שקיימים: ${known}` : 'אין פרופילים ב-codes.json'}`
+    );
+  }
+  const { note, ...values } = p;
+  return values;
+}
+
 export function loadOverrides() {
   try {
     return JSON.parse(readFileSync(OVERRIDES_PATH, 'utf8'));
@@ -128,7 +153,7 @@ export function backboneKey(row) {
  * @returns {{family,sizeScale,division,gender, source, notes:string[]}}
  *          each field is `{ value, confidence: 'high'|'medium'|null, why }`
  */
-export function classify(row, card, learned, overrides = loadOverrides()) {
+export function classify(row, card, learned, overrides = loadOverrides(), profile = null) {
   const notes = [];
   const style = String(row.style || '').toUpperCase();
   const siblings = style
@@ -137,11 +162,23 @@ export function classify(row, card, learned, overrides = loadOverrides()) {
 
   const out = { source: siblings.length ? 'style' : 'backbone', notes };
   const sku = `AR${style}`;
-  const fixed = { ...(overrides[style] || {}), ...(overrides[parentSkuOf(row)] || {}) };
+  // Ranked weakest to strongest. A profile is Dror declaring what kind of batch
+  // this is — "these are customised caps" — so it outranks anything derived
+  // from the card; an override names one style or one item and outranks even
+  // that. Neither is inference, which is why both are allowed to win.
+  const fixed = {
+    ...(profile || {}),
+    ...(overrides[style] || {}),
+    ...(overrides[parentSkuOf(row)] || {}),
+  };
+  const fixedWhy = (field) =>
+    (overrides[parentSkuOf(row)] || {})[field] !== undefined || (overrides[style] || {})[field] !== undefined
+      ? 'נקבע ידנית ב-overrides.json'
+      : 'לפי הפרופיל שנבחר למנה';
 
   for (const field of FIELDS) {
     if (fixed[field] !== undefined && fixed[field] !== null && fixed[field] !== '') {
-      out[field] = { value: String(fixed[field]), confidence: 'high', why: 'נקבע ידנית ב-overrides.json' };
+      out[field] = { value: String(fixed[field]), confidence: 'high', why: fixedWhy(field) };
       continue;
     }
     if (siblings.length) {
