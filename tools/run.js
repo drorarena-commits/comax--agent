@@ -29,9 +29,52 @@ const listTasks = () =>
 
 const argv = process.argv.slice(2);
 
+/**
+ * `--list` used to print bare filenames, and that is what made an agent write a
+ * task that already existed.
+ *
+ * Measured 09/09/2026: asked for "the customer's last invoice", an agent read a
+ * list of 23 names, saw nothing called anything like it, and wrote 3,782 bytes
+ * of new task — four minutes before the Comax window even opened. The task it
+ * needed was `customer-history`, whose own `meta.description` says "מה לקוח
+ * רכש בעבר — חשבונית מס...". The name did not say it; the description did.
+ *
+ * So the listing reads each task's `meta` and prints what it does, what it
+ * takes, and whether it writes. Finding an existing task has to be cheaper than
+ * writing a new one, or the new one keeps winning.
+ */
+async function describeTasks() {
+  const rows = [];
+  for (const name of listTasks()) {
+    try {
+      const m = (await import(pathToFileURL(resolve(TASK_DIR, `${name}.js`)).href)).meta ?? {};
+      rows.push({
+        name,
+        description: m.description ?? '(אין תיאור)',
+        writes: m.writes !== false,
+        input: Object.entries(m.input ?? {}).map(([k, v]) => `${k}: ${v}`),
+      });
+    } catch (e) {
+      rows.push({ name, description: `⚠️ לא נטען: ${e.message}`, writes: true, input: [] });
+    }
+  }
+  return rows;
+}
+
 if (!argv.length || argv[0] === '--list') {
-  const tasks = listTasks();
-  console.log(tasks.length ? `משימות זמינות:\n  ${tasks.join('\n  ')}` : 'עדיין אין משימות. נבנה אותן ביחד.');
+  const rows = await describeTasks();
+  if (!rows.length) {
+    console.log('עדיין אין משימות. נבנה אותן ביחד.');
+    process.exit(0);
+  }
+  console.log(`\n${rows.length} משימות זמינות — חפש כאן לפני שאתה כותב משימה חדשה:\n`);
+  for (const r of rows) {
+    console.log(`  ${r.writes ? '✏️ ' : '👁️ '} ${r.name}`);
+    console.log(`      ${r.description}`);
+    for (const i of r.input) console.log(`        · ${i}`);
+    console.log('');
+  }
+  console.log('👁️  = קריאה בלבד   ✏️  = כותבת (דורשת --confirm)\n');
   process.exit(0);
 }
 
@@ -44,6 +87,45 @@ const input = fileIdx >= 0
   ? JSON.parse(readFileSync(resolve(ROOT, argv[fileIdx + 1]), 'utf8'))
   : jsonIdx >= 0 ? JSON.parse(argv[jsonIdx + 1]) : {};
 const confirm = argv.includes('--confirm');
+
+/**
+ * `--key value` pairs, folded into the same input object as `--json`.
+ *
+ * Until 09/09/2026 the only way in was `--json '{"customer":"112074"}'`, and
+ * anything else was **swallowed in silence**: `--customer 112074` left `input`
+ * as `{}` and the run went on to spend 128 seconds — a login, a failure, a
+ * second login — before the task itself said "חסר customer". The obvious
+ * spelling has to either work or complain; quietly doing neither is what makes
+ * the dispatcher look broken and a fresh task look easier.
+ *
+ * Values are read verbatim, with no numeric or boolean coercion beyond a bare
+ * flag becoming `true` — Dror's rule that a source value is written as it is.
+ * A leading `112074` must stay the string Comax matches on.
+ */
+const KNOWN_FLAGS = new Set(['--json', '--json-file', '--confirm']);
+const unknown = [];
+for (let i = 1; i < argv.length; i++) {
+  const a = argv[i];
+  if (!a.startsWith('--')) continue;
+  if (KNOWN_FLAGS.has(a)) { if (a !== '--confirm') i++; continue; }
+  const key = a.slice(2);
+  if (!/^[A-Za-z][A-Za-z0-9]*$/.test(key)) { unknown.push(a); continue; }
+  const next = argv[i + 1];
+  if (next === undefined || next.startsWith('--')) {
+    input[key] = true;
+  } else {
+    // A repeated flag builds a list, so `--programs a157 --programs a132` works
+    // for the array-shaped inputs without making the caller reach for --json.
+    input[key] = Object.hasOwn(input, key)
+      ? [].concat(input[key], next)
+      : next;
+    i++;
+  }
+}
+if (unknown.length) {
+  console.error(`דגל לא מוכר: ${unknown.join(', ')}\nהרץ "npm run run -- --list" כדי לראות מה כל משימה מקבלת.`);
+  process.exit(1);
+}
 
 const taskFile = resolve(TASK_DIR, `${taskName}.js`);
 if (!existsSync(taskFile)) {
@@ -59,6 +141,65 @@ if (typeof mod.run !== 'function') {
 
 const writes = mod.meta?.writes !== false; // assume a task writes unless it says otherwise
 const dryRun = writes && !confirm;
+
+/**
+ * Input is checked **before** the browser, the lock and the login.
+ *
+ * `customer-history` validates its own `customer` and throws a clear message —
+ * but it throws from inside the task, which is after `ensureComax` and a login.
+ * Measured 09/09/2026: a run missing `customer` cost 128 seconds and *two*
+ * logins (the retry re-logged in and hit the identical line) to deliver "חסר
+ * customer — על איזה לקוח לבדוק?". Nothing about that answer needed Comax.
+ *
+ * The convention is already in the codebase: a required field's description
+ * ends with "חובה". So it is enforced here rather than restated in a new
+ * `required` array that every task would have to keep in sync.
+ *
+ * The same pass normalises inputs the meta calls `array`, so `--programs a157`
+ * reaches a task expecting a list as `['a157']` instead of a bare string that
+ * fails much later, somewhere less obvious.
+ */
+for (const [key, spec] of Object.entries(mod.meta?.input ?? {})) {
+  if (typeof spec !== 'string') continue;
+  if (/^array\b/.test(spec) && Object.hasOwn(input, key) && !Array.isArray(input[key])) {
+    input[key] = [input[key]];
+  }
+  const missing = input[key] === undefined || input[key] === '';
+  if (/חובה/.test(spec) && missing) {
+    console.error(
+      `\nחסר "${key}" — ${spec}\n\n` +
+        `  ${taskName}: ${mod.meta?.description ?? ''}\n\n` +
+        `הרץ "npm run run -- --list" כדי לראות את כל השדות.\n`,
+    );
+    process.exit(1);
+  }
+}
+
+/**
+ * A task's own pre-flight check, run before the browser, the lock and the login.
+ *
+ * The "חובה" convention above covers a plainly required field, but not an
+ * either/or: `invoice-email` needs `docNo` **or** `customer`, and neither is
+ * required on its own. Measured 09/09/2026 — a call missing both still cost 81
+ * seconds and a login before the task said so from inside.
+ *
+ * So a task may export `meta.precheck(input)`, which throws (or returns a
+ * string) when the combination cannot work. It gets the parsed input and
+ * nothing else: no page, no session. Anything needing Comax to answer is not a
+ * precheck.
+ */
+if (typeof mod.meta?.precheck === 'function') {
+  let problem = null;
+  try {
+    problem = mod.meta.precheck(input) ?? null;
+  } catch (e) {
+    problem = e.message;
+  }
+  if (problem) {
+    console.error(`\n${problem}\n\n  ${taskName}: ${mod.meta?.description ?? ''}\n`);
+    process.exit(1);
+  }
+}
 
 const logger = new RunLogger(taskName);
 logger.step('input', JSON.stringify(input));
@@ -190,7 +331,18 @@ try {
   // ועל סשן מת (ממצא ב׳ ב-MAP.md). וסשן מת גם לא מנווט למסך התחברות — התוכנית
   // פשוט לא נפתחת וה-DOM נשאר שלם (ממצא ג׳). לכן אין מה לזהות, ומגיבים לכישלון
   // עצמו.
-  if (!writes) {
+  if (e?.sessionUnrelated) {
+    // יש כישלונות שאנחנו כן יודעים לזהות, ולוגין מחדש לא נוגע בהם: אייקון שאינו
+    // בשולחן העבודה, תווית כפולה, קטלוג קיצורים ישן. הניסיון השני ימות באותה
+    // שורה בדיוק — נמדד 09/09/2026, שלוש הרצות customer-history שכל אחת שילמה
+    // לוגין של ~50 שניות ונכשלה שוב על אותו a157.
+    //
+    // זה לא סותר את "אי אפשר לזהות סשן מת ב-GET": אין כאן ניסיון להוכיח שהסשן
+    // חי, אלא רק להכיר בכישלון שהסיבה שלו ידועה ואינה הסשן. כל שאר הכישלונות
+    // נשארים תחת ברירת המחדל של הניסיון החוזר.
+    logger.step('session', `הכישלון אינו קשור לסשן — לא מתחבר מחדש. ${e.message.split('\n')[0]}`);
+    await fail(e);
+  } else if (!writes) {
     // קריאה: אין מה לאבד. לוגין מחדש וניסיון שני יחיד מכסים את מקרה הסשן המת
     // בלי לנסות להבחין בו. המחיר: לוגין מיותר על כישלון שאינו קשור לסשן.
     logger.step('session', 'המשימה נכשלה — מתחבר מחדש ומנסה שוב פעם אחת');

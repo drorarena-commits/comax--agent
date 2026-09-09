@@ -34,7 +34,7 @@ export const meta = {
   description: 'שליחת חשבונית מס בדוא"ל דרך קומקס',
   writes: true,
   input: {
-    docNo: 'string — מספר החשבונית',
+    docNo: 'string — מספר החשבונית. בלעדיו נדרש customer, ותישלח האחרונה שלו',
     to: 'string — כתובת הנמען. חובה. אין ברירת מחדל, בכוונה',
     customer: 'string, אופציונלי — שם הלקוח, לבחירת השורה כשהמספר חוזר בין שנים',
     toName: 'string, אופציונלי — שם הנמען',
@@ -42,6 +42,24 @@ export const meta = {
     remark: 'string, אופציונלי — גוף ההודעה',
     stopAfter: 'string, אופציונלי — למפות ולעצור: shihzur | chooser | form',
     keepOpen: 'boolean — להשאיר את החלונות פתוחים בסוף. ברירת מחדל: סוגר',
+  },
+  /**
+   * Everything here is decidable without Comax, so it runs before the login
+   * rather than 51 seconds into the task — which is where `חסר docNo` surfaced
+   * on 09/09/2026, after a full login, for a call that was never going to work.
+   */
+  precheck(input) {
+    if (!input.docNo && !input.customer) {
+      return 'חסר docNo — איזו חשבונית לשלוח? (או customer, ואז תישלח האחרונה שלו)';
+    }
+    if (!input.to) {
+      return (
+        'חסר to — כתובת הנמען חייבת להיות מפורשת.\n' +
+        'קומקס ממלא אוטומטית את כתובת הלקוח, ושליחה בטעות ללקוח אינה הפיכה (כלל 14).'
+      );
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.to)) return `"${input.to}" אינה כתובת דוא"ל תקינה.`;
+    return null;
   },
 };
 
@@ -105,10 +123,51 @@ async function mapFrame(frame, logger, name) {
   return controls;
 }
 
+/**
+ * The invoice list grid, as rows. Column positions are read from the header
+ * rather than assumed — Comax reorders them between screens, and a fixed index
+ * would quietly pick up the wrong column.
+ *
+ * Only the visible page is read, which is exactly right here and would be wrong
+ * elsewhere: the newest invoice sorts onto page 1, so no paging is needed to
+ * find it. Reading a *document's lines* is the case that must page and prove
+ * its total (rule 16) — that is `src/documents/read-lines.js`, not this.
+ */
+async function readInvoiceGrid(frame) {
+  return frame.evaluate(() => {
+    const txt = (el) => (el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim();
+    for (const t of document.querySelectorAll('table')) {
+      const rows = [...t.rows].map((tr) => [...tr.cells].map(txt));
+      const hi = rows.findIndex((r) => r.includes('שם לקוח'));
+      if (hi < 0) continue;
+      const head = rows[hi];
+      const at = (l) => head.indexOf(l);
+      const dc = ['חשבונית', 'מסמך', 'תעודה'].map(at).find((i) => i >= 0);
+      if (dc === undefined) continue;
+      const out = [];
+      for (const r of rows.slice(hi + 1)) {
+        const docNo = r[dc];
+        if (!docNo || !/^\d+$/.test(docNo)) continue;
+        out.push({
+          docNo,
+          date: at('מתאריך') >= 0 ? r[at('מתאריך')] : '',
+          customer: at('שם לקוח') >= 0 ? r[at('שם לקוח')] : '',
+          code: at('לקוח') >= 0 ? r[at('לקוח')] : '',
+          amount: at('סכום') >= 0 ? r[at('סכום')] : '',
+        });
+      }
+      return out;
+    }
+    return [];
+  });
+}
+
 export async function run(ctx) {
   const { page, human, logger, cfg, input, dryRun } = ctx;
 
-  if (!input.docNo) throw new Error('חסר docNo — איזו חשבונית לשלוח?');
+  if (!input.docNo && !input.customer) {
+    throw new Error('חסר docNo — איזו חשבונית לשלוח? (או customer, ואז תישלח האחרונה שלו)');
+  }
   if (!input.to) {
     throw new Error(
       'חסר to — כתובת הנמען חייבת להיות מפורשת.\n' +
@@ -118,13 +177,71 @@ export async function run(ctx) {
   if (!EMAIL_RE.test(input.to)) throw new Error(`"${input.to}" אינה כתובת דוא"ל תקינה.`);
 
   await ensureLoggedIn({ page, human, logger, cfg });
-  const { frame: list } = await openProgram(ctx, 'a157', { expect: /Doc650V\.asp/i });
+  const { frame: list } = await openProgram(ctx, 'a157', {
+    expect: /Doc650V\.asp/i,
+    // The desktop is not a stable route: it switches category on its own, and on
+    // 09/09/2026 it came up on "לקוחות", where a157 simply is not present. The
+    // path is the same one customer-history.js and the invoice document profile
+    // already use, and it skips raising the desktop entirely (~18s).
+    program: 'Erp/Mehirot/Doc650/Inv_Mlay/Doc650V.asp',
+  });
 
   /* ------------------------------------------------- 1. find the invoice -- */
-  await human.type('#wFindDocNo', String(input.docNo), { scope: list, label: 'מספר חשבונית' });
+  /**
+   * "שלח לי את החשבונית האחרונה של X" is one print, not a search followed by a
+   * send. Dror's correction, 09/09/2026:
+   *
+   *   "גם לא ביקשתי שיפתח או יחפש משהו — רק שישלח לי למייל.
+   *    בקשה כזו לא דורשת פתיחה, רק 'הדפסה' למייל."
+   *
+   * He was right, and the run he stopped proved it: reaching for
+   * `customer-history` to learn the number opened each invoice in turn to read
+   * its lines — ten Comax actions to answer something the grid already shows,
+   * and every one of them a real invoice opened on a screen where `#OK` means
+   * קליטה (rule 4).
+   *
+   * So when only a customer is given, the number is read off the filtered grid
+   * and the existing print route continues untouched. Nothing is opened.
+   */
+  let docNo = input.docNo;
+  if (!docNo) {
+    // The filter boxes accumulate — a leftover docNo filter silently yields
+    // "this customer has no invoices" (the same trap as rule 11's duplicate
+    // check). Clear them before filtering by customer.
+    for (const sel of ['#wFindDocNo', '#wFindDateM', '#wFindDateA']) {
+      await list.locator(sel).fill('').catch(() => {});
+    }
+    await human.type('#wFindLkNm', String(input.customer), {
+      scope: list, label: `סינון ללקוח ${input.customer}`, clear: true,
+    });
+    await human.press('Enter', { label: 'החלת הסינון' });
+    await human.settle('filtered by customer');
+
+    const grid = await readInvoiceGrid(list);
+    const mine = grid.filter((r) => String(r.code) === String(input.customer));
+    if (!mine.length) {
+      throw new Error(
+        `ללקוח ${input.customer} אין חשבוניות בשנת העבודה הנוכחית.\n` +
+          'זה אינו "אין לו חשבוניות" — חשבונית משנה קודמת דורשת החלפת חברה (כלל 9).',
+      );
+    }
+    // Highest document number wins. The running number resets each year, but the
+    // grid here is scoped to one working year, so within it the order holds.
+    mine.sort((a, b) => Number(b.docNo) - Number(a.docNo));
+    docNo = mine[0].docNo;
+    logger.step('found', `החשבונית האחרונה של ${input.customer}: ${docNo} מ-${mine[0].date}, ${mine[0].amount} ₪`);
+    if (mine.length > 1) {
+      logger.step('found', `(מתוך ${mine.length} חשבוניות: ${mine.slice(0, 5).map((r) => r.docNo).join(', ')}…)`);
+    }
+  }
+
+  await human.type('#wFindDocNo', String(docNo), { scope: list, label: 'מספר חשבונית' });
   await human.press('Enter', { label: 'החלת הסינון' });
   await human.settle('filtered');
 
+  // Still selected by customer even when we just derived the number: rule 18 —
+  // a document number repeats across years, so the docNo filter alone can leave
+  // two unrelated invoices in the grid.
   if (input.customer) {
     // The grid paints the name into more than one cell, so exact text is not
     // unique; the docNo filter has already narrowed it to the right row.
@@ -172,9 +289,12 @@ export async function run(ctx) {
     lkTo: document.getElementById('LkA')?.value ?? null,
   }));
   logger.step('range', `חשבונית ${range.docFrom}–${range.docTo} · לקוח ${range.lkFrom}–${range.lkTo}`);
-  if (String(range.docFrom) !== String(input.docNo) || String(range.docTo) !== String(input.docNo)) {
+  // `docNo`, not `input.docNo` — when the number was derived from the customer
+  // the latter is undefined, and this gate is the one thing standing between a
+  // single invoice and a mail carrying other customers' invoices too.
+  if (String(range.docFrom) !== String(docNo) || String(range.docTo) !== String(docNo)) {
     throw new Error(
-      `טווח השיחזור הוא ${range.docFrom}–${range.docTo} ולא ${input.docNo} בלבד. ` +
+      `טווח השיחזור הוא ${range.docFrom}–${range.docTo} ולא ${docNo} בלבד. ` +
         'עוצר: שליחה כזאת תצרף חשבוניות של לקוחות אחרים.',
     );
   }

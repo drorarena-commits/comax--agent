@@ -49,7 +49,8 @@
     {
       "id": "a77",
       "label": "ניהול דגם",
-      "selector": "a:text-is(\"ניהול דגם\")"
+      "selector": "a:text-is(\"ניהול דגם\")",
+      "program": "Erp/Prt_Degem/Prt_DegemV.asp"
     },
     {
       "id": "a110",
@@ -74,7 +75,8 @@
     {
       "id": "a84",
       "label": "פריטים",
-      "selector": "a:text-is(\"פריטים\")"
+      "selector": "a:text-is(\"פריטים\")",
+      "program": "Erp/Prt/PrtV.aspx"
     },
     {
       "id": "a132",
@@ -134,7 +136,8 @@
     {
       "id": "a125",
       "label": "ניהול סוגי צבע",
-      "selector": "a:text-is(\"ניהול סוגי צבע\")"
+      "selector": "a:text-is(\"ניהול סוגי צבע\")",
+      "program": "Erp/Prt_Gimor/Prt_GimorV.asp"
     },
     {
       "id": "a170",
@@ -164,7 +167,8 @@
     {
       "id": "a157",
       "label": "חשבוניות מס ( מכירות )",
-      "selector": "a:text-is(\"חשבוניות מס ( מכירות )\")"
+      "selector": "a:text-is(\"חשבוניות מס ( מכירות )\")",
+      "program": "Erp/Mehirot/Doc650/Inv_Mlay/Doc650V.asp"
     },
     {
       "id": "a42",
@@ -189,7 +193,8 @@
     {
       "id": "a6",
       "label": "מחירונים",
-      "selector": "a:text-is(\"מחירונים\")"
+      "selector": "a:text-is(\"מחירונים\")",
+      "program": "Erp/Mhr/MhrV.aspx"
     },
     {
       "id": "a118",
@@ -244,7 +249,8 @@
     {
       "id": "a158",
       "label": "מטריצת מחסנים",
-      "selector": "a:text-is(\"מטריצת מחסנים\")"
+      "selector": "a:text-is(\"מטריצת מחסנים\")",
+      "program": "Erp/Nituah/MlaiPrtStoreMatItraP.aspx"
     },
     {
       "id": "a143",

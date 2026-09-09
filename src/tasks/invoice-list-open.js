@@ -28,7 +28,14 @@ export async function run(ctx) {
   const { page, human, logger, cfg, input } = ctx;
 
   await ensureLoggedIn({ page, human, logger, cfg });
-  const { frame: list } = await openProgram(ctx, 'a157', { expect: /Doc650V\.asp/i });
+  const { frame: list } = await openProgram(ctx, 'a157', {
+    expect: /Doc650V\.asp/i,
+    // The desktop is not a stable route: it switches category on its own, and on
+    // 09/09/2026 it came up on "לקוחות", where a157 simply is not present. The
+    // path is the same one customer-history.js and the invoice document profile
+    // already use, and it skips raising the desktop entirely (~18s).
+    program: 'Erp/Mehirot/Doc650/Inv_Mlay/Doc650V.asp',
+  });
 
   if (input.docNo) {
     // Typing filters. `#Find` opens the advanced-search dialog and leaves it

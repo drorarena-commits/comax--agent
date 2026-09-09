@@ -103,11 +103,11 @@ async function resolveShortcut({ nav, logger }, sc) {
   if (n === 1) return sc.selector;
 
   if (n > 1) {
-    throw new Error(
+    throw markSessionUnrelated(new Error(
       `"${sc.label}" מופיע ${n} פעמים בשולחן העבודה. ` +
         `הטקסט לא מספיק לזיהוי, וה-id בקטלוג (${sc.id}) לא אמין כי קומקס ממספר מחדש. ` +
         `תריץ "npm run snapshot" ותעדכן את knowledge/desktop-shortcuts.json.`,
-    );
+    ));
   }
 
   // No match by label. Fall back to the id, but only if it is really there —
@@ -118,10 +118,10 @@ async function resolveShortcut({ nav, logger }, sc) {
     return `#${sc.id}`;
   }
 
-  throw new Error(
+  throw markSessionUnrelated(new Error(
     `"${sc.label}" (${sc.id}) לא נמצא בשולחן העבודה — לא לפי טקסט ולא לפי id. ` +
       `ייתכן שהקיצור הוסר או ששולחן העבודה השתנה. תריץ "npm run run -- desktop-probe".`,
-  );
+  ));
 }
 
 /**
@@ -137,14 +137,24 @@ async function resolveShortcut({ nav, logger }, sc) {
 export async function openProgram({ page, human, logger, cfg }, nameOrId, { expect = null, program = null } = {}) {
   const sc = findShortcut(nameOrId);
   const nav = navFrame(page, cfg);
+
+  /**
+   * The catalogue supplies the path when the caller did not.
+   *
+   * Before 09/09/2026 a path could only be hard-coded at the call site, and an
+   * audit that day found seven tasks without one — `stock-matrix`, the three
+   * `a84` tasks, `cost-import`, `color-create`, `model-create`. Nothing was
+   * wrong with them; they simply predate the fast route, and each was one
+   * desktop reshuffle away from failing the way `invoice-email` did at 18:20.
+   *
+   * Reading it from `desktop-shortcuts.json` fixes them together, and every
+   * future caller by default. An explicit `program` still wins — a task that
+   * needs a variant path (query string, a different entry point) keeps it.
+   */
+  program = program ?? sc.program ?? null;
   const wanted = expect ?? (sc.urlPattern ? new RegExp(sc.urlPattern, 'i') : null);
 
   const before = new Set((await activeFrames(page)).map((f) => f.name + f.url));
-
-  const selector = await resolveShortcut({ nav, logger }, sc);
-  // Desktop icons select on a single click; only a double-click launches them.
-  await human.doubleClick(selector, { scope: nav, label: `${sc.label} (${sc.id})` });
-  await human.settle(`program "${sc.label}" loading`);
 
   // Max2000 programs can take a few seconds to paint into their frame. When the
   // program was already open, nothing new appears — so a URL match counts as
@@ -192,6 +202,24 @@ export async function openProgram({ page, human, logger, cfg }, nameOrId, { expe
     // underneath simply never lands. Raise the desktop first.
     await showDesktop({ page, human, logger, cfg });
 
+    // ...and only *then* ask which selector reaches the icon. `resolveShortcut`
+    // counts what is in the DOM in front of it, so asking while a program still
+    // covers the desktop reports "not on the desktop" for an icon that is merely
+    // hidden — and it throws, so the `showDesktop()` that would have fixed it
+    // never runs.
+    //
+    // Measured 09/09/2026: three consecutive `customer-history` runs died on
+    // `a157 לא נמצא בשולחן העבודה` while a157 was on the desktop the whole time.
+    // The tell was in the same logs — the one run that succeeded had resolved
+    // the shortcut straight after login, when the desktop happened to be up.
+    //
+    // The relogin in `tools/run.js` cannot rescue this and doubles its cost: a
+    // fresh session does not raise the desktop either, so the second attempt
+    // failed at the identical line, ~50s later. Resolving after the desktop is
+    // raised also drops the speculative double-click that used to run first,
+    // so the happy path gets shorter, not longer.
+    const selector = await resolveShortcut({ nav, logger }, sc);
+
     // `count()` asks the DOM as it stands rather than waiting for the element to
     // appear, so an icon Comax has taken off the desktop costs nothing to rule
     // out. Measured 04/09/2026 — `a157` is gone from a 51-icon desktop, and
@@ -201,16 +229,16 @@ export async function openProgram({ page, human, logger, cfg }, nameOrId, { expe
       // Desktop icons select on a single click; only a double-click launches them.
       await human.doubleClick(selector, { scope: nav, label: `${sc.label} (${sc.id})` });
     } else if (program) {
-      throw new Error(
+      throw markSessionUnrelated(new Error(
         `"${sc.label}" (${sc.id}) לא נפתח: הנתיב ${program} לא הביא תוכנית, והאייקון לא בשולחן.\n` +
           'שני המסלולים נוסו. בדוק את הנתיב, או הרץ `node tools/_smoke/desktop-probe.mjs`.',
-      );
+      ));
     } else {
-      throw new Error(
+      throw markSessionUnrelated(new Error(
         `"${sc.label}" (${sc.id}) לא נמצא בשולחן העבודה, ואין נתיב חלופי.\n` +
           'קומקס מסדר מחדש את השולחן בלי להודיע. הוסף `program` לקריאה ל-openProgram,\n' +
           'או הרץ `node tools/_smoke/desktop-probe.mjs` כדי לראות אילו אייקונים כן קיימים.',
-      );
+      ));
     }
     after = await waitForProgram();
   }
@@ -594,3 +622,22 @@ export async function fillLookup(ctx, { frame, field, arrow, value, what = 'ער
 }
 
 export { PROGRAM_FRAMES, BLOCKING_POPUPS, pickerFrame };
+
+/**
+ * Marks an error as one a fresh login cannot fix.
+ *
+ * `tools/run.js` cannot ask Comax whether the session is alive — 37 URLs read
+ * byte-identical on a live session and a killed one (finding 4 in MAP.md) — so
+ * it treats any failure of a read task as possibly-dead-session and pays one
+ * relogin for a second attempt. That is the right default for the unknown case
+ * and the wrong one here: a missing desktop icon, an ambiguous label and a
+ * stale catalogue all fail identically on the second attempt, ~50s later.
+ *
+ * Measured 09/09/2026: three `customer-history` runs each paid that relogin and
+ * each died at the same line. Only failures we can positively identify as
+ * session-independent are marked; everything else keeps the retry.
+ */
+export function markSessionUnrelated(err) {
+  err.sessionUnrelated = true;
+  return err;
+}
