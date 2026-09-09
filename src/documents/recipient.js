@@ -55,7 +55,7 @@ export async function takeOverRecipient({ frame, human, logger, to, field = '#Em
   // flows, and this is also the only field with a real gate behind it:
   // `assertRecipient` re-reads it at send time and throws on exact mismatch,
   // so a paste that did not land cannot reach the send button.
-  await human.type(field, to, { scope: frame, label: 'מקבל דוא"ל', paste: true });
+  await human.type(field, to, { scope: frame, label: 'מקבל דוא"ל', free: true });
 
   // קריאה-חזרה מיד, לא רק בשער השליחה. הדבקה היא אירוע input אחד, ושדה שבונה
   // את עצמו מחדש היה בולע אותה בשקט; ב-DRY RUN גם אין assertRecipient שיתפוס

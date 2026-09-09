@@ -109,7 +109,7 @@ async function openEnvelope(ctx, profile, list, docNo) {
 
   for (const field of [route.range.from, route.range.to]) {
     await range.locator(field).fill('').catch(() => {});
-    await human.type(field, docNo, { scope: range, label: field });
+    await human.type(field, docNo, { scope: range, label: field, free: true });
   }
 
   /**
@@ -208,9 +208,9 @@ export async function run(ctx) {
   assertEnvelopeDocument(dlg.url(), String(input.docNo), profile.label, logger);
 
   const { prefilled: original } = await takeOverRecipient({ frame: dlg, human, logger, to });
-  if (input.toName) await human.type('#SentToEmail_Add', input.toName, { scope: dlg, label: 'שם הנמען', paste: true });
-  if (input.subject) await human.type('#Subject', input.subject, { scope: dlg, label: 'נושא', paste: true });
-  if (input.remark) await human.type('#Remark', input.remark, { scope: dlg, label: 'הערה', paste: true });
+  if (input.toName) await human.type('#SentToEmail_Add', input.toName, { scope: dlg, label: 'שם הנמען', free: true });
+  if (input.subject) await human.type('#Subject', input.subject, { scope: dlg, label: 'נושא', free: true });
+  if (input.remark) await human.type('#Remark', input.remark, { scope: dlg, label: 'הערה', free: true });
 
   const mail = await dlg.evaluate(() => ({
     to: document.getElementById('Email')?.value,

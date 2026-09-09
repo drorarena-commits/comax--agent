@@ -190,9 +190,15 @@ export class Human {
       if (got === null) {
         how = 'paste?';
       } else if (got.trim() !== want.trim()) {
+        // ⚠️ `secret` must hold here too. The first version of this message
+        // printed both values raw, and on 09/09/2026 it wrote the Comax
+        // password into runs/*/steps.log in clear text. The mismatch is worth
+        // reporting; the value is not.
+        const mine = secret ? '•'.repeat(Math.min(want.length, 8)) : `"${want}"`;
+        const theirs = secret ? `(${got.length} תווים)` : `"${got}"`;
         this.logger?.step(
           'paste',
-          `${label ?? String(target)}: ההדבקה נתנה "${got}" במקום "${want}" — מקליד במקום`,
+          `${label ?? String(target)}: ההדבקה נתנה ${theirs} במקום ${mine} — מקליד במקום`,
         );
         await this.page.keyboard.press('Control+A');
         await sleep(rand(80, 200));
