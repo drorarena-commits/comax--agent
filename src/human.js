@@ -160,12 +160,26 @@ export class Human {
     this.lastActionAt = Date.now();
   }
 
-  /** Wait for the page to settle after a postback, then take a human beat. */
+  /**
+   * Wait for the page to settle after a postback, then take a human beat.
+   *
+   * `networkidle` never arrives here — Comax keeps a heartbeat and a chat widget
+   * polling — so this wait always runs to its deadline. That deadline used to be
+   * 15s, and measuring the invoice-email flow (09/09/2026) showed six of them
+   * burning 90 of the run's 235 seconds waiting for something that cannot
+   * happen. The budget is therefore small on purpose: it catches a postback that
+   * does go quiet, and gives up quickly on the ones that never will.
+   *
+   * What actually makes this safe is that nothing relies on it. Every step that
+   * needs a screen waits for that screen — `waitFor({state:'visible'})` before a
+   * click, `waitForFrameWith` for a dialog — and those have their own generous
+   * timeouts. `settle` is a beat, not a barrier.
+   */
   async settle(label = null) {
     try {
-      await this.page.waitForLoadState('networkidle', { timeout: 15000 });
+      await this.page.waitForLoadState('networkidle', { timeout: this.pace.settleTimeoutMs ?? 2500 });
     } catch {
-      /* Comax polls in the background; networkidle may never arrive. */
+      /* Expected: Comax polls in the background, so idle never comes. */
     }
     await this.think(label ?? 'settling');
   }

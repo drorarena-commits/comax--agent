@@ -81,6 +81,50 @@ export async function showDesktop({ page, human, logger, cfg }) {
 }
 
 /**
+ * Which selector actually reaches this shortcut on the desktop in front of us.
+ *
+ * The `id` in the catalogue is **not stable**. Comax renumbers the desktop
+ * anchors: on 09/09/2026 "חשבוניות מס ( מכירות )" was `a227` and "חשבונית
+ * מס/קבלה מכירות" was `a226`, where the catalogue — snapshotted a week earlier —
+ * still said `a157` and `a132`. Aiming `#a157` at that desktop waited thirty
+ * seconds for an element that no longer exists and then gave up, which is what
+ * made every document program look like a browser that hangs on open.
+ *
+ * So the label leads and the id only fills in behind it. The label is what the
+ * icon actually says, and it survives the renumbering. The dangerous case is the
+ * reverse of the old assumption: a stale id that happens to exist today belongs
+ * to *some other program*, and a double-click would open the wrong one in
+ * silence. Refusing beats guessing — the same rule as everywhere else here.
+ */
+async function resolveShortcut({ nav, logger }, sc) {
+  const byText = sc.selector ? nav.locator(sc.selector) : null;
+  const n = byText ? await byText.count().catch(() => 0) : 0;
+
+  if (n === 1) return sc.selector;
+
+  if (n > 1) {
+    throw new Error(
+      `"${sc.label}" מופיע ${n} פעמים בשולחן העבודה. ` +
+        `הטקסט לא מספיק לזיהוי, וה-id בקטלוג (${sc.id}) לא אמין כי קומקס ממספר מחדש. ` +
+        `תריץ "npm run snapshot" ותעדכן את knowledge/desktop-shortcuts.json.`,
+    );
+  }
+
+  // No match by label. Fall back to the id, but only if it is really there —
+  // otherwise we would hand Playwright a selector we already know is missing
+  // and pay the full action timeout for the privilege.
+  if (sc.id && (await nav.locator(`#${sc.id}`).count().catch(() => 0)) === 1) {
+    logger?.step('shortcut', `"${sc.label}" לא נמצא לפי טקסט — נופל ל-#${sc.id}`);
+    return `#${sc.id}`;
+  }
+
+  throw new Error(
+    `"${sc.label}" (${sc.id}) לא נמצא בשולחן העבודה — לא לפי טקסט ולא לפי id. ` +
+      `ייתכן שהקיצור הוסר או ששולחן העבודה השתנה. תריץ "npm run run -- desktop-probe".`,
+  );
+}
+
+/**
  * Opens a program from the desktop shortcut strip and waits for it to render.
  * Returns the frames that came alive, so a task can pick its working frame.
  */
@@ -95,8 +139,7 @@ export async function openProgram({ page, human, logger, cfg }, nameOrId, { expe
   // underneath simply never lands. Raise the desktop first, every time.
   await showDesktop({ page, human, logger, cfg });
 
-  // Prefer the id when we have one — it survives two shortcuts sharing a label.
-  const selector = sc.id ? `#${sc.id}` : sc.selector;
+  const selector = await resolveShortcut({ nav, logger }, sc);
   // Desktop icons select on a single click; only a double-click launches them.
   await human.doubleClick(selector, { scope: nav, label: `${sc.label} (${sc.id})` });
   await human.settle(`program "${sc.label}" loading`);
