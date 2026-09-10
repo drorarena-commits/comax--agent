@@ -79,12 +79,18 @@ export class Human {
     await el.scrollIntoViewIfNeeded();
     await sleep(rand(200, 500));
 
-    // Move the mouse there in a few steps, hover briefly, then click.
+    // Move the mouse there, hover briefly, then click. The step count stays at
+    // 1-2 on purpose: Max2000 is a frameset with dozens of frames, and Playwright
+    // dispatches every intermediate mousemove into all of them, so each step costs
+    // ~1 second on a live page (measured 10/09/2026: steps:1 = 0.7s, steps:18 =
+    // 18.2s, at 61 frames). The human pace lives in hoverMinMs/hoverMaxMs and in
+    // gate(), not in the interpolation — raising steps buys no realism, only dead
+    // time, and the cost grows as Max2000 accumulates frames during a flow.
     const box = await el.boundingBox();
     if (box) {
       const x = box.x + box.width * rand(0.35, 0.65);
       const y = box.y + box.height * rand(0.35, 0.65);
-      await this.page.mouse.move(x, y, { steps: Math.round(rand(8, 18)) });
+      await this.page.mouse.move(x, y, { steps: Math.round(rand(1, 2)) });
       await sleep(rand(this.pace.hoverMinMs, this.pace.hoverMaxMs));
       await this.page.mouse.click(x, y);
     } else {
@@ -107,7 +113,7 @@ export class Human {
     if (box) {
       const x = box.x + box.width * rand(0.4, 0.6);
       const y = box.y + box.height * rand(0.4, 0.6);
-      await this.page.mouse.move(x, y, { steps: Math.round(rand(8, 18)) });
+      await this.page.mouse.move(x, y, { steps: Math.round(rand(1, 2)) });
       await sleep(rand(this.pace.hoverMinMs, this.pace.hoverMaxMs));
       await this.page.mouse.dblclick(x, y);
     } else {
