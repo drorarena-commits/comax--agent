@@ -17,6 +17,17 @@ import { chromium } from 'playwright-core';
 import { ROOT, loadConfig } from '../src/config.js';
 
 const args = process.argv.slice(2);
+const acctFlag = args.findIndex((a) => a === '--account');
+// Dror has two Gmail accounts — dror.arena@ and drorarena@ (no dot) — and mail
+// arrives at both. /mail/u/0/ is whichever Chrome signed in first, so a message
+// that lives in the other one reports 'no attachments' rather than 'wrong
+// account'. Measured 10/09/2026 on the Wix August report.
+const account = acctFlag >= 0 ? args[acctFlag + 1] : '0';
+if (acctFlag >= 0) args.splice(acctFlag, 2);
+// `list` is read *after* the splice — otherwise `--account 1 --list <id>` puts
+// `--account` at args[0], `list` comes out false, and `--list` is taken as the
+// message id. It then reports "no attachments", which reads like an answer
+// about the mail rather than a parsing bug.
 const list = args[0] === '--list';
 const [messageId, match, outName] = list ? args.slice(1) : args;
 if (!messageId) {
@@ -34,7 +45,7 @@ if (!ctx) { console.error('אין הקשר דפדפן.'); process.exit(1); }
 
 try {
   const p = await ctx.newPage();
-  await p.goto(`https://mail.google.com/mail/u/0/#all/${messageId}`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
+  await p.goto(`https://mail.google.com/mail/u/${account}/#all/${messageId}`, { waitUntil: 'domcontentloaded', timeout: 120_000 });
   await p.waitForTimeout(6000);
 
   if (/accounts\.google\.com|ServiceLogin/i.test(p.url())) {

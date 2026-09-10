@@ -558,7 +558,30 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
     return f.evaluate(() => {
       const tr = [...document.querySelectorAll("tr")];
       const cell = (r) => [...r.cells].map((c) => c.innerText.trim()).join(" | ");
-      return { rows: tr.length, first: tr[0] ? cell(tr[0]) : "", last: tr.at(-1) ? cell(tr.at(-1)) : "" };
+      /**
+       * The header row is a `<tr>` like any other, and counting it inflated
+       * every grid by one.
+       *
+       * Measured 10/09/2026 on a 32-row file: Comax's own counter said
+       * "יבוא תקין: 31 · יבוא לא תקין: 1" — exactly 32 — while `tr.length` gave
+       * 32 and 2, and the `shown + rejected === dataRows` gate then refused a
+       * preview that was perfectly fine. The mismatch was two header rows.
+       *
+       * Detected by content rather than position: the header is the row whose
+       * cells are the column labels, and `פריט` with `ברקוד` in the same row is
+       * what no data row can look like (a data row holds values there).
+       */
+      const isHeader = (r) => {
+        const t = cell(r);
+        return /(^|\|)\s*פריט\s*(\||$)/.test(t) && /ברקוד/.test(t);
+      };
+      const body = tr.filter((r) => !isHeader(r));
+      return {
+        rows: body.length,
+        headers: tr.length - body.length,
+        first: tr[0] ? cell(tr[0]) : "",
+        last: body.at(-1) ? cell(body.at(-1)) : "",
+      };
     }).catch(() => null);
   };
 
@@ -582,7 +605,7 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   if (shown === null || rejected === null) {
     throw new Error(`⛔ רשת תוצאה לא נמצאה (תקין=${shown} · לא תקין=${rejected}). לא קולטים בלי לראות את שתי הרשתות.\nהפריימים שהיו פתוחים:\n${frameDump()}`);
   }
-  logger.step('grids', `נספר מתוך הפריימים — יבוא תקין: ${shown} · יבוא לא תקין: ${rejected} · בקובץ: ${dataRows}`);
+  logger.step('grids', `נספר מתוך הפריימים — יבוא תקין: ${shown} · יבוא לא תקין: ${rejected} · בקובץ: ${dataRows} (כותרות שהוחסרו: ${(okG?.headers ?? 0) + (badG?.headers ?? 0)})`);
   logger.step('grid-rows', `תקין[0]: ${okG?.first ?? '—'}`);
   logger.step('grid-rows', `תקין[N]: ${okG?.last ?? '—'}`);
 
