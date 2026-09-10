@@ -158,6 +158,38 @@ export async function run({ page, human, logger, input, cfg }) {
     await human.type(`#Store${i}`, value, { scope: frame, label: `מחסן ${i}` });
   }
 
+  /**
+   * טווח הפריטים נכתב תמיד — גם כשהוא ריק.
+   *
+   * אותו היגיון כמו חריצי המחסנים ממש מעליו, ומאותה סיבה: קומקס משמר את מה
+   * שהוקלד בהרצה קודמת. נמדד 11/09/2026 — הרצה שביקשה דוח מלא נעצרה על
+   * `PrtM="7297491492084"` ו-`PrtA="44906901011159"`, ברקודים משתי הרצות
+   * ישנות. הקוד ציפה לריק אבל מעולם לא כתב ריק, ולכן השער תפס את הפער
+   * במקום שהמילוי ימנע אותו.
+   *
+   * ⚠️ ובלי השער הזה הדוח היה רץ על שני פריטים ומדווח מלאי חלקי בלי שגיאה —
+   * בדיוק משפחת הכשל של "הסינון מצטבר" בבדיקת הכפילות (כלל 11).
+   */
+  const range = { PrtM: String(input.itemFrom ?? ''), PrtA: String(input.itemTo ?? '') };
+  const rangeSet = await frame.evaluate((want) => {
+    const out = {};
+    for (const [id, value] of Object.entries(want)) {
+      const el = document.getElementById(id);
+      if (!el) { out[id] = 'לא נמצא'; continue; }
+      // `fill()` refuses a readonly input and Playwright reports nothing useful
+      // through a catch — measured 11/09/2026, two runs in a row where the
+      // clear appeared to happen and the field still held a stale barcode.
+      // These are lookup fields: they are filled by Comax's picker, not by
+      // typing, so the value is set the same way `readForm` reads it.
+      const ro = el.readOnly || el.disabled;
+      el.value = value;
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      out[id] = `${ro ? 'readonly, ' : ''}נכתב ${JSON.stringify(value)}`;
+    }
+    return out;
+  }, range);
+  logger.step('range', `טווח פריטים — ${Object.entries(rangeSet).map(([k, v]) => `${k}: ${v}`).join(' · ')}`);
+
   if (conf.emptyWarehouses != null) {
     await human.select('#SwSrak', String(conf.emptyWarehouses), { scope: frame, label: 'מחסני סרק' });
   }
