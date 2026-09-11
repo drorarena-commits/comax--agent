@@ -29,11 +29,34 @@ export const meta = {
     priceList: 'string, אופציונלי — מחירון. בלעדיו נשאר מה שקומקס טען',
     date: 'string dd/mm/yyyy, אופציונלי',
     details: 'string, אופציונלי — שדה פרטים',
+    probeImport: 'boolean — גם לפתוח את דיאלוג "יבוא מאקסל" ולמפות את כל פקדיו',
   },
   precheck(input) {
     if (!input.customer) return 'חסר customer — לאיזה לקוח לפתוח את החשבונית?';
     return null;
   },
+};
+
+/** כל מה שלחיץ או נבחר בפריים — כך דיאלוג שלא מופה נעשה ידוע. */
+const CONTROLS = () => {
+  const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+  return [...document.querySelectorAll('button, input, select, img, a, td[onclick], div[onclick]')]
+    .filter((el) => el.offsetParent)
+    .map((el) => ({
+      tag: el.tagName,
+      type: el.type || null,
+      id: el.id || null,
+      name: el.name || null,
+      title: norm(el.title) || null,
+      alt: norm(el.alt) || null,
+      value: el.value ?? null,
+      text: norm(el.textContent).slice(0, 60) || null,
+      onclick: norm(el.getAttribute('onclick')).slice(0, 120) || null,
+      options: el.tagName === 'SELECT'
+        ? [...el.options].map((o) => `${norm(o.textContent) || o.title || ''}=${o.value}`).slice(0, 30)
+        : null,
+    }))
+    .filter((c) => c.id || c.title || c.alt || c.text || c.onclick);
 };
 
 export async function run(ctx) {
@@ -62,6 +85,34 @@ export async function run(ctx) {
   await logger.shot(page, 'lines-empty');
 
   const out = { docNo, header: head, customer: input.customer, filed: false };
+
+  // מיפוי דיאלוג היבוא. `#ImpExcel` נקרא מהסנפשוט הקיים — `button` עם
+  // `onclick="ImpExcel_onclick()"` ב-`Doc650LinesV.asp` — ולא נוחש מצילום.
+  if (input.probeImport) {
+    const grid = page.frames().find((f) => /Doc650LinesV/i.test(f.url()));
+    if (!grid) throw new Error('frame השורות לא נמצא — אי אפשר לפתוח את דיאלוג היבוא.');
+    const before = new Set(page.frames().map((f) => f.url()));
+    await human.click('#ImpExcel', { scope: grid, label: 'יבוא מאקסל' });
+    await human.settle('import dialog');
+    await human.think('dialog painting');
+
+    out.importDialog = [];
+    for (const f of page.frames()) {
+      if (before.has(f.url())) continue;
+      const controls = await f.evaluate(CONTROLS).catch(() => null);
+      if (!controls?.length) continue;
+      out.importDialog.push({ url: f.url(), controls });
+      logger.step('frame', `${f.url().split('/').pop().split('?')[0]} — ${controls.length} פקדים`);
+      for (const c of controls) {
+        const label = [c.id && `#${c.id}`, c.tag, c.type, c.title, c.alt, c.value, c.text]
+          .filter(Boolean).join(' · ').slice(0, 110);
+        if (label) logger.step('ctl', label);
+        if (c.options?.length) logger.step('opts', c.options.join(' | ').slice(0, 300));
+      }
+    }
+    await logger.shot(page, 'import-dialog');
+  }
+
   logger.save('result.json', out);
 
   // 💣 החלון נשאר פתוח **בכוונה**, וזו החריגה מכלל 10. סגירת התוכניות כאן
