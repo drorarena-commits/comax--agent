@@ -109,7 +109,7 @@ const RESET_CANDIDATES = () => {
     .filter((c) => /איפוס|reset|ipus/i.test([c.id, c.title, c.alt, c.text, c.onclick].join(' ')));
 };
 
-async function resetLines(ctx, profile, gridFrame) {
+export async function resetLines(ctx, profile, gridFrame) {
   const { page, human, logger } = ctx;
   const cands = await gridFrame.evaluate(RESET_CANDIDATES);
   for (const c of cands) logger.step('reset?', [c.id && `#${c.id}`, c.title, c.alt, c.text, c.onclick].filter(Boolean).join(' · ').slice(0, 120));
