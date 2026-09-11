@@ -147,11 +147,21 @@ export const profile = {
   finalizeLabel: 'קליטת חשבונית',
 
   /**
-   * A tax invoice must claim at least one printed copy.
+   * At least one printed copy — the safe default for **any** customer.
    *
-   * 0 is what a quote uses, and on Doc650 it is rejected outright: Comax shows
+   * 0 is what a quote uses, and on Doc650 it was rejected outright: Comax shows
    * "חובת הדפסה לפחות עותק אחד !" in red and leaves the document unfiled, while
-   * the click itself looks like it worked. Observed on 6500084, 02/09/2026.
+   * the click itself looks like it worked. Observed on 6500084, 02/09/2026, and
+   * again on 6500088, 11/09/2026.
+   *
+   * ⚠️ **אבל זו אינה תכונה של חשבונית מס — היא תכונה של הלקוח.** דרור,
+   * 11/09/2026: "אם ללקוח בכרטיס לקוח אין אימייל שמור — המערכת לא תיתן להפיק
+   * 0 עותקים". כלומר 0 **מותר** ללקוח שנושא אימייל בכרטיס, כי אז המסמך נשלח
+   * במייל במקום להידפס. שתי ההרצות שראינו היו על לקוחות בלי אימייל, והכלל
+   * נרשם על סוג המסמך — הכללה שגויה מתוך מדגם מוטה.
+   *
+   * ⇒ 1 נשאר ברירת המחדל. לרדת ל-0 מותר **רק** אחרי קריאת כתובת האימייל
+   * מכרטיס הלקוח, ולעולם לא בהנחה שהיא קיימת.
    *
    * Safe because `browser.js` neutralises `window.print` — the filing is already
    * committed by the time the print would fire.
