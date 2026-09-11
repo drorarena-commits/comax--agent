@@ -31,6 +31,7 @@ export const meta = {
     format: 'string, ברירת מחדל "ברקוד/קוד-כמות-סכום" — המבנה ב-#SwFormat',
     hasHeader: 'boolean, אופציונלי — לקובץ שיש בו שורת כותרת (#SwKoteret)',
     allowExisting: 'boolean — לייבא גם למסמך שכבר יש בו שורות. ברירת המחדל היא סירוב',
+    resetExisting: 'boolean — לאפס את המסמך (מחיקת כל השורות) לפני היבוא',
   },
   precheck(input) {
     if (!input.customer) return 'חסר customer.';
@@ -78,6 +79,67 @@ const READ_COUNTS = () => {
   const found = [...body.matchAll(/סה"כ\s*רשומות\s*:\s*(\d*)/g)].map((m) => (m[1] === '' ? 0 : Number(m[1])));
   return { found, body: body.slice(0, 400) };
 };
+
+/**
+ * 🧹 "איפוס מסמך" — מוחק את **כל** שורות החשבונית ומשאיר את המסמך פתוח.
+ *
+ * המסלול, מצילומי דרור (11/09/2026): אייקון ⊗ אדום בסרגל ⇒ דיאלוג
+ * `איפוס חשבונית` עם `למחיקת כל השורות · הקש/י אישור` ⇒ ✓ ⇒ רשת ריקה,
+ * סיכומים 0.00, אותו מספר מסמך.
+ *
+ * ⚠️ **בסרגל שני אייקונים אדומים זה לצד זה**, ⊗ ו-`✗`, ואחד מהם נוגע בשורה
+ * בודדת. לכן הפקד מאותר **לפי תוכן** ולא לפי מיקום, ריבוי מועמדים הוא סירוב,
+ * והתוצאה מאומתת מול הסיכום — קליק על הלא-נכון היה מייצר מסמך חלקי שנראה תקין.
+ *
+ * ⚠️ ושני האייקונים **אינם קיימים ברשת ריקה**, בדיוק כמו כפתור הקליטה. לכן הם
+ * לא נמצאים ב-`knowledge/screens/invoice-lines.json`, שנלכד על מסמך ריק —
+ * ואין להסיק מהיעדרם שם שהם לא קיימים.
+ */
+const RESET_CANDIDATES = () => {
+  const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+  return [...document.querySelectorAll('img, button, a, td[onclick]')]
+    .filter((el) => el.offsetParent)
+    .map((el) => ({
+      id: el.id || null,
+      title: norm(el.title),
+      alt: norm(el.alt),
+      text: norm(el.textContent).slice(0, 40),
+      onclick: norm(el.getAttribute('onclick')).slice(0, 120),
+    }))
+    .filter((c) => /איפוס|reset|ipus/i.test([c.id, c.title, c.alt, c.text, c.onclick].join(' ')));
+};
+
+async function resetLines(ctx, profile, gridFrame) {
+  const { page, human, logger } = ctx;
+  const cands = await gridFrame.evaluate(RESET_CANDIDATES);
+  for (const c of cands) logger.step('reset?', [c.id && `#${c.id}`, c.title, c.alt, c.text, c.onclick].filter(Boolean).join(' · ').slice(0, 120));
+  if (cands.length !== 1 || !cands[0].id) {
+    throw new Error(
+      `"איפוס מסמך" לא אותר חד-משמעית (${cands.length} מועמדים).\n`
+      + '  לא מנחשים איזה אייקון אדום זה — השני מוחק שורה בודדת.',
+    );
+  }
+  const before = new Set(page.frames().map((f) => f.url()));
+  await human.click(`#${cands[0].id}`, { scope: gridFrame, label: 'איפוס מסמך — מחיקת כל השורות' });
+  await human.settle('reset dialog');
+
+  const dlg = page.frames().find((f) => !before.has(f.url()));
+  if (dlg) {
+    await human.click('#OK', { scope: dlg, label: 'אישור מחיקת כל השורות' }).catch(() => {});
+  } else {
+    // הדיאלוג נצבע בתוך אותו frame — הוי הירוק שם.
+    await human.click('#OK', { scope: gridFrame, label: 'אישור מחיקת כל השורות' });
+  }
+  await human.settle('lines cleared');
+
+  // ההוכחה היא הסיכום, לא הלחיצה.
+  const after = await readTotals(ctx, profile).catch(() => null);
+  const left = Number(String(after?.total ?? 'x').replace(/,/g, ''));
+  if (!(left === 0)) {
+    throw new Error(`האיפוס לא אומת — הסיכום אחרי הפעולה הוא "${after?.total ?? '(לא נקרא)'}" ולא 0.00.`);
+  }
+  logger.step('reset', 'כל השורות נמחקו — הסיכום 0.00');
+}
 
 /** שורות רשת אחת — לדיווח על מה נדחה. המונה, לא אורך המערך, הוא הסמכות. */
 const READ_ROWS = () => {
@@ -131,12 +193,18 @@ export async function run(ctx) {
   // לכן: מסמך שאינו ריק הוא **עצירה**, לא הערה.
   const existing = await readTotals(ctx, profile).catch(() => null);
   const already = Number(String(existing?.total ?? '0').replace(/,/g, '')) || 0;
-  if (already > 0 && !input.allowExisting) {
-    throw new Error(
-      `המסמך ${docNo} כבר מכיל שורות (סה"כ ${existing.total}).\n`
-      + '  זו כנראה טיוטה קודמת שנתפסה מחדש, ויבוא נוסף יכפיל אותה.\n'
-      + '  לקלוט או למחוק אותה קודם, או להעביר allowExisting אם ההוספה מכוונת.',
-    );
+  if (already > 0) {
+    logger.step('existing', `⚠ המסמך כבר מכיל שורות — סה"כ ${existing.total}`);
+    if (input.resetExisting) {
+      await resetLines(ctx, profile, grid);
+    } else if (!input.allowExisting) {
+      throw new Error(
+        `המסמך ${docNo} כבר מכיל שורות (סה"כ ${existing.total}).\n`
+        + '  זו כנראה טיוטה קודמת שנתפסה מחדש, ויבוא נוסף יכפיל אותה.\n'
+        + '  resetExisting — לאפס את המסמך ולייבא מחדש.\n'
+        + '  allowExisting — להוסיף על גבי מה שיש, אם זו הכוונה.',
+      );
+    }
   }
 
   const seen = new Set(page.frames().map((f) => f.url()));
@@ -193,7 +261,21 @@ export async function run(ctx) {
   const F = (re) => page.frames().find((f) => re.test(f.url()));
   const shell = F(PREVIEW.shell);
   if (!shell) throw new Error('מסך התצוגה המקדימה לא נפתח — היבוא לא בוצע.');
-  const counts = await shell.evaluate(READ_COUNTS).catch(() => null);
+  // 💣 **המונים מגיעים אחרי המסגרת, והמצב ההתחלתי שלהם הוא 0.**
+  //
+  // ה-shell נצבע ראשון עם `סה"כ רשומות:` ריקים, והרשתות הפנימיות ממלאות אותם
+  // רגע אחר כך. קריאה בודדת אחרי `settle` החזירה **`תקין: 0`** בהרצה שבה שלוש
+  // שורות נכנסו בפועל (11/09/2026) — כלומר הדיווח הכחיש את מה שקרה, והקוד
+  // המשיך בכל זאת. אפס שנקרא מוקדם מדי נראה בדיוק כמו אפס אמיתי.
+  //
+  // לכן ממתינים עד שהמונים **אומרים משהו**: תצוגה מקדימה תקינה תמיד מסתכמת
+  // ב-`תקין + לא תקין > 0`, כי קובץ עם שורות חייב להצטייר באחת הרשתות.
+  let counts = null;
+  for (let i = 0; i < 8; i++) {
+    counts = await shell.evaluate(READ_COUNTS).catch(() => null);
+    if (counts?.found.length >= 2 && counts.found[0] + counts.found[1] > 0) break;
+    await human.think('waiting for record counts');
+  }
   const badRows = F(PREVIEW.bad) ? await F(PREVIEW.bad).evaluate(READ_ROWS).catch(() => []) : [];
   await logger.shot(page, 'import-preview');
 
@@ -205,6 +287,12 @@ export async function run(ctx) {
     );
   }
   const [valid, invalid] = counts.found;
+  if (valid + invalid === 0) {
+    throw new Error(
+      'התצוגה המקדימה מדווחת 0 תקינות ו-0 דחיות — הקובץ לא נקרא, או שהמונים לא נטענו.\n'
+      + '  עוצר: אפס משני הצדדים אינו תוצאה אפשרית לקובץ שיש בו שורות.',
+    );
+  }
   logger.step('preview', `תקין: ${valid}   לא תקין: ${invalid}`);
   for (const r of badRows.slice(1, 11)) logger.step('rejected', r.join(' · ').slice(0, 140));
 
