@@ -429,7 +429,23 @@ export async function run(ctx) {
 
   // ---- הוי השני: זה שמכניס באמת -----------------------------------------
   if (!confirm) {
+    // 💣 **עצירה אינה יציאה.** גרסה קודמת פשוט חזרה מהפונקציה והשאירה את
+    // דיאלוג התצוגה המקדימה פתוח על המסך. דרור ראה אותו שם ושאל אם ההרצה
+    // נתקעה (11/09/2026) — והגרוע יותר: מסך פתוח בולע את הדאבל-קליק של
+    // המשימה הבאה (כלל 10), כך שהעצירה "הבטוחה" מפילה את ההרצה שאחריה.
+    //
+    // הביטול עצמו חסר תוצאה — הוי הראשון רק בנה תצוגה מקדימה, ולא נכנסה
+    // שום שורה. דרור: "אם הוא מבטל אז כלום לא קורה, וזה בסדר".
+    await human.click('#Cancel', { scope: shell, label: 'ביטול התצוגה המקדימה' }).catch(() => {});
+    await human.settle('preview closed');
+    const grid2 = page.frames().find((f) => /Doc650LinesV/i.test(f.url()));
+    if (grid2) {
+      await human.click('#DoExit', { scope: grid2, label: 'יציאה ממסך השורות בלי קליטה' }).catch(() => {});
+      await human.settle('left lines');
+    }
+    out.backedOut = true;
     console.log('  ⛔ עצירה בתצוגה המקדימה — בלי --confirm השורות לא נכנסות למסמך.');
+    console.log('     הדיאלוג בוטל והמסך נסגר; הטיוטה נשארה ריקה.');
     console.log('');
     logger.save('result.json', out);
     return out;
