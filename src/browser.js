@@ -97,8 +97,13 @@ const SUPPRESS_PRINT = () => {
  * it, and every other tool arrives through `attachBrowser`. With nobody holding
  * the launching context, nothing would register `SUPPRESS_PRINT` — and a flow
  * that reaches Comax's print step would park on `chrome://print`, which cannot
- * be screenshotted, clicked or closed. That is survivable with someone sitting
- * at the machine and fatal when the request came from a phone.
+ * be screenshotted or closed by the agent.
+ *
+ * ⚠️ **אבל הוא אינו חוסם את העבודה, בניגוד למה שנכתב כאן קודם.** נמדד
+ * 11/09/2026: `chrome://print` נפתח אחרי קליטת חשבונית 6500089, ושלוש הרצות
+ * שלאחריו — יבוא, איפוס וסגירת תוכניות — עברו במלואן בזמן שהוא היה על המסך.
+ * דרור: "אתה ממשיך לראות הכל רגיל... לי זה מסתיר את כל מה שאתה עושה מאחור".
+ * כלומר המחיר הוא **חסימת המבט של האדם**, לא חסימת הסוכן. עדיין שווה למנוע.
  *
  * `addInitScript` only affects documents loaded from here on, so a window
  * already sitting inside the Max2000 frameset would keep its real
@@ -111,17 +116,22 @@ async function harden(context, page, cfg) {
     return;
   }
 
-  // The window is now detached and long-lived, so the same Chrome is attached to
-  // many times over its life. `addInitScript` registrations are not removed when
-  // a Playwright client disconnects, so registering blindly on every attach would
-  // pile up copies inside that browser. If the current document already carries
-  // the marker, a previous attach registered them and the registration is still
-  // live — only the already-loaded frames need the immediate pass.
-  const registered = await page.evaluate(() => window.__comaxHardened === true).catch(() => false);
-  if (!registered) {
-    await context.addInitScript(HIDE_AUTOMATION);
-    await context.addInitScript(SUPPRESS_PRINT);
-  }
+  // 💣 **הדילוג על ההרשמה לפי הסימון היה שגוי, והוא נמדד ב-11/09/2026.**
+  //
+  // הגרסה הקודמת בדקה `window.__comaxHardened` על המסמך הנוכחי, והניחה שאם
+  // הוא דלוק אז ההרשמה של ה-attach הקודם עדיין חיה. אבל **הסימון והרשמה הם
+  // שני דברים בעלי אורך חיים שונה**: הסימון יושב על מסמך הפריים-סט, ששורד
+  // ימים שלמים, בעוד שהרשמת `addInitScript` שייכת ל-client שהתנתק מזמן.
+  //
+  // התוצאה: מסמך **חדש** שנפתח אחרי ההתנתקות — למשל פריים ההדפסה שקומקס
+  // פותח אחרי קליטת חשבונית — לא קיבל את ההשתקה, ו-`chrome://print` נפתח על
+  // המסך. דרור ראה את זה אחרי קליטת חשבונית 6500089, בעוד שאותה זרימה על
+  // לקוח הבדיקות לא הציגה אותו.
+  //
+  // ⇒ נרשמים **בכל attach**. שתי הפונקציות אידמפוטנטיות (כתיבת noop והצבת
+  // דגל), והמחיר של עותק נוסף זניח מול דיאלוג הדפסה שנפתח על חלון חי.
+  await context.addInitScript(HIDE_AUTOMATION);
+  await context.addInitScript(SUPPRESS_PRINT);
 
   // `addInitScript` only affects documents loaded from here on, so a window
   // already sitting inside the Max2000 frameset would keep its real
