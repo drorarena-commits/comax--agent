@@ -119,12 +119,21 @@ export const profile = {
   },
 
   // Read off Doc650U.asp live. `#OK` is the green tick; `#OKNot` is the blue
-  // "אישור ללא הזמנות" beside it and `#OKRikuz` is "אישור + ריכוז" — three ways
+  // "ללא הזמנות" beside it and `#OKRikuz` is "אישור + ריכוז" — three ways
   // to leave the header, all of which only advance to the lines.
+  //
+  // 💣 **ובחשבונית מס מאשרים ב-`#OKNot`, לא בירוק.** דרור, 11/09/2026, על
+  // צילום של דיאלוג "הוספת // חשבונית" עם הכפתור מוקף: "זה הכפתור שלוחצים
+  // עליו ולא על הירוק". עד אז הקוד לחץ `#OK` — **וזה עבד**, במובן שהמסמך
+  // נפתח והשורות נטענו, ולכן שום הרצה לא התריעה. זו הסיבה ש-`commitWith`
+  // יושב כאן ולא ב-engine: אין להסיק מכאן על `Doc470U` של תעודת ההעברה, שיש
+  // בה `#OKNot` זהה ושלגביה דרור לא אמר דבר.
+  //
   // `#DocNo` is an *input whose value is empty*: the number Comax assigned sits
   // in its label, `(6500084)`. Nothing writes it — the number is automatic.
   header: {
-    new: '#newRec', ok: '#OK', okNoOrders: '#OKNot', cancel: '#Cancel', docId: '#DocNo',
+    new: '#newRec', ok: '#OK', okNoOrders: '#OKNot', commitWith: 'okNoOrders',
+    cancel: '#Cancel', docId: '#DocNo',
     customer: '#IdxLk', store: '#Store', priceList: '#Mhr',
     date: '#DateDoc', agent: '#Sochen', details: '#Pratim',
   },

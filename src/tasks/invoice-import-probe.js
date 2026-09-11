@@ -54,6 +54,42 @@ const CONTROLS = () => {
     .filter((c) => c.id || c.title || c.alt || c.text || c.onclick);
 };
 
+/**
+ * רשימת החשבוניות כרשומות. העמודות **לפי תווית** ולא לפי מיקום — סדר העמודות
+ * ב-`a157` אינו זהה לזה של `a164`, וקריאה מיקומית נשברת בשקט.
+ * `rowClass` הוא הידית היחידה שהרשת נותנת לשורה בודדת (כלל 18).
+ */
+async function readList(frame) {
+  return frame.evaluate(() => {
+    const txt = (c) => (c.innerText || '').replace(/\s+/g, ' ').trim();
+    for (const t of [...document.querySelectorAll('table')]) {
+      const rows = [...t.rows].map((tr) => [...tr.cells].map(txt));
+      const hi = rows.findIndex((r) => r.includes('שם לקוח'));
+      if (hi < 0) continue;
+      const head = rows[hi];
+      const at = (label) => head.indexOf(label);
+      const docCol = ['חשבונית', 'מסמך', 'תעודה'].map(at).find((i) => i >= 0);
+      if (docCol === undefined) continue;
+      const out = [];
+      for (const tr of [...t.rows].slice(hi + 1)) {
+        const r = [...tr.cells].map(txt);
+        const docNo = r[docCol];
+        if (!docNo || !/^\d+$/.test(docNo)) continue;
+        out.push({
+          docNo,
+          rowClass: [...tr.cells][docCol]?.className ?? '',
+          date: at('מתאריך') >= 0 ? r[at('מתאריך')] : '',
+          customer: at('שם לקוח') >= 0 ? r[at('שם לקוח')] : '',
+          customerCode: at('לקוח') >= 0 ? r[at('לקוח')] : '',
+          amount: at('סכום') >= 0 ? r[at('סכום')] : '',
+        });
+      }
+      return { head, rows: out };
+    }
+    return { head: [], rows: [] };
+  });
+}
+
 export async function run(ctx) {
   const { page, human, logger, cfg, input } = ctx;
   const F = (re) => page.frames().find((f) => re.test(f.url()));
@@ -72,11 +108,33 @@ export async function run(ctx) {
   await human.press('Enter', { label: 'החלת הסינון' });
   await human.settle('filtered');
 
-  // כלל 18: מספר מסמך חוזר בין שנים. כשנמסר לקוח — בוחרים לפיו.
-  const rowSel = input.customer
-    ? `td:text-is(${JSON.stringify(String(input.customer))})`
+  // 💣 שתי מלכודות בשורה אחת, ושתיהן הפילו את ההרצה הראשונה (10/09/2026):
+  //   1. **רשת Max2000 נפתחת בדאבל-קליק, לא בקליק.** קליק בודד רק מסמן את
+  //      השורה, ואז `F(HEADER)` מחזיר undefined ונראה כאילו המסמך לא קיים.
+  //   2. כלל 18 — מספר מסמך חוזר בין שנים ובין לקוחות. פותחים לפי **השורה**
+  //      (`td[class="<מספר השורה>"]`), כמו ב-`quote-read`, ולא לפי הטקסט.
+  const grid = await readList(list);
+  let match = grid.rows.filter((r) => String(r.docNo) === String(input.docNo));
+  if (input.customer) {
+    match = match.filter(
+      (r) => r.customerCode === String(input.customer) || r.customer === String(input.customer),
+    );
+  }
+  if (!match.length) {
+    throw new Error(`חשבונית ${input.docNo} לא נמצאה ברשימה אחרי הסינון.`);
+  }
+  if (match.length > 1) {
+    for (const r of match) logger.step('ambiguous', `${r.docNo} · ${r.date} · ${r.customer}`);
+    throw new Error(
+      `מספר ${input.docNo} החזיר ${match.length} חשבוניות שונות — יש למסור customer כדי להכריע.`,
+    );
+  }
+  const row = match[0];
+  logger.step('row', `${row.docNo} · ${row.date} · ${row.customer} · ${row.amount}`);
+  const rowSel = row.rowClass
+    ? `td[class=${JSON.stringify(row.rowClass)}]:text-is(${JSON.stringify(String(input.docNo))})`
     : `td:text-is(${JSON.stringify(String(input.docNo))})`;
-  await human.click(list.locator(rowSel).first(), { label: `פתיחת ${input.docNo}` });
+  await human.doubleClick(list.locator(rowSel).first(), { label: `פתיחת ${input.docNo}` });
   await human.settle('document opening');
 
   const out = { docNo: input.docNo, frames: [] };

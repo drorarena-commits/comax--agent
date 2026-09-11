@@ -307,6 +307,15 @@ export async function readHeader(profile, frame) {
  *
  * The frame is re-checked against the *header* pattern first. Aiming this at a
  * lines frame would press the button that files the document.
+ *
+ * 💣 **איזה כפתור מאשר את הכותרת הוא עניין של כל מסמך בנפרד.** בכותרת יושבים
+ * שלושה ווים שכולם מתקדמים לשורות — `#OK` הירוק, `#OKNot` ("ללא הזמנות")
+ * ו-`#OKRikuz` ("אישור + ריכוז") — ולכן בחירה שגויה **אינה מייצרת שגיאה**:
+ * המסמך נפתח והשורות נטענות בדיוק אותו דבר. דרור תיקן את זה ב-11/09/2026
+ * לחשבונית מס: שם מאשרים ב-`ללא הזמנות`, לא בירוק.
+ *
+ * לכן הכפתור נקבע ב**פרופיל** דרך `header.commitWith`, ולא נגזר כאן — הכללה
+ * מסוג מסמך אחד למשנהו היא בדיוק מה שהוביל לטעות.
  */
 export async function commitHeader(ctx, profile, frame) {
   const { human } = ctx;
@@ -316,7 +325,17 @@ export async function commitHeader(ctx, profile, frame) {
       `${profile.header.ok} במסך שורות קולט את המסמך.`,
     );
   }
-  await human.click(profile.header.ok, { scope: frame, label: 'אישור הכותרת' });
+  const key = profile.header.commitWith ?? 'ok';
+  const button = profile.header[key];
+  if (!button) {
+    throw new Error(
+      `${profile.label}: הפרופיל מבקש לאשר כותרת ב-header.${key}, והשדה הזה לא מוגדר.`,
+    );
+  }
+  await human.click(button, {
+    scope: frame,
+    label: `אישור הכותרת (${key === 'ok' ? 'וי ירוק' : 'ללא הזמנות'} · ${button})`,
+  });
   await human.settle(`${profile.name} created`);
   await dismissPopups(ctx);
 }
