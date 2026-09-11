@@ -141,6 +141,33 @@ export async function resetLines(ctx, profile, gridFrame) {
   logger.step('reset', 'כל השורות נמחקו — הסיכום 0.00');
 }
 
+/**
+ * כמה שורות **נתונים** יש בקובץ — כדי להוכיח שהתצוגה המקדימה קראה את כולן.
+ *
+ * שורה ראשונה שאין בעמודתה הראשונה ספרות בלבד נחשבת כותרת ואינה נספרת. זה
+ * מסתדר עם העובדה שקומקס מדלג עליה מעצמו (`#SwKoteret` מוסתר).
+ */
+async function countDataRows(file) {
+  const path = String(file);
+  if (/\.csv$/i.test(path)) {
+    const { readFileSync } = await import('node:fs');
+    const lines = readFileSync(path, 'utf8').replace(/^﻿/, '').split(/\r?\n/).filter((l) => l.trim());
+    if (!lines.length) return 0;
+    return /^\s*"?\d+"?\s*[,;]/.test(lines[0]) ? lines.length : lines.length - 1;
+  }
+  const { default: ExcelJS } = await import('exceljs');
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.readFile(path);
+  const ws = wb.worksheets[0];
+  const cells = [];
+  ws.eachRow((row) => {
+    const first = row.values[1];
+    if (first !== undefined && first !== null && String(first).trim()) cells.push(String(first).trim());
+  });
+  if (!cells.length) return 0;
+  return /^\d+$/.test(cells[0]) ? cells.length : cells.length - 1;
+}
+
 /** שורות רשת אחת — לדיווח על מה נדחה. המונה, לא אורך המערך, הוא הסמכות. */
 const READ_ROWS = () => {
   const txt = (el) => (el.innerText || '').replace(/\s+/g, ' ').trim();
@@ -287,10 +314,22 @@ export async function run(ctx) {
   //
   // לכן ממתינים עד שהמונים **אומרים משהו**: תצוגה מקדימה תקינה תמיד מסתכמת
   // ב-`תקין + לא תקין > 0`, כי קובץ עם שורות חייב להצטייר באחת הרשתות.
+  //
+  // ⚠️ **ו"גדול מאפס" אינו מספיק — המונה עולה בהדרגה.** על קובץ וויקס בן 186
+  // שורות הקוד קרא **`תקין: 30`** ועצר שם, בזמן שכל 186 השורות נכנסו (הסכום
+  // 22,497.00 הוכיח זאת). דיווח כזה היה מסתיר דחיות אמיתיות בקובץ הבא.
+  //
+  // לכן ממתינים עד שהמונה **מתייצב** — אותו ערך בשתי קריאות רצופות.
   let counts = null;
-  for (let i = 0; i < 8; i++) {
+  let stable = 0;
+  let last = null;
+  for (let i = 0; i < 20; i++) {
     counts = await shell.evaluate(READ_COUNTS).catch(() => null);
-    if (counts?.found.length >= 2 && counts.found[0] + counts.found[1] > 0) break;
+    const key = counts?.found.join(',') ?? '';
+    const alive = counts?.found.length >= 2 && counts.found[0] + counts.found[1] > 0;
+    stable = alive && key === last ? stable + 1 : 0;
+    last = key;
+    if (stable >= 2) break;
     await human.think('waiting for record counts');
   }
   const badRows = F(PREVIEW.bad) ? await F(PREVIEW.bad).evaluate(READ_ROWS).catch(() => []) : [];
@@ -304,6 +343,21 @@ export async function run(ctx) {
     );
   }
   const [valid, invalid] = counts.found;
+
+  // ⛔ **והמונה חייב להסתכם לשורות שבקובץ.** זו אותה הוכחת שלמות של כלל 16:
+  // קריאה חלקית היא הכשל היחיד שנראה בדיוק כמו הצלחה. בלי זה "תקין: 30" על
+  // קובץ בן 186 עובר בשקט.
+  const expected = await countDataRows(input.file).catch(() => null);
+  if (expected != null) {
+    logger.step('file', `שורות נתונים בקובץ: ${expected}`);
+    if (valid + invalid !== expected) {
+      throw new Error(
+        `הקובץ מכיל ${expected} שורות נתונים, והתצוגה המקדימה מדווחת ${valid} תקינות + ${invalid} דחיות `
+        + `= ${valid + invalid}.\n  הפער אומר שהקריאה חלקית או שהקובץ לא נקרא במלואו — עוצר לפני ההכנסה.`,
+      );
+    }
+  }
+
   if (valid + invalid === 0) {
     throw new Error(
       'התצוגה המקדימה מדווחת 0 תקינות ו-0 דחיות — הקובץ לא נקרא, או שהמונים לא נטענו.\n'
