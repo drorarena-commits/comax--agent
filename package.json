@@ -31,6 +31,8 @@
     "cost-file": "node tools/cost-import-file.js",
     "site-file": "node tools/site-data-file.js",
     "memory-backup": "node tools/memory-backup.js",
+    "mail-send": "node tools/gmail-send.js",
+    "mail-get": "node tools/gmail-attach.js",
     "items-import": "node tools/run.js items-import"
   },
   "dependencies": {

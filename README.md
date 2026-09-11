@@ -27,6 +27,9 @@ npm run run -- invoice-import-lines --json '{"customer":"112474","store":"WIX","
 npm run run -- invoice-finalize --json '{"customer":"112474","expectDoc":"6500089","expectTotal":"22497","store":"WIX","priceList":"מכירה ראשי"}'  # קליטה אחרי אישור
 npm run run -- invoice-reset --json '{"customer":"112001"}'   # מוחק את כל שורות הטיוטה
 npm run payroll -- --to <כתובת>    # דוח נוכחות חודשי לשכר -> מייל מקומקס
+npm run mail-send -- --to <כתובת> --subject "..." --body-file b.txt --attach f.pdf  # מייל עם קבצים (יבש)
+npm run mail-send -- ... --confirm                    # ורק זה שולח בפועל
+npm run mail-get -- <messageId> <חלק-משם-הקובץ>       # מוריד קובץ מצורף ממייל לדיסק
 npm run items-file                 # בונה את קובץ ההקמה + מריץ את שערי האימות
 npm run items-import -- --json '{"file":"data/exports/הקמה-קומקס-175.xlsx"}'  # יבוא פריטים (יבש)
 npm run cost-file -- --import      # מחירי עלות מדוח רכישות -> שני קבצי CSV
