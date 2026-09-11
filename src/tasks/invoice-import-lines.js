@@ -168,6 +168,42 @@ async function countDataRows(file) {
   return /^\d+$/.test(cells[0]) ? cells.length : cells.length - 1;
 }
 
+/**
+ * סכום עמודת הסכום בקובץ — הוכחת השלמות היחידה שיש ליבוא הזה.
+ *
+ * המונה בתצוגה המקדימה נעצר על 30 (גודל עמוד), ולכן הוא אינו יכול להעיד
+ * שכל השורות נכנסו. הסכום כן: אם המסמך מסתכם למה שהקובץ מסתכם, לא חסרה שורה
+ * ולא נוספה. זה בדיוק ההיגיון של כלל 16, בכיוון ההפוך.
+ */
+async function sumFileAmounts(file) {
+  const path = String(file);
+  const num = (v) => Number(String(v ?? '').replace(/,/g, ''));
+  if (/\.csv$/i.test(path)) {
+    const { readFileSync } = await import('node:fs');
+    const lines = readFileSync(path, 'utf8').replace(/^﻿/, '').split(/\r?\n/).filter((l) => l.trim());
+    let s = 0;
+    for (const l of lines) {
+      const c = l.split(',');
+      if (!/^\s*"?\d+"?\s*$/.test(c[0] ?? '')) continue;
+      const v = num(c[2]);
+      if (Number.isFinite(v)) s += v;
+    }
+    return s;
+  }
+  const { default: ExcelJS } = await import('exceljs');
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.readFile(path);
+  const ws = wb.worksheets[0];
+  let s = 0;
+  ws.eachRow((row) => {
+    const first = String(row.values[1] ?? '').trim();
+    if (!/^\d+$/.test(first)) return; // שורת כותרת
+    const v = num(row.values[3]);
+    if (Number.isFinite(v)) s += v;
+  });
+  return s;
+}
+
 /** שורות רשת אחת — לדיווח על מה נדחה. המונה, לא אורך המערך, הוא הסמכות. */
 const READ_ROWS = () => {
   const txt = (el) => (el.innerText || '').replace(/\s+/g, ' ').trim();
@@ -320,16 +356,25 @@ export async function run(ctx) {
   // 22,497.00 הוכיח זאת). דיווח כזה היה מסתיר דחיות אמיתיות בקובץ הבא.
   //
   // לכן ממתינים עד שהמונה **מתייצב** — אותו ערך בשתי קריאות רצופות.
+  // ⚠️ **והיעד הוא מספר השורות בקובץ, לא "התייצבות".** על קובץ וויקס בן 182
+  // שורות המונה נקרא **30 + 6 = 36** ועצר שם: הוא עולה בהדרגה, ושתי קריאות
+  // רצופות יכולות ליפול על אותו ערך בזמן שהוא עוד מטפס. לכן ממתינים עד
+  // ש-`תקין + לא תקין` **שווה למספר שורות הנתונים בקובץ**, וההתייצבות היא
+  // רק רשת ביטחון לקובץ שאי אפשר לספור.
+  const expected = await countDataRows(input.file).catch(() => null);
+  if (expected != null) logger.step('file', `שורות נתונים בקובץ: ${expected}`);
+
   let counts = null;
   let stable = 0;
   let last = null;
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 45; i++) {
     counts = await shell.evaluate(READ_COUNTS).catch(() => null);
     const key = counts?.found.join(',') ?? '';
-    const alive = counts?.found.length >= 2 && counts.found[0] + counts.found[1] > 0;
-    stable = alive && key === last ? stable + 1 : 0;
+    const total = counts?.found.length >= 2 ? counts.found[0] + counts.found[1] : 0;
+    if (expected != null && total === expected) break;
+    stable = total > 0 && key === last ? stable + 1 : 0;
     last = key;
-    if (stable >= 2) break;
+    if (expected == null && stable >= 3) break;
     await human.think('waiting for record counts');
   }
   const badRows = F(PREVIEW.bad) ? await F(PREVIEW.bad).evaluate(READ_ROWS).catch(() => []) : [];
@@ -344,18 +389,20 @@ export async function run(ctx) {
   }
   const [valid, invalid] = counts.found;
 
-  // ⛔ **והמונה חייב להסתכם לשורות שבקובץ.** זו אותה הוכחת שלמות של כלל 16:
-  // קריאה חלקית היא הכשל היחיד שנראה בדיוק כמו הצלחה. בלי זה "תקין: 30" על
-  // קובץ בן 186 עובר בשקט.
-  const expected = await countDataRows(input.file).catch(() => null);
-  if (expected != null) {
-    logger.step('file', `שורות נתונים בקובץ: ${expected}`);
-    if (valid + invalid !== expected) {
-      throw new Error(
-        `הקובץ מכיל ${expected} שורות נתונים, והתצוגה המקדימה מדווחת ${valid} תקינות + ${invalid} דחיות `
-        + `= ${valid + invalid}.\n  הפער אומר שהקריאה חלקית או שהקובץ לא נקרא במלואו — עוצר לפני ההכנסה.`,
-      );
-    }
+  // 💣 **`סה"כ רשומות` הוא מונה של העמוד, לא של הקובץ.**
+  //
+  // נמדד פעמיים ב-11/09/2026: קובץ וויקס של **186** שורות הציג `תקין: 30`,
+  // וקובץ של **182** שורות הציג `תקין: 30` — אותו 30 בדיוק, יציב אחרי 45
+  // קריאות ו-264 שניות. קובץ בדיקה בן 3 שורות הציג 3. כלומר הערך הוא
+  // `min(שורות, 30)`, וגודל העמוד הוא 30.
+  //
+  // ⛔ לכן **אסור לבנות עליו הוכחת שלמות.** גרסה קודמת עשתה בדיוק את זה
+  // ועצרה יבוא תקין בטענה ש"הקריאה חלקית". ההוכחה האמיתית היא **הסיכום
+  // במסמך אחרי ההכנסה**, מול סכום הקובץ.
+  //
+  // ומה שכן אמין: מונה שאינו 30 הוא ספירה אמיתית.
+  if (expected != null && valid + invalid !== expected) {
+    logger.step('note', `⚠ המונה מציג ${valid}+${invalid} מתוך ${expected} שורות — מונה עמוד (30), לא סכום`);
   }
 
   if (valid + invalid === 0) {
@@ -401,13 +448,27 @@ export async function run(ctx) {
   // עם שורת כותרת) — המסמך באמת החזיק 290.00, כפי שהתברר בקריאה מאוחרת יותר.
   // דיווח כזה גרוע פי כמה מכישלון: הוא אומר "לא נכנס כלום" על מסמך מלא,
   // ומזמין הרצה חוזרת שתכפיל את השורות.
+  //
+  // ⇒ **וזו גם הוכחת השלמות היחידה שיש.** המונה בתצוגה המקדימה נעצר על 30,
+  // ולכן הדרך היחידה לדעת שכל השורות נכנסו היא להשוות את סכום המסמך לסכום
+  // עמודת הסכום בקובץ.
+  const expectedSum = await sumFileAmounts(input.file).catch(() => null);
+  const num = (v) => Number(String(v ?? '0').replace(/,/g, ''));
   let totals = null;
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 10; i++) {
     totals = await readTotals(ctx, profile).catch(() => null);
-    if (Number(String(totals?.total ?? '0').replace(/,/g, '')) > 0) break;
+    if (expectedSum != null ? Math.abs(num(totals?.total) - expectedSum) < 0.5 : num(totals?.total) > 0) break;
     await human.think('waiting for totals to repaint');
   }
-  if (!(Number(String(totals?.total ?? '0').replace(/,/g, '')) > 0)) {
+  out.expectedSum = expectedSum;
+  if (expectedSum != null && Math.abs(num(totals?.total) - expectedSum) >= 0.5) {
+    throw new Error(
+      `סכום הקובץ ${expectedSum.toLocaleString('he-IL')} והסכום במסמך "${totals?.total ?? '(לא נקרא)'}" אינם שווים.\n`
+      + '  לא כל השורות נכנסו, או שנכנסו שורות נוספות — לבדוק את המסמך לפני כל הרצה חוזרת,\n'
+      + '  כי הרצה שנייה מוסיפה על מה שכבר שם.',
+    );
+  }
+  if (!(num(totals?.total) > 0)) {
     throw new Error(
       `היבוא דיווח ${valid} שורות תקינות, אבל הסיכום במסמך נשאר "${totals?.total ?? '(לא נקרא)'}".\n`
       + '  לבדוק את המסמך בקומקס לפני הרצה חוזרת — הרצה שנייה תכפיל שורות שכבר נכנסו.',

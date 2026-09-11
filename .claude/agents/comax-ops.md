@@ -68,7 +68,8 @@ npm run logoff        # התנתקות מסודרת — משחררת את הסש
 | `npm run full-stock` | 11 מנות לפי טווחי מק"ט → `stock-full.json` | **~25-30 דקות** | כן |
 | `npm run merge-full` | מצליב עם הקטלוג → `content/מלאי-מלא-<תאריך>.csv` | שניות | לא |
 | `npm run apply-matrix` | צורב מטריצה על מלאי-מלא קיים | שניות | **לא** |
-| `npm run run -- items-export --json '{"fields":"all"}'` | **קטלוג הפריטים המלא** לאקסל → `data/exports/` | ~70 שניות | כן |
+| `npm run run -- items-export` | **קטלוג הפריטים** לאקסל → `data/exports/` — ברירת מחדל **רזה**, רק עמודות עם תוכן | ~60 שניות | כן |
+| `... --json '{"fields":"all"}'` | ⚠️ 97 עמודות, 58MB. **חריג בלבד** — לא לייצא הכל כברירת מחדל | ~70 שניות | כן |
 
 ## ייצוא הפריטים המלא — `items-export`
 
