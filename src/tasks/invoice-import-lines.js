@@ -236,11 +236,28 @@ export async function run(ctx) {
 
   // שורת כותרת בקובץ. נקרא **ונרשם** ולא מונח — קובץ בלי כותרת שהתיבה
   // מסומנת עבורו מאבד את שורתו הראשונה בשקט, וזו שורה חסרה בחשבונית.
-  if (input.hasHeader !== undefined) {
-    await dlg.locator(IMPORT_DIALOG.header).setChecked(!!input.hasHeader).catch(() => {});
+  // 📌 **`#SwKoteret` קיים ב-DOM אבל מוסתר בדיאלוג הזה** (נמדד 11/09/2026:
+  // `element is not visible`, 30 שניות של ניסיונות קליק עד timeout). כלומר
+  // אין כאן בכלל תיבת "שורת כותרת" ללחוץ עליה.
+  //
+  // ✅ **ושורת כותרת עובדת בלעדיה.** דרור: "לא צריכה להיות בעיה לקובץ עם
+  // כותרות, ככה עד היום עשיתי" — ואומת: אותו קובץ עם `ברקוד · כמות · סכום`
+  // בראשו נתן **3 תקינות, 0 דחיות, 290.00**, זהה לקובץ בלי כותרת, כשהתיבה
+  // אינה מסומנת. קומקס מתעלם משורת הכותרת מעצמו.
+  //
+  // לכן `hasHeader` אינו נכפה כאן — הוא רק נקרא ונרשם. ניסיון לסמן תיבה
+  // מוסתרת הפיל את ההרצה כולה ב-timeout, וזה יקר יותר מכל מה שהוא קונה.
+  const headerBox = dlg.locator(IMPORT_DIALOG.header);
+  const headerVisible = await headerBox.isVisible().catch(() => false);
+  if (input.hasHeader !== undefined && headerVisible) {
+    await headerBox.setChecked(!!input.hasHeader);
   }
-  const hasHeader = await dlg.locator(IMPORT_DIALOG.header).isChecked().catch(() => null);
-  logger.step('header-row', `"שורת כותרת בקובץ" = ${hasHeader === null ? '(לא נקרא)' : hasHeader ? 'מסומן' : 'לא מסומן'}`);
+  const hasHeader = await headerBox.isChecked().catch(() => null);
+  logger.step(
+    'header-row',
+    `"שורת כותרת בקובץ" = ${hasHeader ? 'מסומן' : 'לא מסומן'}`
+    + `${headerVisible ? '' : ' (התיבה מוסתרת — קומקס מדלג על הכותרת לבד)'}`,
+  );
 
   // ---- הקובץ — כתיבה ישירה ל-input, לא לחיצה על הכפתור -------------------
   // לחיצה על "בחירת קובץ" פותחת את חלון הקבצים של Windows, מחוץ לדפדפן,
@@ -325,7 +342,23 @@ export async function run(ctx) {
   out.imported = true;
 
   // ההוכחה אינה הלחיצה אלא הסיכום שקומקס עצמו מציג.
-  const totals = await readTotals(ctx, profile).catch(() => null);
+  // 💣 **הסיכום נצבע מחדש אחרי שהשורות נכנסו, לא באותו רגע.** קריאה בודדת
+  // מיד אחרי הקליק החזירה **0.00** על יבוא שהצליח לחלוטין (11/09/2026, קובץ
+  // עם שורת כותרת) — המסמך באמת החזיק 290.00, כפי שהתברר בקריאה מאוחרת יותר.
+  // דיווח כזה גרוע פי כמה מכישלון: הוא אומר "לא נכנס כלום" על מסמך מלא,
+  // ומזמין הרצה חוזרת שתכפיל את השורות.
+  let totals = null;
+  for (let i = 0; i < 8; i++) {
+    totals = await readTotals(ctx, profile).catch(() => null);
+    if (Number(String(totals?.total ?? '0').replace(/,/g, '')) > 0) break;
+    await human.think('waiting for totals to repaint');
+  }
+  if (!(Number(String(totals?.total ?? '0').replace(/,/g, '')) > 0)) {
+    throw new Error(
+      `היבוא דיווח ${valid} שורות תקינות, אבל הסיכום במסמך נשאר "${totals?.total ?? '(לא נקרא)'}".\n`
+      + '  לבדוק את המסמך בקומקס לפני הרצה חוזרת — הרצה שנייה תכפיל שורות שכבר נכנסו.',
+    );
+  }
   out.totals = totals;
   if (totals) for (const [k, v] of Object.entries(totals)) logger.step('totals', `${k}: ${v}`);
   await logger.shot(page, 'lines-imported');
