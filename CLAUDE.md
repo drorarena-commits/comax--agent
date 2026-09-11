@@ -300,6 +300,9 @@ content/                         הייצוא המקומי — מלאי ולקו
 content/פריטים-מלא-<תאריך>.csv   קטלוג הפריטים המלא — 13,107 פריטים × 37 עמודות
 src/documents/read-lines.js       הקורא המשותף של שורות מסמך — דפדוף + הוכחת שלמות (כלל 16)
 src/tasks/quote-read.js           מציאת הצעת מחיר קיימת וקריאתה — a164, קריאה בלבד
+src/tasks/invoice-import-lines.js  חשבונית גדולה: שורות מאקסל (#ImpExcel) + תצוגה מקדימה + איפוס
+src/tasks/invoice-finalize.js      קליטת טיוטה קיימת, אחרי אימות המספר והסכום שאושרו
+src/tasks/invoice-reset.js         מוחק את כל שורות הטיוטה (#ZeroDoc)
 src/tasks/                       משימה אחת = קובץ אחד
 ```
 ## סנכרון גיט — עבודה משני מחשבים

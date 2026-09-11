@@ -23,6 +23,9 @@ npm run run -- items-export --json '{"fields":"all"}'  # כל הפריטים ל�
 npm run run -- customer-history --json '{"customer":"112447","item":"שנורקל"}'
 npm run run -- quote-read --json '{"customer":"בני הרצליה"}'          # רשימת ההצעות של לקוח
 npm run run -- quote-read --json '{"docNo":"6120029","customer":"בני הרצליה"}'  # וקריאת שורותיה
+npm run run -- invoice-import-lines --json '{"customer":"112474","store":"WIX","priceList":"מכירה ראשי","file":"...xlsx"}'  # חשבונית גדולה: שורות מאקסל
+npm run run -- invoice-finalize --json '{"customer":"112474","expectDoc":"6500089","expectTotal":"22497","store":"WIX","priceList":"מכירה ראשי"}'  # קליטה אחרי אישור
+npm run run -- invoice-reset --json '{"customer":"112001"}'   # מוחק את כל שורות הטיוטה
 npm run payroll -- --to <כתובת>    # דוח נוכחות חודשי לשכר -> מייל מקומקס
 npm run items-file                 # בונה את קובץ ההקמה + מריץ את שערי האימות
 npm run items-import -- --json '{"file":"data/exports/הקמה-קומקס-175.xlsx"}'  # יבוא פריטים (יבש)
@@ -451,3 +454,30 @@ npm run payroll -- --to dror.arena@gmail.com --dry           # ממלא ועוצ
 "שלח" — ההערות פר-עובד משתנות כל חודש, וכלי ההעברה בג'ימייל שולח מיד בלי טיוטה.
 
 הפרטים המלאים: [knowledge/payroll-attendance.md](knowledge/payroll-attendance.md)
+
+## חשבונית גדולה — שורות מאקסל במקום אחת-אחת
+
+הזנת שורה בקצב אנושי נמדדה ב-**~36 שניות**. חשבונית וויקס של 188 שורות הייתה
+נמשכת כשעתיים עם המושב תפוס. `invoice-import-lines` עושה את זה בדקה וחצי.
+
+```bash
+npm run run -- invoice-import-lines --json '{"customer":"112474","store":"WIX","priceList":"מכירה ראשי","details":"...","file":"data/exports/....xlsx"}' --confirm
+npm run run -- invoice-finalize     --json '{"customer":"112474","expectDoc":"6500089","expectTotal":"22497","store":"WIX","priceList":"מכירה ראשי"}' --confirm
+npm run run -- invoice-reset        --json '{"customer":"112001"}' --confirm
+```
+
+**הקובץ:** שלוש עמודות — `ברקוד · כמות · סכום`. שורת כותרת אופציונלית.
+`סכום` הוא **סה"כ השורה**, וקומקס גוזר ממנו `מחיר = סכום ÷ כמות`.
+
+⚠️ **המחירון בכותרת קובע מה המספרים בקובץ אומרים.** תחת `מכירה ראשי` הם
+נבלעים ככוללי מע"מ — וזה הנכון לוויקס, שהדוח שלהם כולל מע"מ. תחת `מחירון
+קבוצות` אותו קובץ ייתן סכום גבוה ב-18%.
+
+**השערים:** `invoice-import-lines` בוחרת את המבנה `ברקוד/קוד-כמות-סכום`
+במפורש (ברירת המחדל בקומקס היא בלי סכום ותמשוך מחירים מהמחירון), מוודאת
+ש-`תקין + לא תקין` מסתכם למספר השורות בקובץ, ו**עוצרת על כל דחייה**. היא
+**אינה קולטת** — הקליטה היא `invoice-finalize` בלבד, עם אימות המספר והסכום
+שאושרו.
+
+⚠️ **טיוטה נתפסת מחדש עם שורותיה**, ויבוא נוסף מוסיף עליהן. מסמך לא ריק
+הוא עצירה; `resetExisting` מאפס תחילה, `invoice-reset` מנקה בנפרד.
