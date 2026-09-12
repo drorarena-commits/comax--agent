@@ -9,3 +9,4 @@
 - ["ראשי" = החנות בוינגייט](rashi-warehouse-is-wingate-store.md) — לא אותו דבר כמו "מכולה וינגייט", מחסן נפרד
 - [סוכן עתידי למשק פריטים](planned-agent-item-master.md) — לא מיפוי חד-פעמי דרך comax-ops, סוכן ייעודי
 - [לאמת תוצאה ולא מנגנון](verify-outcome-not-mechanism.md) — בדיקה חייבת למדוד את מה שהמשתמש יחווה, במסלול האמיתי
+- [ערכים בטוחים מתאריך בקבצים](date-safe-values-in-exported-files.md) — "6-7" ו-"10-11" הופכים לתאריך באקסל; xlsx עם number_format '@', ו-CSV רק כגיבוי
