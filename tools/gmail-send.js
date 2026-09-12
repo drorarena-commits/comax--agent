@@ -157,11 +157,25 @@ const SCOPE_FN = `(sendSrc) => {
     return re.test(l.trim());
   });
   if (!btn) return null;
+  // ⚠️ הטיפוס "עד האב הראשון שמכיל contenteditable" עוצר מוקדם מדי: שדה
+  // העריכה הראשון שנתקלים בו הוא **גוף ההודעה**, ושורת הנמענים יושבת מעליו
+  // ונשארת מחוץ לסקופ. התוצאה היא "נמענים על המסך: (אין)" על חלון שהנמען בו
+  // מולא כראוי — נמדד 12/09/2026, והשליחה נחסמה למרות שהצ'יפ היה על המסך.
+  // לכן קודם חלון הכתיבה עצמו, ואז אב שמכיל **גם** שדה עריכה וגם נמען.
+  const dlg = btn.closest('[role="dialog"]');
+  if (dlg && dlg.querySelector('[contenteditable="true"]')) return dlg;
   let n = btn;
   for (let i = 0; i < 12 && n.parentElement; i++) {
     n = n.parentElement;
-    if (n.querySelector('[contenteditable="true"]')) return n;
+    if (n.querySelector('[contenteditable="true"]') && n.querySelector('[email]')) return n;
   }
+  // חלון כתיבה **במסך מלא** (\`?tf=cm&fs=1\`, וזה בדיוק מה שהסקריפט פותח) אינו
+  // role="dialog", וכפתור השליחה ושורת הנמענים רחוקים זה מזה ב-DOM — אין אב
+  // משותף בתוך 12 רמות. הדף כולו הוא ההודעה, ולכן הוא הסקופ הנכון. נמדד
+  // 12/09/2026: \`[email]\` יחיד ונכון היה בדף, והסקופ הישן החזיר רשימה ריקה.
+  if (/[?&]tf=cm/.test(location.search)) return document.body;
+  // אין דיאלוג, אין אב שמכיל נמען, ואין מסך-מלא — נכשלים סגור. סקופ שמכיל
+  // גוף הודעה בלי שורת נמענים היה מחזיר "(אין)" ומסתיר נמען אמיתי.
   return null;
 }`;
 
@@ -227,13 +241,22 @@ try {
     // סדר עדיפות מפורש ולא איחוד סלקטורים עם `.last()`: ב-Gmail יש כמה
     // input-ים מסוג file באותו דף (תמונה מוטבעת, חתימה), ו"האחרון ב-DOM"
     // אינו בהכרח זה של הצירוף.
+    // ⚠️ `count()` מחזיר 0 מיד — הוא אינו ממתין. Gmail שעדיין על מסך הטעינה
+    // (לוגו Google Workspace) מחזיר 0 בשלושת הסלקטורים, והסקריפט היה מכריז
+    // "לא מצאתי את שדה הצירוף" על חלון שפשוט טרם נטען. נמדד 12/09/2026, כשהרצת
+    // קומקס מקבילה העמיסה את אותו Chrome. לכן סבב חוזר עד 60 שניות לפני ויתור.
     let input = null;
-    for (const sel of ['input[type="file"][name="Filedata"]', 'input[type="file"][multiple]', 'input[type="file"]']) {
-      const loc = page.locator(sel).last();
-      if (await loc.count()) { input = loc; break; }
+    const attachDeadline = Date.now() + 60_000;
+    for (;;) {
+      for (const sel of ['input[type="file"][name="Filedata"]', 'input[type="file"][multiple]', 'input[type="file"]']) {
+        const loc = page.locator(sel).last();
+        if (await loc.count()) { input = loc; break; }
+      }
+      if (input || Date.now() > attachDeadline) break;
+      await page.waitForTimeout(1000);
     }
     if (!input) {
-      console.error('לא מצאתי את שדה הצירוף של Gmail. לצלם את המסך ולמפות מחדש.');
+      console.error('לא מצאתי את שדה הצירוף של Gmail אחרי 60 שניות. לצלם את המסך ולמפות מחדש.');
       await page.screenshot({ path: shot, fullPage: false }).catch(() => {});
       process.exit(1);
     }
