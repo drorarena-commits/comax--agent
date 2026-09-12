@@ -193,12 +193,18 @@ try {
     // על הקלדה לתוך השדות: peoplekit מחליף סלקטורים בין גרסאות, וכתובת
     // שנכנסה חצי-מוקלדת נשארת טקסט חופשי במקום להפוך לצ׳יפ — ואז Gmail שולח
     // לכתובת קטועה בלי להתלונן.
+    // ⚠️ `body` בכוונה **לא** נכנס ל-URL. עברית מתנפחת פי ~6 בקידוד אחוזים,
+    // וגוף של 1,500+ תווים כבר מוציא URL שגוגל דוחה עם `Bad Request · Error
+    // 400` — דף לבן שאינו Gmail בכלל, שגורם לשלב הבא (חיפוש שדה הצירוף)
+    // להיכשל בהודעה שנראית כמו מיפוי שבור. נמדד 12/09/2026 פעמיים, בגוף
+    // ארוך משתי משימות שונות. `to`/`cc`/`su` נשארים ב-URL — הם קצרים ואינם
+    // עלולים לחצות את התקרה, ורק דרכם הנמען הופך לצ׳יפ אמיתי (הערה למעלה).
+    // הגוף מוקלד אחרי הטעינה, בדיוק כמו בתגובה.
     const q = new URLSearchParams({ view: 'cm', fs: '1', tf: '1' });
     q.set('to', opts.to.join(','));
     if (opts.cc.length) q.set('cc', opts.cc.join(','));
     if (opts.bcc.length) q.set('bcc', opts.bcc.join(','));
     q.set('su', opts.subject);
-    q.set('body', body);
     await page.goto(`https://mail.google.com/mail/u/${account}/?${q}`,
       { waitUntil: 'domcontentloaded', timeout: 120_000 });
   }
@@ -229,7 +235,21 @@ try {
     // גוף התגובה נכנס בהקלדה — בתגובה אין URL שממלא אותו.
     const bodyBox = page.locator('div[role="textbox"][contenteditable="true"]').last();
     await bodyBox.click({ timeout: 30_000 });
-    await bodyBox.pressSequentially(body, { delay: 5 });
+    // timeout מוגדל בכוונה: זו קריאה יחידה שמקלידה את כל הגוף, וגוף בן
+    // כאלפיים תווים חצה את ברירת המחדל (30s) בהרצה חיה — לא בגלל delay
+    // (5ms × 2,000 ≈ 10s) אלא בגלל שגוגל מריץ שמירה אוטומטית ובדיקת איות
+    // על כל טקסט RTL תוך כדי ההקלדה, וזה מאט את הקצב האמיתי.
+    await bodyBox.pressSequentially(body, { delay: 5, timeout: 180_000 });
+  } else if (body) {
+    // מייל חדש: הגוף הוסר בכוונה מה-URL (ראה הערה למעלה) ומוקלד כאן, אחרי
+    // שהחלון נטען עם הנמענים/נושא ממולאים.
+    const bodyBox = page.locator('div[role="textbox"][contenteditable="true"]').last();
+    await bodyBox.click({ timeout: 30_000 });
+    // timeout מוגדל בכוונה: זו קריאה יחידה שמקלידה את כל הגוף, וגוף בן
+    // כאלפיים תווים חצה את ברירת המחדל (30s) בהרצה חיה — לא בגלל delay
+    // (5ms × 2,000 ≈ 10s) אלא בגלל שגוגל מריץ שמירה אוטומטית ובדיקת איות
+    // על כל טקסט RTL תוך כדי ההקלדה, וזה מאט את הקצב האמיתי.
+    await bodyBox.pressSequentially(body, { delay: 5, timeout: 180_000 });
   }
 
   // ---------- צירוף הקבצים ----------
