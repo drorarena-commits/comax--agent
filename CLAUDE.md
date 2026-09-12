@@ -346,6 +346,8 @@ tools/site-data-file.js           קובץ "נתוני אתר" — מבטל "ל�
 memory/                           הזיכרון של הסוכן — גיבוי בלבד. המקור הוא ~/.claude/…/memory
 tools/memory-backup.js            מסנכרן אותו לכאן. כיוון אחד: מקור ⇒ ריפו, ולא מוחק
 knowledge/arena-site-items.md    הקמת מוצרים באתר ארנה ישראל — מפת השדות, הווריאציות, שלושת השערים
+tools/site-swatch.js             ריבועי בחירת הצבע לאתר — 50×50 מדגימת צבע מצילום המוצר
+tools/xlsx.js                    קורא את ה-Product Matrix של ארנה — מקור התיאורים והמפרט
 sportmore/KNOWLEDGE.md           הסיסטם של ספורט אנד מור — נפרד, לא מעורבב
 sportmore/reference/             כרטיס פריט, תבניות, טבלאות קוד — בגיט
 knowledge/screens/               מתכון הסלקטורים לכל מסך שמופה
