@@ -117,6 +117,24 @@ async function loginOnce({ page, human, logger, cfg, creds, fresh = false }) {
 }
 
 /**
+ * Why the last `login()` returned false: 'busy' | 'failed' | null.
+ *
+ * `login()` keeps its boolean return — six callers test it for truthiness, and
+ * a string return would have made `'failed'` read as success. The distinction
+ * is published alongside it instead, for the one caller that must act on it.
+ *
+ * It matters because the two failures call for opposite responses. 'failed' is
+ * a credential Comax rejected, and retrying it on every task would walk the
+ * account into a lockout — that is what the 30-minute block in
+ * `ensure-comax.js` exists to prevent. 'busy' is our *own* previous session
+ * still holding the single seat: nothing is wrong with the credentials, and the
+ * condition clears itself. Blocking on it turns a three-minute wait into half
+ * an hour of paralysis — measured 12/09/2026, twice in one afternoon.
+ */
+let lastFailure = null;
+export const lastLoginFailure = () => lastFailure;
+
+/**
  * Signs in using the credentials in .env — a file you write by hand and that is
  * never committed. The values are typed at human speed and never logged; the
  * log records only that a login was attempted.
@@ -125,10 +143,18 @@ async function loginOnce({ page, human, logger, cfg, creds, fresh = false }) {
  * the seat frees itself once the server times the stale session out, so the
  * fix is to wait it out. `login.busyRetries` / `login.busyWaitMs` in the config
  * bound how long.
+ *
+ * ⚠️ Unless a **second Chrome window** is open on the profile. A live frameset
+ * polls the server every ~90 seconds, so that seat never times out and waiting
+ * is pointless — the fix is to close the window. Dror diagnosed this on
+ * 12/09/2026 after the retries had run their full course for nothing.
  */
 export async function login({ page, human, logger, cfg }) {
   const creds = comaxCredentials();
-  if (!creds) return false;
+  if (!creds) {
+    lastFailure = 'failed';
+    return false;
+  }
 
   const retries = cfg.login.busyRetries ?? 4;
   const waitMs = cfg.login.busyWaitMs ?? 45_000;
@@ -137,10 +163,12 @@ export async function login({ page, human, logger, cfg }) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     const result = await loginOnce({ page, human, logger, cfg, creds, fresh: attempt > 0 });
     if (result === 'ok') {
+      lastFailure = null;
       logger?.step('login', 'ההתחברות הצליחה');
       return true;
     }
     if (result === 'failed') {
+      lastFailure = 'failed';
       logger?.step('login', 'ההתחברות נכשלה — בדוק את הפרטים ב-.env');
       return false;
     }
@@ -151,6 +179,7 @@ export async function login({ page, human, logger, cfg }) {
     await new Promise((r) => setTimeout(r, waitMs));
   }
 
+  lastFailure = 'busy';
   logger?.step('login', 'ההתחברות נכשלה — קוד המשתמש נשאר תפוס');
   return false;
 }

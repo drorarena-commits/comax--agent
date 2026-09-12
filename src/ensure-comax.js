@@ -15,7 +15,7 @@ import { existsSync, readFileSync, writeFileSync, unlinkSync, statSync } from 'n
 import { resolve } from 'node:path';
 import { ROOT, loadConfig } from './config.js';
 import { attachBrowser } from './browser.js';
-import { isLoggedIn, login } from './session.js';
+import { isLoggedIn, login, lastLoginFailure } from './session.js';
 import { comaxCredentials } from './env.js';
 
 const BLOCK_PATH = resolve(ROOT, 'runs', '.login-blocked');
@@ -117,6 +117,11 @@ async function waitForPort(port, ms = 30_000) {
  * `login()` כבר חסום מבפנים — הוא חוזר רק על "קוד משתמש בשימוש" ונכשל מיד על
  * סיסמה שגויה. אבל `ensureComax` נקרא בכל משימה, אז .env שגוי היה מייצר ניסיון
  * טרי בכל הפעלה: עשר בקשות מהטלפון, עשרה ניסיונות כושלים מול קומקס.
+ *
+ * ⚠️ ולכן החסימה שייכת **רק** לתרחיש הזה. היא נרשמת על `lastLoginFailure() ===
+ * 'failed'` בלבד — סיסמה שקומקס דחה — ולא על מושב תפוס ולא על נפילת דפדפן.
+ * שניהם חולפים מעצמם, וחסימה עליהם הופכת המתנה של דקות לשיתוק של חצי שעה
+ * שדורש ניקוי ידני של הקובץ. ראה את ההערה מעל `login()` ב-src/session.js.
  */
 function loginBlocked() {
   if (!existsSync(BLOCK_PATH)) return null;
@@ -237,15 +242,32 @@ export async function ensureComax({ logger = null } = {}) {
     return needsLogin('אין .env — צריך התחברות ידנית בחלון הסוכן.');
   }
 
+  /**
+   * החסימה נרשמת **רק** על סיסמה שקומקס דחה — ולא על שני הכישלונות האחרים,
+   * ששניהם חולפים מעצמם. נמדד 12/09/2026: חלון כרום כפול תפס את המושב, קומקס
+   * ענה "קוד משתמש בשימוש", והקוד רשם חסימה של 30 דקות על תקלה שנפתרת בסגירת
+   * חלון. פעמיים באותו אחר צהריים, והשנייה דרשה ניקוי ידני של הקובץ.
+   *
+   *   busy      — המושב שלנו עצמו. הסיסמה תקינה, אין מה לחסום.
+   *   exception — הדפדפן נפל באמצע ("Target page … has been closed"). לא הגענו
+   *               לפסק דין מקומקס בכלל, ולכן זו אינה עדות על הפרטים ב-.env.
+   */
   try {
     const ok = await login({ ...session, logger });
     if (!ok) {
-      setBlock('ההתחברות נדחתה');
+      const busy = lastLoginFailure() === 'busy';
+      if (!busy) setBlock('ההתחברות נדחתה');
       await disconnect();
-      return needsLogin('ההתחברות מ-.env נכשלה — בדוק את הפרטים.');
+      return needsLogin(
+        busy
+          ? 'המושב תפוס — קומקס מחזיק סשן קודם שלנו ("קוד משתמש בשימוש"). ' +
+            'זו אינה בעיית סיסמה ולא נרשמה חסימה. ' +
+            'בדוק חלון כרום נוסף פתוח על הפרופיל — חלון פתוח מחזיק את המושב לצמיתות ' +
+            'ואין טעם להמתין; אם אין כזה, נסה שוב בעוד כשלוש דקות.'
+          : 'ההתחברות מ-.env נכשלה — בדוק את הפרטים.',
+      );
     }
   } catch (e) {
-    setBlock(e.message);
     await disconnect();
     return needsLogin(`ההתחברות נכשלה: ${e.message}`);
   }
