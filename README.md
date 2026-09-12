@@ -551,3 +551,10 @@ npm run run -- invoice-reset        --json '{"customer":"112001"}' --confirm
 **ריבועי בחירת הצבע** אינם נוצרים על ידי האתר. `node tools/site-swatch.js
 <מקור> <יעד> <דגם> <קוד:שם> ...` חותך ריבוע 50×50 של הצבע האמיתי מצילום
 המוצר, והוא משויך למונח ה-`pa_color` דרך שדה `ux_image` במסך עריכת המונח.
+
+**ה-SEO גם הוא חלק מההקמה** — האתר מריץ Yoast SEO Premium עם Yoast SEO:
+WooCommerce, ובלי מילוי הוא נופל לתבנית שמחזירה את שם המוצר כתיאור המטא.
+ההקמה ממלאת ביטוי מפתח, תיאור מטא וקטגוריה ראשית על ההורה, ו-`gtin13` על
+**כל ווריאציה** מתוך ה-EAN שכבר משמש כמק"ט — במפתח
+`wpseo_variation_global_identifiers_values`. חומר הגלם למילים הוא עמודות
+`Keywords` ו-`Name for the Internet` שב-Product Matrix, לתרגום.
