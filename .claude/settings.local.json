@@ -13,7 +13,9 @@
       "Bash(node --check src/documents/agents/osh-receipt/index.js)",
       "Bash(node -e \"import\\('./src/documents/registry.js'\\).then\\(m=>console.log\\('registry ok:', m.list\\(\\).map\\(a=>a.name\\).join\\(', '\\)\\)\\).catch\\(e=>{console.error\\('FAIL',e.message\\);process.exit\\(1\\)}\\)\")",
       "PowerShell($prev = \"C:\\\\AGENT-COMAX-CLOAD\\\\data\\\\exports\\\\פריטים-מלא-2026-09-11.csv\"; $n = \\(Get-Content $prev | Measure-Object -Line\\).Lines; \"prev rows \\(incl header\\): $n\"; if \\(Test-Path \"C:\\\\AGENT-COMAX-CLOAD\\\\runs\\\\.lock\"\\) { \"LOCK EXISTS\"; Get-Content \"C:\\\\AGENT-COMAX-CLOAD\\\\runs\\\\.lock\" } else { \"no lock\" })",
-      "PowerShell(npm run run -- items-export --confirm)"
+      "PowerShell(npm run run -- items-export --confirm)",
+      "PowerShell($f=\"C:\\\\AGENT-COMAX-CLOAD\\\\data\\\\exports\\\\פריטים-מלא-2026-09-11.csv\"; \\(\\(Get-Content $f | Measure-Object -Line\\).Lines\\))",
+      "PowerShell(npm run logoff)"
     ]
   }
 }
