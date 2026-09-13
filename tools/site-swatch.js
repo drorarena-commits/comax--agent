@@ -27,7 +27,22 @@ const SUB  = 3;     // דגימה בתוך הריבוע
 // בתמונה הוא הפאנל השחור, לא צבע המוצר. נמדד 13/09/2026 על 010231-800 "ICE":
 // הריבוע יצא rgb(28,44,63), כמעט שחור, בזמן שהתיק אפור בהיר. לכן דוחים משטח
 // כהה מדי — הוא כמעט תמיד טרים ולא הצבע ששם הצבע מתאר.
-const MIN_LUM = 100;  // ערוץ מקסימלי מתחת לזה = טרים, לא צבע המוצר
+// ⚠️ ולצבע שהוא **באמת** כהה (BLACK, ANTHRACITE) הסף הזה דוחה את כל התמונה
+// והכלי נופל ב"לא נמצא משטח אחיד". במקרה כזה מריצים עם `MIN_LUM=0` — אין דרך
+// להבחין אוטומטית בין טרים שחור לבגד שחור, וזו הכרעה של מי שמסתכל על התמונה.
+const MIN_LUM = Number(process.env.MIN_LUM ?? 100);
+// 💣💣 **הדוגמן לובש בגד תחתון בצבע אחר, והוא המשטח האחיד ביותר בפריים.**
+// נמדד 13/09/2026 על 1D352: הריבוע ל-080 ROYAL יצא `rgb(207,61,66)` — אדום,
+// כי הסריקה נחתה על המכנסיים האדומים שמתחת לז'קט הכחול; ול-070 NAVY יצא
+// כחול-רויאל מהמכנסיים. הריבוע נראה תקין לגמרי בפני עצמו, והטעות מתגלה רק
+// כשמשווים אותו לשם הצבע. לכן הסריקה מוגבלת לחלק **העליון** של התמונה.
+// ⚠️ לאביזרים (תיק, כובע, משקפת) שיושבים במרכז או בתחתית — `SCAN_TOP=1`.
+const SCAN_TOP = Number(process.env.SCAN_TOP ?? 0.60);
+// ⚠️ וגם ראש הפריים פסול: הפנים והצוואר של הדוגמן הם משטח אחיד לגמרי, וב-1D352-070
+// הריבוע יצא rgb(159,122,113) — גוון עור. לכן הסריקה יושבת על **חלון הגו**:
+// רצועה אנכית מתחת לפנים ומעל למותן, ורצועה אופקית סביב מרכז הפריים.
+const SCAN_BOTTOM = Number(process.env.SCAN_BOTTOM ?? 0.20);  // מתחילים מתחת לפנים
+const SCAN_SIDE = Number(process.env.SCAN_SIDE ?? 0.22);      // שוליים מימין ומשמאל
 
 async function swatch(file, out) {
   const img = sharp(file);
@@ -35,14 +50,22 @@ async function swatch(file, out) {
   const { data } = await img.raw().toBuffer({ resolveWithObject: true });
   const px = (x, y) => { const i = (y * W + x) * 3; return [data[i], data[i + 1], data[i + 2]]; };
   // "מוצר" = לא לבן ולא אפור-בהיר. רקע הסטודיו של ארנה כמעט תמיד לבן נקי.
+  // 💣 **בגד לבן אינו ניתן להבחנה מרקע הסטודיו הלבן** — הכלל למטה דוחה את כולו
+  // והכלי נופל. ל-1D347-010 WHITE מריצים עם  **וגם** חלון סריקה צר
+  // שיושב בוודאות על החזה (למשל SCAN_SIDE=0.36 SCAN_BOTTOM=0.26 SCAN_TOP=0.5),
+  // כי בלי מסנן הרקע כל ריבוע לבן — כולל רקע — נראה למכונה כמו הבד.
+  const ANY = process.env.ANY_PIXEL === "1";
   const isProduct = ([r, g, b]) => {
+    if (ANY) return true;
     const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
     return mx < 235 || (mx - mn) > 25;
   };
 
   let best = null;
-  for (let y = 0; y + CROP < H; y += STEP) {
-    for (let x = 0; x + CROP < W; x += STEP) {
+  const yMin = Math.floor(H * SCAN_BOTTOM), yMax = Math.floor(H * SCAN_TOP);
+  const xMin = Math.floor(W * SCAN_SIDE), xMax = Math.ceil(W * (1 - SCAN_SIDE));
+  for (let y = yMin; y + CROP < yMax; y += STEP) {
+    for (let x = xMin; x + CROP < xMax; x += STEP) {
       let n = 0, sr = 0, sg = 0, sb = 0; const vals = [];
       for (let dy = 0; dy < CROP; dy += SUB) {
         for (let dx = 0; dx < CROP; dx += SUB) {
@@ -74,7 +97,13 @@ async function swatch(file, out) {
   fs.mkdirSync(dst, { recursive: true });
   for (const spec of colors) {
     const [code, name] = spec.split(":");
-    const file = `${src}/${model}-${code}-001.jpg`;
+    // מוסכמת השמות של `pim-fetch` כוללת את שם המוצר באמצע ומסתיימת ב-.webp,
+    // ולכן חיפוש לפי שם מדויק החמיץ אותם. מחפשים לפי תחילית דגם-צבע וסיומת 001.
+    const cand = [`${model}-${code}-001.jpg`, `${model}-${code}-001.webp`];
+    const found = cand.find((f) => fs.existsSync(`${src}/${f}`))
+      ?? fs.readdirSync(src).find((f) => f.startsWith(`${model}-${code}-`) && /-001\.(jpe?g|png|webp)$/i.test(f));
+    if (!found) throw new Error(`אין תמונת מקור ל-${model}-${code} בתיקייה ${src}`);
+    const file = `${src}/${found}`;
     const out  = `${dst}/${model}${code}_thumb-${name}.webp`;
     const b = await swatch(file, out);
     console.log(`${code} ${name}  crop@${b.x},${b.y}  rgb(${b.rgb})  ${fs.statSync(out).size}B`);
