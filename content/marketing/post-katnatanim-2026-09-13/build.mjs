@@ -54,7 +54,7 @@ const cover = shell(`
   <div class="title">קטנטנים.</div>
   <div class="sub">קטגוריה חדשה אצלנו</div>
   <div class="desc">ציוד שחייה לגיל הרך, עכשיו באתר ובחנות בוינגייט</div>
-  <footer><span class="wm">arena</span><span class="nx">1/6 · החליקו ←</span></footer>
+  <footer><span class="wm">arena</span><span class="nx">1/7 · החליקו ←</span></footer>
 `);
 
 const product = shell(`
@@ -63,7 +63,7 @@ const product = shell(`
   <div class="pname">בגד ים קטנטנות — Team Challenge Solid</div>
   <div class="price">100 ₪</div>
   <div class="pdesc">עמיד כלור, הגנת UV 50+. מידות 4-5 עד 10-11.<br>מהקטגוריה החדשה, קטנטנים.</div>
-  <footer><span class="wm">arena</span><span class="pg">2/6</span></footer>
+  <footer><span class="wm">arena</span><span class="pg">2/7</span></footer>
 `);
 
 const other = (img, name, price, badge, pg) => shell(`
@@ -75,8 +75,9 @@ const other = (img, name, price, badge, pg) => shell(`
   <footer><span class="wm">arena</span><span class="pg">${pg}</span></footer>
 `);
 
-const capSlide = other('cap-roy.jpg', 'כובע שחייה לפעוטות — ROY', 'מ-69.90 ₪', 'לגילאי 6-36 חודשים', '3/6');
-const warmsuitSlide = other('warmsuit.jpg', 'בגד ים שומר חום — Neoprene Warmsuit', '159.90 ₪', 'לגילאי 1-6', '4/6');
+const capSlide = other('cap-roy.jpg', 'כובע שחייה לפעוטות — ROY', 'מ-69.90 ₪', 'לגילאי 6-36 חודשים', '3/7');
+const warmsuitSlide = other('warmsuit.jpg', 'בגד ים שומר חום — Neoprene Warmsuit', '159.90 ₪', 'לגילאי 1-6', '4/7');
+const gogglesSlide = other('goggles.jpg', 'משקפת שחייה מסיכה — Kids\' Spider Swim Mask', '109.00 ₪', 'לגילאי 2-5', '5/7');
 
 const details = shell(`
   <div class="accent"></div>
@@ -88,7 +89,7 @@ const details = shell(`
     <div class="row"><span class="k">צבעים</span><span class="v">שישה גוונים לבחירה</span></div>
     <div class="row"><span class="k">מחיר</span><span class="v" style="color:${C.blue};font-weight:900">100 ₪ בלבד</span></div>
   </div>
-  <footer><span class="wm">arena</span><span class="pg">5/6</span></footer>
+  <footer><span class="wm">arena</span><span class="pg">6/7</span></footer>
 `);
 
 const closing = shell(`
@@ -96,7 +97,7 @@ const closing = shell(`
   באתר או בחנות בוינגייט</div>
   <div style="position:absolute;right:80px;left:80px;top:700px;text-align:center;color:${C.blue};
        font-weight:700;font-size:44px">arenaisrael.co.il</div>
-  <footer><span class="wm">arena</span><span class="pg">6/6</span></footer>
+  <footer><span class="wm">arena</span><span class="pg">7/7</span></footer>
 `);
 
 const slides = [
@@ -104,8 +105,9 @@ const slides = [
   { name: 'slide-2.png', html: product },
   { name: 'slide-3.png', html: capSlide },
   { name: 'slide-4.png', html: warmsuitSlide },
-  { name: 'slide-5.png', html: details },
-  { name: 'slide-6.png', html: closing },
+  { name: 'slide-5.png', html: gogglesSlide },
+  { name: 'slide-6.png', html: details },
+  { name: 'slide-7.png', html: closing },
 ];
 
 const browser = await chromium.launch({ executablePath: CHROME, args: ['--allow-file-access-from-files', '--force-device-scale-factor=1'] });
