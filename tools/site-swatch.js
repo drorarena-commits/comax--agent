@@ -19,10 +19,15 @@
 import sharp from "sharp";
 import fs from "node:fs";
 
-const CROP = 140;   // הריבוע שנחתך מהמקור
+const CROP = 90;    // הריבוע שנחתך מהמקור
 const SIZE = 50;    // הגודל הסופי — כמו הריבועים הקיימים באתר
-const STEP = 20;    // צפיפות הסריקה
-const SUB  = 7;     // דגימה בתוך הריבוע
+const STEP = 6;     // צפיפות הסריקה
+const SUB  = 3;     // דגימה בתוך הריבוע
+// 💣 מוצר עם פאנל טרים שחור (תיק, נעל, בגד עם חלקים כהים) — המשטח הכי אחיד
+// בתמונה הוא הפאנל השחור, לא צבע המוצר. נמדד 13/09/2026 על 010231-800 "ICE":
+// הריבוע יצא rgb(28,44,63), כמעט שחור, בזמן שהתיק אפור בהיר. לכן דוחים משטח
+// כהה מדי — הוא כמעט תמיד טרים ולא הצבע ששם הצבע מתאר.
+const MIN_LUM = 100;  // ערוץ מקסימלי מתחת לזה = טרים, לא צבע המוצר
 
 async function swatch(file, out) {
   const img = sharp(file);
@@ -48,6 +53,7 @@ async function swatch(file, out) {
       const total = Math.ceil(CROP / SUB) ** 2;
       if (n / total < 0.98) continue;            // רק ריבוע שכולו מוצר
       const mr = sr / n, mg = sg / n, mb = sb / n;
+      if (Math.max(mr, mg, mb) < MIN_LUM) continue;   // ראו MIN_LUM למעלה
       let varr = 0;
       for (const p of vals) varr += (p[0] - mr) ** 2 + (p[1] - mg) ** 2 + (p[2] - mb) ** 2;
       varr /= n;
