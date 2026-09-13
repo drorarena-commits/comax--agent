@@ -69,11 +69,21 @@ function dialogSince(page, mark) {
  * never show. Measured 07/09/2026: after a `npm run open` window the visible
  * pair was `User` / `Password`, while the config named the other.
  */
-async function visibleField(page, selectors) {
-  for (const sel of selectors) {
-    if (await page.locator(sel).first().isVisible().catch(() => false)) return sel;
-  }
-  return selectors[0];
+async function visibleField(page, selectors, timeoutMs = 8000) {
+  // 💣 **"אף אחד מהם לא נראה כרגע" אינו "תבחר את הראשון".** נמדד 13/09/2026:
+  // הקלדת הארגון מחליפה את זוג השדות, ובחלון שבין ההחלפות **שניהם** מוסתרים.
+  // הגרסה הקודמת החזירה אז את `selectors[0]` בשקט, ההקלדה נחתה על התאום
+  // המוסתר, ו-`User_Pass` נקרא חזרה עם ערך ברירת המחדל שלו — המילה **"משתמש"**
+  // — כלומר כישלון שנראה בדיוק כמו שדה שלא נוקה. לכן ממתינים שאחד מהם ייראה
+  // באמת, ורק אז בוחרים.
+  const until = Date.now() + timeoutMs;
+  do {
+    for (const sel of selectors) {
+      if (await page.locator(sel).first().isVisible().catch(() => false)) return sel;
+    }
+    await new Promise((r) => setTimeout(r, 200));
+  } while (Date.now() < until);
+  throw new Error(`אף אחד משדות ההתחברות לא נראה תוך ${timeoutMs}ms: ${selectors.join(' , ')}`);
 }
 
 /** One sign-in attempt. Returns 'ok' | 'busy' | 'failed'. */
@@ -99,6 +109,10 @@ async function loginOnce({ page, human, logger, cfg, creds, fresh = false }) {
   }).catch(() => {});
 
   await human.type(cfg.login.orgField, creds.org, { label: 'ארגון', clear: true, paste: false });
+  // הקלדת הארגון היא מה שמחליפה בין שני זוגות שדות האישורים, וההחלפה אינה
+  // מיידית. בלי ההמתנה הזאת `visibleField` נבחר על מצב ביניים והשדה נעלם
+  // מתחת להקלדה.
+  await human.settle('החלפת שדות ההתחברות');
   const userSel = await visibleField(page, [cfg.login.userField, ...(cfg.login.userFieldAlt ?? [])]);
   await human.type(userSel, creds.user, { label: 'משתמש', clear: true, paste: false });
   // The password pair is resolved **after** the user is typed, not before.
