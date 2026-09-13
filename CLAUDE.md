@@ -353,6 +353,8 @@ src/items/build-cost.js           מחירי עלות מדוח רכישות — 
 src/tasks/cost-import.js          יבוא מחירון — a6 → יבוא מאקסל → CSV בן 3 עמודות
 tools/site-data-file.js           קובץ "נתוני אתר" — מבטל "לא להציג", בלעדיו פריט לא מסונכרן
 tools/catalog-sync.js             מעתיק את קטלוג הפריטים הטרי מ-data/exports ל-content/ ומנקה ישנים
+tools/matrix-html-to-csv.js       ממיר את מטריצת המחסנים מה-HTML שקומקס מחזיר ל-CSV קריא
+                                  נדרש כי מסלול האקסל שבור — stock-matrix חייב --json '{"excel":false}'
                                   רץ אוטומטית אחרי הייצוא הלילי (COMAX-Items-Export-Nightly, 03:00)
 memory/                           הזיכרון של הסוכן — גיבוי בלבד. המקור הוא ~/.claude/…/memory
 tools/memory-backup.js            מסנכרן אותו לכאן. כיוון אחד: מקור ⇒ ריפו, ולא מוחק

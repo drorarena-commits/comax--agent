@@ -582,3 +582,17 @@ WooCommerce, ובלי מילוי הוא נופל לתבנית שמחזירה א�
 **כל ווריאציה** מתוך ה-EAN שכבר משמש כמק"ט — במפתח
 `wpseo_variation_global_identifiers_values`. חומר הגלם למילים הוא עמודות
 `Keywords` ו-`Name for the Internet` שב-Product Matrix, לתרגום.
+
+### מטריצת מחסנים — המסלול שעובד
+
+⚠️ מסלול האקסל של הדוח שבור מצד קומקס (`Spooler_Exl_EXE` → "בעיה בהפעלה ראשונית").
+ההרצה חייבת לעבור דרך הצופה, ואז דרך הממיר:
+
+```bash
+npm run run -- stock-matrix --json '{"excel":false}'
+npm run matrix-csv -- "data/exports/מטריצת-מחסנים-<תאריך>.html" "content/מטריצת-מחסנים-<תאריך>.csv"
+npm run apply-matrix -- --write
+```
+
+בלי שלב ההמרה הדוח יורד בהצלחה ואז נתקע — `loadMatrix` קורא CSV והדוח הוא HTML.
+פירוט: ממצא 21 ב-`knowledge/MAP.md`.

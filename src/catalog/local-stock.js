@@ -165,9 +165,20 @@ export function loadMatrix(file = newest(MATRIX_RE), { reference = null } = {}) 
   const head = rows[0] ?? [];
 
   // Trailing block of stock columns: total first, then one per warehouse.
+  const isStock = (h) => /^(מלאי|יתרת מלאי)$/.test(h);
   let width = 0;
-  while (width < head.length && /^(מלאי|יתרת מלאי)$/.test(head[head.length - 1 - width])) width++;
-  const labelled = head.slice(head.length - width + 1).some((h) => !/^(מלאי|יתרת מלאי)$/.test(h));
+  while (width < head.length && isStock(head[head.length - 1 - width])) width++;
+  // The labelled shape — `מלאי` for the total and then the real warehouse names
+  // — leaves nothing to count backwards from, so the run above measures 0. It is
+  // the shape `tools/matrix-html-to-csv.js` writes, and it is strictly better
+  // than the anonymous one: naming the columns outright removes the need to
+  // guess them by matching an older export, which is exactly what fails on a
+  // volatile warehouse like WIX.
+  if (width === 0) {
+    const i = head.findLastIndex(isStock);
+    if (i >= 0) width = head.length - i;
+  }
+  const labelled = width > 0 && head.slice(head.length - width + 1).some((h) => !isStock(h));
   if (width < 2) {
     throw new Error(
       `לא זיהיתי עמודות מלאי ב-${file}.\n  הכותרות: ${head.join(' | ')}`,

@@ -23,6 +23,7 @@
     "merge-full": "node tools/merge-full.js",
     "stock": "node tools/stock.js",
     "apply-matrix": "node tools/apply-matrix.js",
+    "matrix-csv": "node tools/matrix-html-to-csv.js",
     "sm": "node tools/sportmore.js",
     "sm-test": "node tools/sportmore-selftest.js",
     "payroll": "node tools/payroll-report.js",
