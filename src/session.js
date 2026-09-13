@@ -86,6 +86,18 @@ async function loginOnce({ page, human, logger, cfg, creds, fresh = false }) {
     await human.goto(cfg.loginUrl);
   }
 
+  // 💣 מסך ההתחברות נושא היסטוריית השלמה אוטומטית של כרום, וההצעה שנפתחת
+  // בזמן ההקלדה מתחייבת על הפעולה הבאה ומצרפת לתוכן הקיים. נמדד 13/09/2026:
+  // שדה הארגון יצא `דרורספורטדרורספורט` וקומקס ענה "ארגון שגוי". כאן מכבים
+  // את המנגנון בשורש; `human.type` מאמת את הערך אחרי ההקלדה כרשת ביטחון.
+  await page.evaluate(() => {
+    for (const el of document.querySelectorAll('input')) {
+      el.setAttribute('autocomplete', 'off');
+      el.setAttribute('autocorrect', 'off');
+    }
+    for (const f of document.querySelectorAll('form')) f.setAttribute('autocomplete', 'off');
+  }).catch(() => {});
+
   await human.type(cfg.login.orgField, creds.org, { label: 'ארגון', clear: true, paste: false });
   const userSel = await visibleField(page, [cfg.login.userField, ...(cfg.login.userFieldAlt ?? [])]);
   await human.type(userSel, creds.user, { label: 'משתמש', clear: true, paste: false });

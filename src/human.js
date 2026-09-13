@@ -214,6 +214,31 @@ export class Human {
         await typeOut();
       }
     }
+    // ⛔ 💣 **השלמה אוטומטית של הדפדפן מצרפת לתוכן קיים — ואף אחד לא רואה.**
+    // נמדד 13/09/2026 במסך ההתחברות: שדה הארגון יצא `דרורספורטדרורספורט`
+    // וקומקס החזיר "ארגון שגוי". `Control+A`+`Delete` אינם מספיקים — כרום
+    // ממלא מחדש **אחרי** הניקוי, ורשימת ההצעות שנפתחת בזמן ההקלדה מתחייבת
+    // על הפעולה הבאה. לכן: Escape לסגירת הרשימה, ואז **קריאה חוזרת של השדה**
+    // בשני המסלולים (הדבקה והקלדה כאחד), ותיקון ב-`fill` אם לא תואם.
+    // ⚠️ מסלול ההקלדה לא אומת עד היום — רק מסלול ההדבקה — וזו בדיוק הדלת
+    // שדרכה נכנסה התקלה, כי ההתחברות מקלידה עם `paste: false`.
+    await this.page.keyboard.press('Escape').catch(() => {});
+    await sleep(rand(80, 180));
+    const after = await el.inputValue().catch(() => null);
+    if (after !== null && after.trim() !== want.trim()) {
+      const theirs = secret ? `(${after.length} \u05ea\u05d5\u05d5\u05d9\u05dd)` : `"${after}"`;
+      const mine = secret ? '\u2022'.repeat(Math.min(want.length, 8)) : `"${want}"`;
+      this.logger?.step('fix', `${label ?? String(target)}: \u05d4\u05e9\u05d3\u05d4 \u05d4\u05d7\u05d6\u05d9\u05e7 ${theirs} \u05d1\u05de\u05e7\u05d5\u05dd ${mine} \u2014 \u05db\u05d5\u05ea\u05d1 \u05de\u05d7\u05d3\u05e9`);
+      await el.fill('');
+      await sleep(rand(80, 180));
+      await el.fill(want);
+      await sleep(rand(120, 250));
+      const again = await el.inputValue().catch(() => null);
+      if (again !== null && again.trim() !== want.trim()) {
+        throw new Error(`${label ?? String(target)}: \u05d4\u05e9\u05d3\u05d4 \u05dc\u05d0 \u05de\u05e7\u05d1\u05dc \u05d0\u05ea \u05d4\u05e2\u05e8\u05da \u05e9\u05e0\u05e9\u05dc\u05d7 \u05d0\u05dc\u05d9\u05d5. \u05e2\u05d5\u05e6\u05e8.`);
+      }
+      how = how + '+fill';
+    }
     const took = Date.now() - t0;
 
     const shown = secret ? '•'.repeat(Math.min(want.length, 8)) : `"${text}"`;
