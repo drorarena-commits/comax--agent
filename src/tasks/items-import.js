@@ -83,6 +83,7 @@ export const meta = {
     allowUpdate: 'true — לאפשר גם עדכון פריטים קיימים ("הקמת פריט" ריק). ברירת המחדל: הקמה בלבד',
     priceDate: 'תאריך "מחיר מכירה נכון לתאריך" בפורמט dd/mm/yyyy. ברירת המחדל: היום',
     previewOnly: 'true — לוחץ רק על הכפתור הירוק הראשון (בניית התצוגה המקדימה), ועוצר. לא נוגע בכפתור השני, הקליטה. דורש --confirm כדי בכלל להגיע למסך הזה',
+    partial: 'true — לאשר קובץ עם תת-קבוצה של העמודות, לעדכון שדה בודד (מחיר, למשל) בפריטים קיימים. חייב מק"ט וברקוד, ולפחות שדה נתונים אחד. לא מקים פריטים',
   },
 };
 
@@ -368,7 +369,26 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   }
   const missingHeaders = Object.keys(spec.fields).filter((h) => !head.includes(h));
   if (missingHeaders.length) {
-    throw new Error(`כותרות חסרות בקובץ: ${missingHeaders.join(' · ')}. הקובץ אינו תוצר של items-import-file.`);
+    // ⚠️ **עדכון שדה בודד בפריטים קיימים אינו הקמה, ואסור לו לדרוש קובץ הקמה
+    //    מלא.** נמדד 13/09/2026 באיחוד מחירון ראשי ל-68 פריטים: בניית הקובץ
+    //    המלא הצריכה למלא 22 עמודות מאסטר מתוך הייצוא — ו-17 מהפריטים מחזיקים
+    //    **קוד צבע ריק** בקומקס. כלומר כדי לשנות מחיר היינו כותבים מחדש מחלקה,
+    //    קבוצה, ספק ודגם על 68 פריטים אמיתיים, בסיכון שכל טעות מיפוי אחת
+    //    תדרוס מאסטר. קובץ חלקי מסוכן פחות: קומקס ממפה **רק את העמודות
+    //    שקיימות**, ושדה שאינו בקובץ אינו נכתב כלל.
+    //    לכן `partial: true` — אישור מפורש, לא ריכוך שקט. השער נשאר בתוקף
+    //    לכל השאר: בלי הדגל, קובץ חסר עמודות עדיין נדחה.
+    if (!input.partial) {
+      throw new Error(`כותרות חסרות בקובץ: ${missingHeaders.join(' · ')}. הקובץ אינו תוצר של items-import-file.`
+        + `
+  לעדכון שדה בודד בפריטים קיימים (מחיר, למשל) — להוסיף --partial.`);
+    }
+    const ids = ['מק"ט', 'ברקוד'].filter((h) => !head.includes(h));
+    if (ids.length) throw new Error(`--partial דורש עמודות זיהוי. חסר: ${ids.join(' · ')}`);
+    const dataCols = head.filter((h) => spec.fields[h] && !['מק"ט', 'ברקוד'].includes(h));
+    if (!dataCols.length) throw new Error('--partial: אין בקובץ אף שדה נתונים לעדכון, רק זיהוי.');
+    if (!input.allowUpdate) throw new Error('--partial הוא עדכון פריטים קיימים ולכן דורש גם --allowUpdate.');
+    logger.step('partial', `קובץ חלקי באישור מפורש — נכתבים רק: ${dataCols.join(' · ')} · לא נכתבים: ${missingHeaders.join(' · ')}`);
   }
   logger.step('columns', `${wanted.size} עמודות ימופו · ${unmapped.length} לקריאה בלבד: ${unmapped.join(' · ')}`);
 

@@ -137,7 +137,7 @@ export class Human {
    * (quantity, price, discount, remark, details, date) — it skips the two-second
    * gate. See `gate()` for the rule and why the pause *after* the field stays.
    */
-  async type(target, text, { scope = null, label = null, clear = true, secret = false, paste = true, free = false } = {}) {
+  async type(target, text, { scope = null, label = null, clear = true, secret = false, paste = true, free = false, verify = true } = {}) {
     const el = this.#loc(target, scope);
     await this.gate({ free });
     await el.waitFor({ state: 'visible', timeout: this.pace.actionTimeoutMs });
@@ -222,9 +222,17 @@ export class Human {
     // בשני המסלולים (הדבקה והקלדה כאחד), ותיקון ב-`fill` אם לא תואם.
     // ⚠️ מסלול ההקלדה לא אומת עד היום — רק מסלול ההדבקה — וזו בדיוק הדלת
     // שדרכה נכנסה התקלה, כי ההתחברות מקלידה עם `paste: false`.
+    // 💣💣 **ויש שדות שאסור לאמת כך — כאלה שהדף מחליף תוך כדי ההקלדה.**
+    // נמדד 13/09/2026 במסך ההתחברות של קומקס: `User_Pass` הוא שדה **טקסט**
+    // שמציג את התווית "משתמש" כערך, וברגע שמקלידים בו `User_Pass_KeyDown()`
+    // מסתיר אותו ומגלה במקומו `User` מסוג password עם מה שהוקלד. הקריאה
+    // חזרה נופלת אז על השדה **הישן**, מקבלת "משתמש", ומסיקה שההקלדה נכשלה —
+    // ואז מנסה `fill` על אלמנט מוסתר ומתה אחרי 30 שניות עם שגיאה שנראית
+    // כמו בעיית אישורים. `verify: false` הוא הפתח לשדות כאלה; מי שמשתמש בו
+    // חייב לאמת בעצמו מול בן-הזוג הנכון.
     await this.page.keyboard.press('Escape').catch(() => {});
     await sleep(rand(80, 180));
-    const after = await el.inputValue().catch(() => null);
+    const after = verify ? await el.inputValue().catch(() => null) : null;
     if (after !== null && after.trim() !== want.trim()) {
       const theirs = secret ? `(${after.length} \u05ea\u05d5\u05d5\u05d9\u05dd)` : `"${after}"`;
       const mine = secret ? '\u2022'.repeat(Math.min(want.length, 8)) : `"${want}"`;

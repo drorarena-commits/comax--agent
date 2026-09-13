@@ -70,20 +70,45 @@ function dialogSince(page, mark) {
  * pair was `User` / `Password`, while the config named the other.
  */
 async function visibleField(page, selectors, timeoutMs = 8000) {
-  // 💣 **"אף אחד מהם לא נראה כרגע" אינו "תבחר את הראשון".** נמדד 13/09/2026:
-  // הקלדת הארגון מחליפה את זוג השדות, ובחלון שבין ההחלפות **שניהם** מוסתרים.
-  // הגרסה הקודמת החזירה אז את `selectors[0]` בשקט, ההקלדה נחתה על התאום
-  // המוסתר, ו-`User_Pass` נקרא חזרה עם ערך ברירת המחדל שלו — המילה **"משתמש"**
-  // — כלומר כישלון שנראה בדיוק כמו שדה שלא נוקה. לכן ממתינים שאחד מהם ייראה
-  // באמת, ורק אז בוחרים.
+  // מחזיר את הראשון מבין המועמדים שנראה **וניתן להקלדה** כרגע, ומחכה עד
+  // שאחד כזה יופיע. "אף אחד לא נראה" אינו "תבחר את הראשון" — זו נפילה שקטה
+  // שמייצרת שגיאה במקום אחר לגמרי.
   const until = Date.now() + timeoutMs;
   do {
     for (const sel of selectors) {
-      if (await page.locator(sel).first().isVisible().catch(() => false)) return sel;
+      const el = page.locator(sel).first();
+      if (await el.isVisible().catch(() => false)
+        && await el.isEditable().catch(() => false)) return sel;
     }
     await new Promise((r) => setTimeout(r, 200));
   } while (Date.now() < until);
-  throw new Error(`אף אחד משדות ההתחברות לא נראה תוך ${timeoutMs}ms: ${selectors.join(' , ')}`);
+  throw new Error(`אף אחד משדות ההתחברות לא נראה וניתן להקלדה תוך ${timeoutMs}ms: ${selectors.join(' , ')}`);
+}
+
+/**
+ * מאמת שמה שהוקלד באמת נחת — בשדה שהוקלד בו **או בבן-הזוג המוסתר שלו**.
+ *
+ * 💣 מסך ההתחברות של קומקס מחזיק לכל שדה **זוג**: אחד מסוג `text` שמציג את
+ * התווית כערך ("ארגון" / "משתמש" / "סיסמה"), ואחד מסוג `password` שמוסתר.
+ * ההקלדה בגלוי מחליפה ביניהם: הגלוי נעלם וחוזר לתווית, והמוסתר מתגלה עם
+ * הערך. לכן קריאה חזרה של השדה שהוקלד בו לבדו **תמיד** תיראה ככישלון, וזו
+ * בדיוק הטעות שהפילה שתי הרצות ב-13/09/2026.
+ *
+ * הכלל: מספיק שאחד מבני הזוג מחזיק את הערך. אף אחד מהם — עצירה, כי לוגין
+ * עם שדה ריק מחזיר "ארגון שגוי" או "משתמש שגוי" ונראה כמו בעיית אישורים.
+ */
+async function assertPair(page, selectors, want, label, logger, secret = false) {
+  const got = [];
+  for (const sel of selectors) {
+    const v = await page.locator(sel).first().inputValue().catch(() => null);
+    if (v !== null) got.push(v.trim());
+  }
+  if (got.some((v) => v === String(want).trim())) {
+    logger?.step('verify', `${label}: הערך נחת${secret ? '' : ` — "${want}"`}`);
+    return;
+  }
+  const seen = secret ? got.map((v) => `(${v.length} תווים)`) : got.map((v) => `"${v}"`);
+  throw new Error(`${label}: אף אחד משדות הזוג לא מחזיק את הערך שהוקלד. נקרא: ${seen.join(' , ') || '(כלום)'}`);
 }
 
 /** One sign-in attempt. Returns 'ok' | 'busy' | 'failed'. */
@@ -92,9 +117,12 @@ async function loginOnce({ page, human, logger, cfg, creds, fresh = false }) {
   // a refused login the page stays put but half its fields go hidden — the user
   // field resolves to `hidden` and the retry dies waiting for it to be visible.
   // Only a reload puts the form back into a state that can be typed into.
-  if (fresh || !page.url().includes(cfg.loginMarker.urlContains)) {
-    await human.goto(cfg.loginUrl);
-  }
+  // ⚠️ **תמיד טוענים את הדף מחדש, גם כשכבר עומדים עליו.** חלון שנשאר פתוח
+  // מהרצה קודמת מחזיק DOM חצי-מת: זוג שדות אחד הוסתר, השני נושא עדיין את
+  // תוויות ברירת המחדל, ואין שום סימן חיצוני להבדל. טעינה מחדש היא הדרך
+  // היחידה להעמיד את הטופס במצב שאפשר להקליד לתוכו.
+  await human.goto(cfg.loginUrl);
+  void fresh;
 
   // 💣 מסך ההתחברות נושא היסטוריית השלמה אוטומטית של כרום, וההצעה שנפתחת
   // בזמן ההקלדה מתחייבת על הפעולה הבאה ומצרפת לתוכן הקיים. נמדד 13/09/2026:
@@ -108,13 +136,16 @@ async function loginOnce({ page, human, logger, cfg, creds, fresh = false }) {
     for (const f of document.querySelectorAll('form')) f.setAttribute('autocomplete', 'off');
   }).catch(() => {});
 
-  await human.type(cfg.login.orgField, creds.org, { label: 'ארגון', clear: true, paste: false });
+  await human.type(cfg.login.orgField, creds.org, { label: 'ארגון', clear: true, paste: false, verify: false });
+  await assertPair(page, [cfg.login.orgField], creds.org, 'ארגון', logger);
   // הקלדת הארגון היא מה שמחליפה בין שני זוגות שדות האישורים, וההחלפה אינה
   // מיידית. בלי ההמתנה הזאת `visibleField` נבחר על מצב ביניים והשדה נעלם
   // מתחת להקלדה.
   await human.settle('החלפת שדות ההתחברות');
   const userSel = await visibleField(page, [cfg.login.userField, ...(cfg.login.userFieldAlt ?? [])]);
-  await human.type(userSel, creds.user, { label: 'משתמש', clear: true, paste: false });
+  const userPair = [cfg.login.userField, ...(cfg.login.userFieldAlt ?? [])];
+  await human.type(userSel, creds.user, { label: 'משתמש', clear: true, paste: false, verify: false });
+  await assertPair(page, userPair, creds.user, 'משתמש', logger);
   // The password pair is resolved **after** the user is typed, not before.
   // Typing into the user field flips the form between the two credential sets,
   // so a selector chosen up front can be visible when picked and hidden a
@@ -123,7 +154,9 @@ async function loginOnce({ page, human, logger, cfg, creds, fresh = false }) {
   const passSel = await visibleField(page, [cfg.login.passField, ...(cfg.login.passFieldAlt ?? [])]);
   // `secret` keeps the value out of runs/<run>/steps.log, which is a plain file
   // that stays on disk. Without it the password would be written in the clear.
-  await human.type(passSel, creds.pass, { label: 'סיסמה', secret: true, clear: true, paste: false });
+  const passPair = [cfg.login.passField, ...(cfg.login.passFieldAlt ?? [])];
+  await human.type(passSel, creds.pass, { label: 'סיסמה', secret: true, clear: true, paste: false, verify: false });
+  await assertPair(page, passPair, creds.pass, 'סיסמה', logger, true);
 
   // Anything the page said before this click is stale; only alerts raised by
   // the submit itself tell us how this attempt went.
