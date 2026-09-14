@@ -22,9 +22,23 @@ export function statusHe(status) {
   return STATUS_HE[status] || status;
 }
 
-export function money(amount, currency = 'ILS') {
+/**
+ * סמל המטבע של ההזמנה.
+ *
+ * ⚠️ נמדד 14/09/2026 באתר ארנה ישראל: שדה `currency` מחזיר `&#8362;` — קוד
+ * HTML של ₪ — ולא `ILS` כפי שה-API אמור להחזיר; תוסף עברי דורס אותו.
+ * בטלגרם זה מתפענח במקרה (`parse_mode: HTML`) ובממשק לא, כלומר תקלה
+ * שנראית כמו הצלחה בחצי מהמקומות. לכן מעדיפים את `currency_symbol`,
+ * ומפענחים entities בכל מקרה.
+ */
+export function currencySymbol(order) {
+  const raw = order?.currency_symbol || order?.currency || 'ILS';
+  const decoded = String(raw).replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+  return decoded === 'ILS' ? '₪' : decoded;
+}
+
+export function money(amount, symbol = '₪') {
   const n = Number(amount || 0);
-  const symbol = currency === 'ILS' ? '₪' : currency;
   // שקלים שלמים מוצגים בלי אגורות — כך גם המחירים בקטלוג.
   const body = Number.isInteger(n) ? String(n) : n.toFixed(2);
   return `${body} ${symbol}`;
@@ -64,6 +78,7 @@ const esc = (s) =>
  */
 export function telegramMessage(order, { comax, appUrl } = {}) {
   const b = order.billing || {};
+  const cur = currencySymbol(order);
   const ship = shippingLine(order);
   const when = new Date(order.date_created_gmt + 'Z').toLocaleString('he-IL', {
     timeZone: 'Asia/Jerusalem', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
@@ -84,20 +99,20 @@ export function telegramMessage(order, { comax, appUrl } = {}) {
     lines.push(head);
     const details = [variation, li.sku ? `מק"ט ${li.sku}` : null].filter(Boolean).join(' · ');
     if (details) lines.push(`   <i>${esc(details)}</i>`);
-    lines.push(`   ${esc(money(li.total, order.currency))}`);
+    lines.push(`   ${esc(money(li.total, cur))}`);
   }
   lines.push('');
 
   lines.push(`🚚 ${esc(ship.method)}`);
   lines.push(`📍 ${esc(ship.address)}`);
   const shipCost = Number(order.shipping_total || 0);
-  if (shipCost > 0) lines.push(`   דמי משלוח: ${esc(money(shipCost, order.currency))}`);
+  if (shipCost > 0) lines.push(`   דמי משלוח: ${esc(money(shipCost, cur))}`);
   lines.push('');
 
   lines.push(`💳 ${esc(order.payment_method_title || 'לא צוין אמצעי תשלום')}`);
   const discount = Number(order.discount_total || 0);
-  if (discount > 0) lines.push(`🏷️ הנחה: ${esc(money(discount, order.currency))}`);
-  lines.push(`<b>סה"כ: ${esc(money(order.total, order.currency))}</b>`);
+  if (discount > 0) lines.push(`🏷️ הנחה: ${esc(money(discount, cur))}`);
+  lines.push(`<b>סה"כ: ${esc(money(order.total, cur))}</b>`);
 
   if (order.customer_note) {
     lines.push('');

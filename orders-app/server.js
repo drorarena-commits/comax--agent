@@ -16,6 +16,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { config, APP_ROOT } from './config.js';
 import { listOrders, getOrder, setOrderStatus, ping } from './woo.js';
 import { checkOrderItems } from './comax-check.js';
+import { currencySymbol } from './format.js';
 import { pollOnce } from './watch.js';
 
 const MIME = {
@@ -101,7 +102,7 @@ async function handleApi(req, res, url) {
         status: o.status,
         date: o.date_created_gmt,
         total: o.total,
-        currency: o.currency,
+        currency: currencySymbol(o),
         customer: [o.billing?.first_name, o.billing?.last_name].filter(Boolean).join(' ') || o.billing?.company || '',
         phone: o.billing?.phone || '',
         itemCount: (o.line_items || []).reduce((n, li) => n + (li.quantity || 0), 0),

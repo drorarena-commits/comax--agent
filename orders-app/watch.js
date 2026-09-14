@@ -12,7 +12,7 @@
  */
 import { listOrders } from './woo.js';
 import { sendMessage } from './telegram.js';
-import { telegramMessage } from './format.js';
+import { telegramMessage, currencySymbol } from './format.js';
 import { checkOrderItems } from './comax-check.js';
 import { since, wasReported, markReported, loadState } from './store.js';
 import { config } from './config.js';
@@ -43,8 +43,9 @@ export async function pollOnce({ quiet = false } = {}) {
     const text = telegramMessage(order, { comax, appUrl: appUrlFor(order) });
     if (!quiet) await sendMessage(text);
     markReported(order.id, order.date_created_gmt);
+    const cur = currencySymbol(order);
     const flag = comax.checked && comax.missing.length ? ` ⚠️ ${comax.missing.length} פריטים חסרים בקומקס` : '';
-    log(`הזמנה #${order.number} — ${order.total} ${order.currency}${flag}`);
+    log(`הזמנה #${order.number} — ${order.total} ${cur}${flag}`);
   }
 
   return fresh.length;

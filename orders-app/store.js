@@ -64,6 +64,11 @@ export function since() {
   }
   // חלון חפיפה של שעה אחורה מכסה פערי שעון בין האתר למחשב; הכפילות נמנעת
   // ממילא על ידי reportedIds.
-  const base = s.lastSeenIso || s.startedIso;
-  return new Date(new Date(base).getTime() - 3_600_000).toISOString().replace(/\.\d+Z$/, '');
+  //
+  // ⚠️ אבל **לא בהרצה הראשונה.** נמדד 14/09/2026: בהתקנה הראשונה החלון הזה
+  // שלף שתי הזמנות מהשעה שקדמה להפעלה ושלח עליהן התראות, בסתירה להבטחה
+  // ש"הזמנות שנכנסו לפני הרגע הזה לא ידווחו למפרע". כשאין עדיין מה להשוות
+  // מולו, נקודת ההתחלה היא בדיוק רגע ההפעלה.
+  if (!s.lastSeenIso) return s.startedIso.replace(/\.\d+Z$/, '');
+  return new Date(new Date(s.lastSeenIso).getTime() - 3_600_000).toISOString().replace(/\.\d+Z$/, '');
 }

@@ -43,10 +43,19 @@ const el = (tag, cls, text) => {
 
 const state = { status: 'any', q: '', page: 1, totalPages: 1, orders: [], loading: false };
 
-function money(v, currency = 'ILS') {
+/**
+ * ⚠️ האתר מחזיר `currency` כקוד HTML (`&#8362;`) ולא כ-`ILS` — תוסף עברי
+ * דורס את השדה. בטלגרם זה מתפענח במקרה ובממשק לא, ולכן מפענחים כאן במפורש.
+ */
+function currencySymbol(order) {
+  const raw = order?.currency_symbol || order?.currency || 'ILS';
+  const decoded = String(raw).replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+  return decoded === 'ILS' ? '₪' : decoded;
+}
+
+function money(v, symbol = '₪') {
   const n = Number(v || 0);
-  const sym = currency === 'ILS' ? '₪' : currency;
-  return `${Number.isInteger(n) ? n : n.toFixed(2)} ${sym}`;
+  return `${Number.isInteger(n) ? n : n.toFixed(2)} ${symbol}`;
 }
 
 function when(iso) {
@@ -240,6 +249,7 @@ function kv(k, v, cls = 'kv') {
 }
 
 function renderOrder(order, comax) {
+  const cur = currencySymbol(order);
   const body = $('#sheet-body');
   body.textContent = '';
 
@@ -277,7 +287,7 @@ function renderOrder(order, comax) {
     const top = el('div', 'item-top');
     top.append(
       el('span', null, li.name + (li.quantity > 1 ? ` × ${li.quantity}` : '')),
-      el('span', null, money(li.total, order.currency)),
+      el('span', null, money(li.total, cur)),
     );
     it.append(top);
     const variation = (li.meta_data || [])
@@ -321,10 +331,10 @@ function renderOrder(order, comax) {
 
   // --- תשלום ---
   const payRows = [kv('אמצעי', order.payment_method_title || 'לא צוין')];
-  if (Number(order.discount_total) > 0) payRows.push(kv('הנחה', '−' + money(order.discount_total, order.currency)));
-  if (Number(order.shipping_total) > 0) payRows.push(kv('דמי משלוח', money(order.shipping_total, order.currency)));
-  if (Number(order.total_tax) > 0) payRows.push(kv('מע"מ', money(order.total_tax, order.currency)));
-  payRows.push(kv('סה"כ', money(order.total, order.currency), 'kv total'));
+  if (Number(order.discount_total) > 0) payRows.push(kv('הנחה', '−' + money(order.discount_total, cur)));
+  if (Number(order.shipping_total) > 0) payRows.push(kv('דמי משלוח', money(order.shipping_total, cur)));
+  if (Number(order.total_tax) > 0) payRows.push(kv('מע"מ', money(order.total_tax, cur)));
+  payRows.push(kv('סה"כ', money(order.total, cur), 'kv total'));
   body.append(block('תשלום', payRows));
 
   if (order.customer_note) body.append(block('הערת לקוח', [el('div', null, order.customer_note)]));

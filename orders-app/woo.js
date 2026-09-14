@@ -44,14 +44,20 @@ async function call(path, { method = 'GET', body, query } = {}) {
 }
 
 /**
- * הזמנות לפי סינון. `after` הוא ISO — WooCommerce מפרש אותו לפי אזור הזמן
- * של האתר, ולכן הלולאה לא נשענת עליו לבדה אלא גם על מזהי הזמנות שכבר נראו.
+ * הזמנות לפי סינון.
+ *
+ * ⚠️ `dates_are_gmt` אינו קישוט. בלעדיו WooCommerce מפרש את `after` לפי אזור
+ * הזמן של האתר (Asia/Jerusalem) בעוד שאנחנו שולחים UTC, והפער של שלוש שעות
+ * גורם לכל סבב למשוך שלוש שעות אחורה. נמדד 14/09/2026: ההרצה הראשונה דיווחה
+ * על שתי הזמנות ישנות אף שנקודת ההתחלה הייתה רגע ההפעלה. הכפילות עצמה נמנעה
+ * על ידי `reportedIds`, ולכן התקלה נראתה כמו התנהגות תקינה.
  */
 export async function listOrders({ status, after, perPage = 25, page = 1, search } = {}) {
   const { data, headers } = await call('orders', {
     query: {
       status: status && status !== 'all' ? status : undefined,
       after,
+      dates_are_gmt: after ? true : undefined,
       search,
       per_page: perPage,
       page,
