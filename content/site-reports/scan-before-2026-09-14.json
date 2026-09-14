@@ -1,0 +1,7250 @@
+{
+  "scannedAt": "2026-09-14T21:40:37.222Z",
+  "site": "https://arenaisrael.co.il",
+  "mode": "scan",
+  "totals": {
+    "products": 463,
+    "variations": 4101,
+    "singleColor": 190,
+    "missing": 913,
+    "fixable": 82,
+    "noSource": 201
+  },
+  "fixable": [
+    {
+      "product": 9150,
+      "name": "סנפירים אימונים (זומרס) מקצועי   Powerfin Pro",
+      "status": "publish",
+      "color": "55-BLACK",
+      "variation": 10334,
+      "size": "36/37",
+      "sku": "3468336201787",
+      "from": 77664,
+      "fromSize": "42/43",
+      "imageId": 77663,
+      "was": 24852
+    },
+    {
+      "product": 9150,
+      "name": "סנפירים אימונים (זומרס) מקצועי   Powerfin Pro",
+      "status": "publish",
+      "color": "55-BLACK",
+      "variation": 9155,
+      "size": "46/47",
+      "sku": "3468335293059",
+      "from": 77664,
+      "fromSize": "42/43",
+      "imageId": 77663,
+      "was": 24852
+    },
+    {
+      "product": 9150,
+      "name": "סנפירים אימונים (זומרס) מקצועי   Powerfin Pro",
+      "status": "publish",
+      "color": "55-BLACK",
+      "variation": 9154,
+      "size": "44/45",
+      "sku": "3468335293042",
+      "from": 77664,
+      "fromSize": "42/43",
+      "imageId": 77663,
+      "was": 24852
+    },
+    {
+      "product": 9150,
+      "name": "סנפירים אימונים (זומרס) מקצועי   Powerfin Pro",
+      "status": "publish",
+      "color": "55-BLACK",
+      "variation": 9151,
+      "size": "38/39",
+      "sku": "3468335293011-9151",
+      "from": 77664,
+      "fromSize": "42/43",
+      "imageId": 77663,
+      "was": 24852
+    },
+    {
+      "product": 9281,
+      "name": "בגד ים נשים קלאסי גזרה נמוכה Solid Swim Pro",
+      "status": "publish",
+      "color": "45-RED-WHITE",
+      "variation": 9282,
+      "size": "36",
+      "sku": "3468335514079",
+      "from": 9292,
+      "fromSize": "46",
+      "imageId": 68149,
+      "was": 25377
+    },
+    {
+      "product": 9378,
+      "name": "תחתון ביקיני Bikini Brief Solid",
+      "status": "publish",
+      "color": "75-NAVY-WHITE",
+      "variation": 9379,
+      "size": "36",
+      "sku": "3468335515274",
+      "from": 9720,
+      "fromSize": "32",
+      "imageId": 78440,
+      "was": 25671
+    },
+    {
+      "product": 9722,
+      "name": "בגד ים ביקיני חלק עליון  Bikini Top Solid",
+      "status": "publish",
+      "color": "75-NAVY-WHITE",
+      "variation": 9723,
+      "size": "32",
+      "sku": "3468335622514",
+      "from": 62610,
+      "fromSize": "34",
+      "imageId": 78437,
+      "was": 27870
+    },
+    {
+      "product": 9743,
+      "name": "בגד ים תחרותי טיץ בנים/גברים POWERSKIN ST 2.0 JAMMER",
+      "status": "publish",
+      "color": "50-BLACK",
+      "variation": 9744,
+      "size": "‎65 (10-11)‎",
+      "sku": "3468335722061",
+      "from": 9748,
+      "fromSize": "‎85 (M)‎",
+      "imageId": 16130,
+      "was": 27947
+    },
+    {
+      "product": 9859,
+      "name": "חלוק מיקרופייבר ילדים/נוער Microfiber  Zeals",
+      "status": "publish",
+      "color": "701-NAVY-WHITE",
+      "variation": 9883,
+      "size": "12-13",
+      "sku": "3468335970943",
+      "from": 77652,
+      "fromSize": "6-7",
+      "imageId": 77651,
+      "was": 28193
+    },
+    {
+      "product": 9859,
+      "name": "חלוק מיקרופייבר ילדים/נוער Microfiber  Zeals",
+      "status": "publish",
+      "color": "701-NAVY-WHITE",
+      "variation": 9879,
+      "size": "14-15",
+      "sku": "3468335970585",
+      "from": 77652,
+      "fromSize": "6-7",
+      "imageId": 77651,
+      "was": 28193
+    },
+    {
+      "product": 9859,
+      "name": "חלוק מיקרופייבר ילדים/נוער Microfiber  Zeals",
+      "status": "publish",
+      "color": "701-NAVY-WHITE",
+      "variation": 9860,
+      "size": "10-11",
+      "sku": "3468335970387",
+      "from": 77652,
+      "fromSize": "6-7",
+      "imageId": 77651,
+      "was": 28193
+    },
+    {
+      "product": 9905,
+      "name": "טופ ביקיני ארנה Rulebreaker Bandeau Play",
+      "status": "publish",
+      "color": "503-BLACK-YELLOW STAR",
+      "variation": 9906,
+      "size": "2XS",
+      "sku": "3468335995458",
+      "from": 77644,
+      "fromSize": "XL",
+      "imageId": 77643,
+      "was": 28358
+    },
+    {
+      "product": 9919,
+      "name": "בגד ים בנות arenaTeam Stripe",
+      "status": "publish",
+      "color": "501-BLACK-WHITE",
+      "variation": 9941,
+      "size": "10-11",
+      "sku": "3468336038864",
+      "from": 77638,
+      "fromSize": "6-7",
+      "imageId": 77637,
+      "was": 28430
+    },
+    {
+      "product": 9919,
+      "name": "בגד ים בנות arenaTeam Stripe",
+      "status": "publish",
+      "color": "501-BLACK-WHITE",
+      "variation": 9940,
+      "size": "12-13",
+      "sku": "3468336037133",
+      "from": 77638,
+      "fromSize": "6-7",
+      "imageId": 77637,
+      "was": 28430
+    },
+    {
+      "product": 9919,
+      "name": "בגד ים בנות arenaTeam Stripe",
+      "status": "publish",
+      "color": "501-BLACK-WHITE",
+      "variation": 9936,
+      "size": "14-15",
+      "sku": "3468336035221",
+      "from": 77638,
+      "fromSize": "6-7",
+      "imageId": 77637,
+      "was": 28430
+    },
+    {
+      "product": 9919,
+      "name": "בגד ים בנות arenaTeam Stripe",
+      "status": "publish",
+      "color": "501-BLACK-WHITE",
+      "variation": 9920,
+      "size": "8-9",
+      "sku": "3468336030431",
+      "from": 77638,
+      "fromSize": "6-7",
+      "imageId": 77637,
+      "was": 28430
+    },
+    {
+      "product": 10602,
+      "name": "בגד ים תחרותי גברים POWERSKIN CARBON AIR2",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10680,
+      "size": "‎80 (S)‎",
+      "sku": "3468336260005",
+      "from": 77601,
+      "fromSize": "55",
+      "imageId": 77600,
+      "was": 29775
+    },
+    {
+      "product": 10602,
+      "name": "בגד ים תחרותי גברים POWERSKIN CARBON AIR2",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10649,
+      "size": "‎65 (10-11)‎",
+      "sku": "3468336259801",
+      "from": 77601,
+      "fromSize": "55",
+      "imageId": 77600,
+      "was": 29775
+    },
+    {
+      "product": 10602,
+      "name": "בגד ים תחרותי גברים POWERSKIN CARBON AIR2",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10648,
+      "size": "‎75 (14-15)‎",
+      "sku": "3468336259795",
+      "from": 77601,
+      "fromSize": "55",
+      "imageId": 77600,
+      "was": 29775
+    },
+    {
+      "product": 10602,
+      "name": "בגד ים תחרותי גברים POWERSKIN CARBON AIR2",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10647,
+      "size": "‎85 (M)‎",
+      "sku": "3468336259788",
+      "from": 77601,
+      "fromSize": "55",
+      "imageId": 77600,
+      "was": 29775
+    },
+    {
+      "product": 10602,
+      "name": "בגד ים תחרותי גברים POWERSKIN CARBON AIR2",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10611,
+      "size": "60",
+      "sku": "3468336259603",
+      "from": 77601,
+      "fromSize": "55",
+      "imageId": 77600,
+      "was": 29775
+    },
+    {
+      "product": 10602,
+      "name": "בגד ים תחרותי גברים POWERSKIN CARBON AIR2",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10603,
+      "size": "‎70 (12-13)‎",
+      "sku": "3468336259597",
+      "from": 77601,
+      "fromSize": "55",
+      "imageId": 77600,
+      "was": 29775
+    },
+    {
+      "product": 10621,
+      "name": "בגד ים תחרותי נשים POWERSKIN CARBON AIR2 OB",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10640,
+      "size": "36",
+      "sku": "3468336259719",
+      "from": 77619,
+      "fromSize": "28",
+      "imageId": 77618,
+      "was": 29807
+    },
+    {
+      "product": 10621,
+      "name": "בגד ים תחרותי נשים POWERSKIN CARBON AIR2 OB",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10636,
+      "size": "32",
+      "sku": "3468336259672",
+      "from": 77619,
+      "fromSize": "28",
+      "imageId": 77618,
+      "was": 29807
+    },
+    {
+      "product": 10621,
+      "name": "בגד ים תחרותי נשים POWERSKIN CARBON AIR2 OB",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10629,
+      "size": "30",
+      "sku": "3468336259658",
+      "from": 77619,
+      "fromSize": "28",
+      "imageId": 77618,
+      "was": 29807
+    },
+    {
+      "product": 10621,
+      "name": "בגד ים תחרותי נשים POWERSKIN CARBON AIR2 OB",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10622,
+      "size": "40",
+      "sku": "3468336259641",
+      "from": 77619,
+      "fromSize": "28",
+      "imageId": 77618,
+      "was": 29807
+    },
+    {
+      "product": 10655,
+      "name": "בגד ים תחרותי נשים גב סגור POWERSKIN CARBON AIR2 CB",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10673,
+      "size": "36",
+      "sku": "3468336259931",
+      "from": 77591,
+      "fromSize": "30",
+      "imageId": 77590,
+      "was": 29936
+    },
+    {
+      "product": 10655,
+      "name": "בגד ים תחרותי נשים גב סגור POWERSKIN CARBON AIR2 CB",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10671,
+      "size": "55",
+      "sku": "3468336259917",
+      "from": 77591,
+      "fromSize": "30",
+      "imageId": 77590,
+      "was": 29936
+    },
+    {
+      "product": 10655,
+      "name": "בגד ים תחרותי נשים גב סגור POWERSKIN CARBON AIR2 CB",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10669,
+      "size": "34",
+      "sku": "3468336259894",
+      "from": 77591,
+      "fromSize": "30",
+      "imageId": 77590,
+      "was": 29936
+    },
+    {
+      "product": 10655,
+      "name": "בגד ים תחרותי נשים גב סגור POWERSKIN CARBON AIR2 CB",
+      "status": "publish",
+      "color": "853-ELECTRIC BLUE-DARK GREY-FLUO YELLOW",
+      "variation": 10656,
+      "size": "32",
+      "sku": "3468336259870",
+      "from": 77591,
+      "fromSize": "30",
+      "imageId": 77590,
+      "was": 29936
+    },
+    {
+      "product": 10688,
+      "name": "ג׳קט גברים קבוצות Icons Men's Team Relax",
+      "status": "publish",
+      "color": "501-BLACK-WHITE-BLACK",
+      "variation": 10736,
+      "size": "M",
+      "sku": "3468336274330",
+      "from": 77571,
+      "fromSize": "L",
+      "imageId": 77570,
+      "was": 30030
+    },
+    {
+      "product": 10688,
+      "name": "ג׳קט גברים קבוצות Icons Men's Team Relax",
+      "status": "publish",
+      "color": "501-BLACK-WHITE-BLACK",
+      "variation": 10730,
+      "size": "2XL",
+      "sku": "3468336274170",
+      "from": 77571,
+      "fromSize": "L",
+      "imageId": 77570,
+      "was": 30030
+    },
+    {
+      "product": 10688,
+      "name": "ג׳קט גברים קבוצות Icons Men's Team Relax",
+      "status": "publish",
+      "color": "501-BLACK-WHITE-BLACK",
+      "variation": 10689,
+      "size": "3XL",
+      "sku": "3468336273388",
+      "from": 77571,
+      "fromSize": "L",
+      "imageId": 77570,
+      "was": 30030
+    },
+    {
+      "product": 11913,
+      "name": "ג׳קט נשים Hooded Full Zip",
+      "status": "publish",
+      "color": "552-DARK GREY MELANGE",
+      "variation": 11920,
+      "size": "L",
+      "sku": "3468336487273",
+      "from": 77499,
+      "fromSize": "XS",
+      "imageId": 77498,
+      "was": 32000
+    },
+    {
+      "product": 11913,
+      "name": "ג׳קט נשים Hooded Full Zip",
+      "status": "publish",
+      "color": "552-DARK GREY MELANGE",
+      "variation": 11914,
+      "size": "XL",
+      "sku": "3468336487266",
+      "from": 77499,
+      "fromSize": "XS",
+      "imageId": 77498,
+      "was": 32000
+    },
+    {
+      "product": 12076,
+      "name": "בגד ים בנות Biglogo",
+      "status": "publish",
+      "color": "595-BLACK-FREAK ROSE",
+      "variation": 12137,
+      "size": "12-13",
+      "sku": "3468336541708",
+      "from": 77481,
+      "fromSize": "14-15",
+      "imageId": 77480,
+      "was": 32310
+    },
+    {
+      "product": 12076,
+      "name": "בגד ים בנות Biglogo",
+      "status": "publish",
+      "color": "595-BLACK-FREAK ROSE",
+      "variation": 12077,
+      "size": "10-11",
+      "sku": "3468336539712",
+      "from": 77481,
+      "fromSize": "14-15",
+      "imageId": 77480,
+      "was": 32310
+    },
+    {
+      "product": 12705,
+      "name": "בגד ים נשים דו צדדיReversible Hooked",
+      "status": "publish",
+      "color": "590-BLACK-MARTINICA",
+      "variation": 12728,
+      "size": "XL",
+      "sku": "3468336600153",
+      "from": 77463,
+      "fromSize": "M",
+      "imageId": 77462,
+      "was": 33631
+    },
+    {
+      "product": 12705,
+      "name": "בגד ים נשים דו צדדיReversible Hooked",
+      "status": "publish",
+      "color": "590-BLACK-MARTINICA",
+      "variation": 12724,
+      "size": "2XS",
+      "sku": "3468336600115",
+      "from": 77463,
+      "fromSize": "M",
+      "imageId": 77462,
+      "was": 33631
+    },
+    {
+      "product": 12705,
+      "name": "בגד ים נשים דו צדדיReversible Hooked",
+      "status": "publish",
+      "color": "590-BLACK-MARTINICA",
+      "variation": 12721,
+      "size": "S",
+      "sku": "3468336600047",
+      "from": 77463,
+      "fromSize": "M",
+      "imageId": 77462,
+      "was": 33631
+    },
+    {
+      "product": 12705,
+      "name": "בגד ים נשים דו צדדיReversible Hooked",
+      "status": "publish",
+      "color": "590-BLACK-MARTINICA",
+      "variation": 12720,
+      "size": "XS",
+      "sku": "3468336600030",
+      "from": 77463,
+      "fromSize": "M",
+      "imageId": 77462,
+      "was": 33631
+    },
+    {
+      "product": 12905,
+      "name": "כפות אימונים קלאסיות ELITE HAND PADDLE 2",
+      "status": "publish",
+      "color": "100-BLACK-WHITE",
+      "variation": 12906,
+      "size": "M",
+      "sku": "3468336607206",
+      "from": 47542,
+      "fromSize": "XS",
+      "imageId": 22844,
+      "was": 34081
+    },
+    {
+      "product": 13177,
+      "name": "בגד ים גברים Earth Texture",
+      "status": "publish",
+      "color": "760-NAVY-SOFT GREEN MULTI",
+      "variation": 13201,
+      "size": "‎90 (L)‎",
+      "sku": "3468336658543",
+      "from": 77439,
+      "fromSize": "‎95 (XL)‎",
+      "imageId": 77438,
+      "was": 34590
+    },
+    {
+      "product": 13177,
+      "name": "בגד ים גברים Earth Texture",
+      "status": "publish",
+      "color": "760-NAVY-SOFT GREEN MULTI",
+      "variation": 13195,
+      "size": "‎75 (14-15)‎",
+      "sku": "3468336654507",
+      "from": 77439,
+      "fromSize": "‎95 (XL)‎",
+      "imageId": 77438,
+      "was": 34590
+    },
+    {
+      "product": 13177,
+      "name": "בגד ים גברים Earth Texture",
+      "status": "publish",
+      "color": "760-NAVY-SOFT GREEN MULTI",
+      "variation": 13192,
+      "size": "‎70 (12-13)‎",
+      "sku": "3468336653517",
+      "from": 77439,
+      "fromSize": "‎95 (XL)‎",
+      "imageId": 77438,
+      "was": 34590
+    },
+    {
+      "product": 13177,
+      "name": "בגד ים גברים Earth Texture",
+      "status": "publish",
+      "color": "760-NAVY-SOFT GREEN MULTI",
+      "variation": 13190,
+      "size": "‎85 (M)‎",
+      "sku": "3468336651926",
+      "from": 77439,
+      "fromSize": "‎95 (XL)‎",
+      "imageId": 77438,
+      "was": 34590
+    },
+    {
+      "product": 13177,
+      "name": "בגד ים גברים Earth Texture",
+      "status": "publish",
+      "color": "760-NAVY-SOFT GREEN MULTI",
+      "variation": 13178,
+      "size": "‎80 (S)‎",
+      "sku": "3468336650974",
+      "from": 77439,
+      "fromSize": "‎95 (XL)‎",
+      "imageId": 77438,
+      "was": 34590
+    },
+    {
+      "product": 13335,
+      "name": "ג'קט יוניסקס Team Unisex  panel",
+      "status": "publish",
+      "color": "800-ROYAL",
+      "variation": 14179,
+      "size": "2XS",
+      "sku": "3468336736425",
+      "from": 77411,
+      "fromSize": "3XS",
+      "imageId": 77410,
+      "was": 34892
+    },
+    {
+      "product": 13335,
+      "name": "ג'קט יוניסקס Team Unisex  panel",
+      "status": "publish",
+      "color": "800-ROYAL",
+      "variation": 13510,
+      "size": "M",
+      "sku": "3468336689479",
+      "from": 77411,
+      "fromSize": "3XS",
+      "imageId": 77410,
+      "was": 34892
+    },
+    {
+      "product": 13335,
+      "name": "ג'קט יוניסקס Team Unisex  panel",
+      "status": "publish",
+      "color": "800-ROYAL",
+      "variation": 13481,
+      "size": "L",
+      "sku": "3468336687789",
+      "from": 77411,
+      "fromSize": "3XS",
+      "imageId": 77410,
+      "was": 34892
+    },
+    {
+      "product": 13335,
+      "name": "ג'קט יוניסקס Team Unisex  panel",
+      "status": "publish",
+      "color": "800-ROYAL",
+      "variation": 13474,
+      "size": "XL",
+      "sku": "3468336687222",
+      "from": 77411,
+      "fromSize": "3XS",
+      "imageId": 77410,
+      "was": 34892
+    },
+    {
+      "product": 13335,
+      "name": "ג'קט יוניסקס Team Unisex  panel",
+      "status": "publish",
+      "color": "800-ROYAL",
+      "variation": 13458,
+      "size": "2XL",
+      "sku": "3468336685853",
+      "from": 77411,
+      "fromSize": "3XS",
+      "imageId": 77410,
+      "was": 34892
+    },
+    {
+      "product": 13335,
+      "name": "ג'קט יוניסקס Team Unisex  panel",
+      "status": "publish",
+      "color": "800-ROYAL",
+      "variation": 13400,
+      "size": "S",
+      "sku": "3468336684191",
+      "from": 77411,
+      "fromSize": "3XS",
+      "imageId": 77410,
+      "was": 34892
+    },
+    {
+      "product": 13335,
+      "name": "ג'קט יוניסקס Team Unisex  panel",
+      "status": "publish",
+      "color": "800-ROYAL",
+      "variation": 13363,
+      "size": "XS",
+      "sku": "3468336683590",
+      "from": 77411,
+      "fromSize": "3XS",
+      "imageId": 77410,
+      "was": 34892
+    },
+    {
+      "product": 13335,
+      "name": "ג'קט יוניסקס Team Unisex  panel",
+      "status": "publish",
+      "color": "800-ROYAL",
+      "variation": 13336,
+      "size": "3XL",
+      "sku": "3468336683125",
+      "from": 77411,
+      "fromSize": "3XS",
+      "imageId": 77410,
+      "was": 34892
+    },
+    {
+      "product": 13364,
+      "name": "מכנס קבוצות יוניסקס TEAM PANT PANEL",
+      "status": "publish",
+      "color": "500-BLACK",
+      "variation": 13525,
+      "size": "2XS",
+      "sku": "3468336691298",
+      "from": 77417,
+      "fromSize": "3XS",
+      "imageId": 77416,
+      "was": 34923
+    },
+    {
+      "product": 13364,
+      "name": "מכנס קבוצות יוניסקס TEAM PANT PANEL",
+      "status": "publish",
+      "color": "500-BLACK",
+      "variation": 13518,
+      "size": "M",
+      "sku": "3468336689998",
+      "from": 77417,
+      "fromSize": "3XS",
+      "imageId": 77416,
+      "was": 34923
+    },
+    {
+      "product": 13364,
+      "name": "מכנס קבוצות יוניסקס TEAM PANT PANEL",
+      "status": "publish",
+      "color": "500-BLACK",
+      "variation": 13504,
+      "size": "XS",
+      "sku": "3468336689141",
+      "from": 77417,
+      "fromSize": "3XS",
+      "imageId": 77416,
+      "was": 34923
+    },
+    {
+      "product": 13364,
+      "name": "מכנס קבוצות יוניסקס TEAM PANT PANEL",
+      "status": "publish",
+      "color": "500-BLACK",
+      "variation": 13493,
+      "size": "3XL",
+      "sku": "3468336688397",
+      "from": 77417,
+      "fromSize": "3XS",
+      "imageId": 77416,
+      "was": 34923
+    },
+    {
+      "product": 13364,
+      "name": "מכנס קבוצות יוניסקס TEAM PANT PANEL",
+      "status": "publish",
+      "color": "500-BLACK",
+      "variation": 13488,
+      "size": "L",
+      "sku": "3468336688335",
+      "from": 77417,
+      "fromSize": "3XS",
+      "imageId": 77416,
+      "was": 34923
+    },
+    {
+      "product": 13364,
+      "name": "מכנס קבוצות יוניסקס TEAM PANT PANEL",
+      "status": "publish",
+      "color": "500-BLACK",
+      "variation": 13439,
+      "size": "XL",
+      "sku": "3468336685204",
+      "from": 77417,
+      "fromSize": "3XS",
+      "imageId": 77416,
+      "was": 34923
+    },
+    {
+      "product": 13364,
+      "name": "מכנס קבוצות יוניסקס TEAM PANT PANEL",
+      "status": "publish",
+      "color": "500-BLACK",
+      "variation": 13419,
+      "size": "S",
+      "sku": "3468336684870",
+      "from": 77417,
+      "fromSize": "3XS",
+      "imageId": 77416,
+      "was": 34923
+    },
+    {
+      "product": 13364,
+      "name": "מכנס קבוצות יוניסקס TEAM PANT PANEL",
+      "status": "publish",
+      "color": "500-BLACK",
+      "variation": 13365,
+      "size": "2XL",
+      "sku": "3468336683613",
+      "from": 77417,
+      "fromSize": "3XS",
+      "imageId": 77416,
+      "was": 34923
+    },
+    {
+      "product": 13829,
+      "name": "בגד ים ילדות Placement",
+      "status": "publish",
+      "color": "730-NAVY-MANGO",
+      "variation": 14033,
+      "size": "14-15",
+      "sku": "3468336725900",
+      "from": 77360,
+      "fromSize": "6-7",
+      "imageId": 77359,
+      "was": 36214
+    },
+    {
+      "product": 13829,
+      "name": "בגד ים ילדות Placement",
+      "status": "publish",
+      "color": "730-NAVY-MANGO",
+      "variation": 13933,
+      "size": "10-11",
+      "sku": "3468336721759",
+      "from": 77360,
+      "fromSize": "6-7",
+      "imageId": 77359,
+      "was": 36214
+    },
+    {
+      "product": 13829,
+      "name": "בגד ים ילדות Placement",
+      "status": "publish",
+      "color": "730-NAVY-MANGO",
+      "variation": 13830,
+      "size": "12-13",
+      "sku": "3468336720493",
+      "from": 77360,
+      "fromSize": "6-7",
+      "imageId": 77359,
+      "was": 36214
+    },
+    {
+      "product": 14318,
+      "name": "בגד ים נשים Allover Swim Pro",
+      "status": "publish",
+      "color": "810-WHITE MULTI",
+      "variation": 14361,
+      "size": "40",
+      "sku": "3468336743683",
+      "from": 77336,
+      "fromSize": "36",
+      "imageId": 77335,
+      "was": 37074
+    },
+    {
+      "product": 14318,
+      "name": "בגד ים נשים Allover Swim Pro",
+      "status": "publish",
+      "color": "810-WHITE MULTI",
+      "variation": 14354,
+      "size": "38",
+      "sku": "3468336743577",
+      "from": 77336,
+      "fromSize": "36",
+      "imageId": 77335,
+      "was": 37074
+    },
+    {
+      "product": 14318,
+      "name": "בגד ים נשים Allover Swim Pro",
+      "status": "publish",
+      "color": "810-WHITE MULTI",
+      "variation": 14342,
+      "size": "42",
+      "sku": "3468336743041",
+      "from": 77336,
+      "fromSize": "36",
+      "imageId": 77335,
+      "was": 37074
+    },
+    {
+      "product": 14318,
+      "name": "בגד ים נשים Allover Swim Pro",
+      "status": "publish",
+      "color": "810-WHITE MULTI",
+      "variation": 14319,
+      "size": "44",
+      "sku": "3468336742587",
+      "from": 77336,
+      "fromSize": "36",
+      "imageId": 77335,
+      "was": 37074
+    },
+    {
+      "product": 22878,
+      "name": "ARENA ICONS SUPER FLY בגד ים נשים",
+      "status": "publish",
+      "color": "751-ROYAL-NESPOLA",
+      "variation": 62764,
+      "size": "38",
+      "sku": "3468336842010",
+      "from": 77342,
+      "fromSize": "40",
+      "imageId": 77341,
+      "was": 65521
+    },
+    {
+      "product": 22878,
+      "name": "ARENA ICONS SUPER FLY בגד ים נשים",
+      "status": "publish",
+      "color": "751-ROYAL-NESPOLA",
+      "variation": 62761,
+      "size": "34",
+      "sku": "3468336841327",
+      "from": 77342,
+      "fromSize": "40",
+      "imageId": 77341,
+      "was": 65521
+    },
+    {
+      "product": 22878,
+      "name": "ARENA ICONS SUPER FLY בגד ים נשים",
+      "status": "publish",
+      "color": "751-ROYAL-NESPOLA",
+      "variation": 62760,
+      "size": "28",
+      "sku": "3468336840641",
+      "from": 77342,
+      "fromSize": "40",
+      "imageId": 77341,
+      "was": 65521
+    },
+    {
+      "product": 22878,
+      "name": "ARENA ICONS SUPER FLY בגד ים נשים",
+      "status": "publish",
+      "color": "751-ROYAL-NESPOLA",
+      "variation": 62759,
+      "size": "30",
+      "sku": "3468336840597",
+      "from": 77342,
+      "fromSize": "40",
+      "imageId": 77341,
+      "was": 65521
+    },
+    {
+      "product": 22878,
+      "name": "ARENA ICONS SUPER FLY בגד ים נשים",
+      "status": "publish",
+      "color": "751-ROYAL-NESPOLA",
+      "variation": 62757,
+      "size": "42",
+      "sku": "3468336839461",
+      "from": 77342,
+      "fromSize": "40",
+      "imageId": 77341,
+      "was": 65521
+    },
+    {
+      "product": 22878,
+      "name": "ARENA ICONS SUPER FLY בגד ים נשים",
+      "status": "publish",
+      "color": "751-ROYAL-NESPOLA",
+      "variation": 62755,
+      "size": "36",
+      "sku": "3468336838815",
+      "from": 77342,
+      "fromSize": "40",
+      "imageId": 77341,
+      "was": 65521
+    },
+    {
+      "product": 22878,
+      "name": "ARENA ICONS SUPER FLY בגד ים נשים",
+      "status": "publish",
+      "color": "751-ROYAL-NESPOLA",
+      "variation": 62754,
+      "size": "32",
+      "sku": "3468336838020",
+      "from": 77342,
+      "fromSize": "40",
+      "imageId": 77341,
+      "was": 65521
+    },
+    {
+      "product": 65535,
+      "name": "בגד ים טיץ גברים Jammer Solid",
+      "status": "publish",
+      "color": "550-BLACK-WHITE",
+      "variation": 65543,
+      "size": "‎75 (14-15)‎",
+      "sku": "3468336648636",
+      "from": 71670,
+      "fromSize": "‎85 (M)‎",
+      "imageId": 68087,
+      "was": 64870
+    },
+    {
+      "product": 65535,
+      "name": "בגד ים טיץ גברים Jammer Solid",
+      "status": "publish",
+      "color": "550-BLACK-WHITE",
+      "variation": 65542,
+      "size": "‎105 (3XL)‎",
+      "sku": "3468336648377",
+      "from": 71670,
+      "fromSize": "‎85 (M)‎",
+      "imageId": 68087,
+      "was": 64870
+    },
+    {
+      "product": 65535,
+      "name": "בגד ים טיץ גברים Jammer Solid",
+      "status": "publish",
+      "color": "550-BLACK-WHITE",
+      "variation": 65541,
+      "size": "‎100 (2XL)‎",
+      "sku": "3468336647509",
+      "from": 71670,
+      "fromSize": "‎85 (M)‎",
+      "imageId": 68087,
+      "was": 64870
+    },
+    {
+      "product": 65535,
+      "name": "בגד ים טיץ גברים Jammer Solid",
+      "status": "publish",
+      "color": "550-BLACK-WHITE",
+      "variation": 65540,
+      "size": "‎90 (L)‎",
+      "sku": "3468336642634",
+      "from": 71670,
+      "fromSize": "‎85 (M)‎",
+      "imageId": 68087,
+      "was": 64870
+    },
+    {
+      "product": 65535,
+      "name": "בגד ים טיץ גברים Jammer Solid",
+      "status": "publish",
+      "color": "550-BLACK-WHITE",
+      "variation": 65536,
+      "size": "‎65 (10-11)‎",
+      "sku": "3468336641057",
+      "from": 71670,
+      "fromSize": "‎85 (M)‎",
+      "imageId": 68087,
+      "was": 64870
+    }
+  ],
+  "noSource": [
+    {
+      "product": 8875,
+      "name": "משקפת שחייה Cobra Ultra Swipe Mirror",
+      "status": "draft",
+      "color": "310-YELLOW COPPER-WHITE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10424,
+          "size": "Os",
+          "sku": "3468336214879"
+        }
+      ],
+      "parentImage": 29351
+    },
+    {
+      "product": 9038,
+      "name": "קרש אימונים משולב פולי PULL KICK",
+      "status": "publish",
+      "color": "39-YELLOW",
+      "count": 1,
+      "variations": [
+        {
+          "id": 9039,
+          "size": "Os",
+          "sku": "3468332169258"
+        }
+      ],
+      "parentImage": 24587
+    },
+    {
+      "product": 9042,
+      "name": "משקפת ילדים ספיידר spider",
+      "status": "publish",
+      "color": "91-VIOLET-CLEAR-PINK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 9043,
+          "size": "Os",
+          "sku": "3468333252263"
+        }
+      ],
+      "parentImage": 24590
+    },
+    {
+      "product": 9058,
+      "name": "פולי שחייה FREEFLOW PULLBUOY",
+      "status": "publish",
+      "color": "65-ACID LIME-BLACK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 9108,
+          "size": "Os",
+          "sku": "3468334369199"
+        }
+      ],
+      "parentImage": 65833
+    },
+    {
+      "product": 9111,
+      "name": "כפות שחייה קלאסיות Elite Hand Paddle",
+      "status": "publish",
+      "color": "55-BLACK-SILVER",
+      "count": 2,
+      "variations": [
+        {
+          "id": 9113,
+          "size": "L",
+          "sku": "3468334373325"
+        },
+        {
+          "id": 9112,
+          "size": "M",
+          "sku": "3468334373318"
+        }
+      ],
+      "parentImage": 24766
+    },
+    {
+      "product": 9114,
+      "name": "כפות חצי - אצבעות Elite Finger Paddle",
+      "status": "publish",
+      "color": "55-BLACK-SILVER",
+      "count": 1,
+      "variations": [
+        {
+          "id": 9115,
+          "size": "Os",
+          "sku": "3468334373356"
+        }
+      ],
+      "parentImage": 24768
+    },
+    {
+      "product": 9127,
+      "name": "קרש אימונים ארנה Kickboard",
+      "status": "publish",
+      "color": "50-SILVER",
+      "count": 1,
+      "variations": [
+        {
+          "id": 9128,
+          "size": "Os",
+          "sku": "3468334869750"
+        }
+      ],
+      "parentImage": 24784
+    },
+    {
+      "product": 9140,
+      "name": "משקפת מסיכה נוער ארנה OBLO",
+      "status": "publish",
+      "color": "60-GREEN-CLEAR",
+      "count": 1,
+      "variations": [
+        {
+          "id": 9141,
+          "size": "Os",
+          "sku": "3468335132501"
+        }
+      ],
+      "parentImage": 24839
+    },
+    {
+      "product": 9148,
+      "name": "משקפת תחרותית ארנה קוברה Cobra Ultra",
+      "status": "publish",
+      "color": "10-blue-white-black",
+      "count": 1,
+      "variations": [
+        {
+          "id": 9149,
+          "size": "Os",
+          "sku": "3468335288673"
+        }
+      ],
+      "parentImage": 24850
+    },
+    {
+      "product": 9729,
+      "name": "arena Unisex Goggles Nimesis Crystal Large",
+      "status": "publish",
+      "color": "17-CLEAR-CLEAR-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 9730,
+          "size": "Os",
+          "sku": "3468335649597"
+        }
+      ],
+      "parentImage": 27898
+    },
+    {
+      "product": 9753,
+      "name": "משקפת בוגרים Spider",
+      "status": "publish",
+      "color": "901-R_CLEAR-GREY",
+      "count": 1,
+      "variations": [
+        {
+          "id": 49164,
+          "size": "Os",
+          "sku": "3468336926314"
+        }
+      ],
+      "parentImage": 52691
+    },
+    {
+      "product": 9763,
+      "name": "arena Unisex Pro Earplug",
+      "status": "publish",
+      "color": "126-CLEAR-LIME",
+      "count": 1,
+      "variations": [
+        {
+          "id": 9764,
+          "size": "Os",
+          "sku": "3468335803937"
+        }
+      ],
+      "parentImage": 44774
+    },
+    {
+      "product": 9784,
+      "name": "בגד ים תחרותי נשים מים פתוחים POWERSKIN R-EVO+ OW OB",
+      "status": "publish",
+      "color": "503-BLACK-FLUO YELLOW",
+      "count": 4,
+      "variations": [
+        {
+          "id": 9793,
+          "size": "36",
+          "sku": "3468335861371"
+        },
+        {
+          "id": 9792,
+          "size": "34",
+          "sku": "3468335861364"
+        },
+        {
+          "id": 9791,
+          "size": "32",
+          "sku": "3468335861357"
+        },
+        {
+          "id": 9785,
+          "size": "30",
+          "sku": "3468335861340"
+        }
+      ],
+      "parentImage": 28000
+    },
+    {
+      "product": 9816,
+      "name": "בגד ים תחרותי גברים מים פתוחים POWERSKIN R-EVO+ OW MAN CB",
+      "status": "publish",
+      "color": "503-BLACK-FLUO YELLOW",
+      "count": 6,
+      "variations": [
+        {
+          "id": 9828,
+          "size": "‎85 (M)‎",
+          "sku": "3468335861753"
+        },
+        {
+          "id": 9827,
+          "size": "‎80 (S)‎",
+          "sku": "3468335861746"
+        },
+        {
+          "id": 9826,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468335861739"
+        },
+        {
+          "id": 9825,
+          "size": "‎70 (12-13)‎",
+          "sku": "3468335861722"
+        },
+        {
+          "id": 9824,
+          "size": "‎65 (10-11)‎",
+          "sku": "3468335861715"
+        },
+        {
+          "id": 9817,
+          "size": "60",
+          "sku": "3468335861708"
+        }
+      ],
+      "parentImage": 28104
+    },
+    {
+      "product": 9834,
+      "name": "כובע שחייה תחרותי",
+      "status": "publish",
+      "color": "721-ROYAL",
+      "count": 2,
+      "variations": [
+        {
+          "id": 9845,
+          "size": "L",
+          "sku": "3468335892856"
+        },
+        {
+          "id": 9835,
+          "size": "M",
+          "sku": "3468335892801"
+        }
+      ],
+      "parentImage": 28155
+    },
+    {
+      "product": 9942,
+      "name": "בגד ים גברים מיני מכנסון arena Icons Team Stripe",
+      "status": "publish",
+      "color": "701-NAVY-WHITE",
+      "count": 9,
+      "variations": [
+        {
+          "id": 10088,
+          "size": "60",
+          "sku": "3468336075890"
+        },
+        {
+          "id": 10082,
+          "size": "55",
+          "sku": "3468336075371"
+        },
+        {
+          "id": 9967,
+          "size": "‎65 (10-11)‎",
+          "sku": "3468336048214"
+        },
+        {
+          "id": 9963,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468336045671"
+        },
+        {
+          "id": 9962,
+          "size": "‎70 (12-13)‎",
+          "sku": "3468336044803"
+        },
+        {
+          "id": 9959,
+          "size": "‎85 (M)‎",
+          "sku": "3468336043196"
+        },
+        {
+          "id": 9958,
+          "size": "‎80 (S)‎",
+          "sku": "3468336042236"
+        },
+        {
+          "id": 9950,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336040775"
+        },
+        {
+          "id": 9943,
+          "size": "‎90 (L)‎",
+          "sku": "3468336039823"
+        }
+      ],
+      "parentImage": 28490
+    },
+    {
+      "product": 9970,
+      "name": "חולצת טי נשים arena Icons Team",
+      "status": "draft",
+      "color": "501-BLACK-WHITE-BLACK",
+      "count": 5,
+      "variations": [
+        {
+          "id": 10206,
+          "size": "XS",
+          "sku": "3468336093290"
+        },
+        {
+          "id": 10046,
+          "size": "L",
+          "sku": "3468336057544"
+        },
+        {
+          "id": 10025,
+          "size": "S",
+          "sku": "3468336053027"
+        },
+        {
+          "id": 9978,
+          "size": "M",
+          "sku": "3468336050187"
+        },
+        {
+          "id": 9971,
+          "size": "XL",
+          "sku": "3468336050064"
+        }
+      ],
+      "parentImage": 28580
+    },
+    {
+      "product": 10006,
+      "name": "חולצת גברים קבוצות arena Icons",
+      "status": "publish",
+      "color": "501-BLACK-WHITE-BLACK",
+      "count": 5,
+      "variations": [
+        {
+          "id": 10044,
+          "size": "XXL",
+          "sku": "3468336057230"
+        },
+        {
+          "id": 10041,
+          "size": "S",
+          "sku": "3468336055755"
+        },
+        {
+          "id": 10039,
+          "size": "XL",
+          "sku": "3468336055380"
+        },
+        {
+          "id": 10024,
+          "size": "M",
+          "sku": "3468336052730"
+        },
+        {
+          "id": 10007,
+          "size": "L",
+          "sku": "3468336050750"
+        }
+      ],
+      "parentImage": 28614
+    },
+    {
+      "product": 10014,
+      "name": "בגד ים נשים arena Icons Team Stripe",
+      "status": "publish",
+      "color": "701-NAVY-WHITE",
+      "count": 6,
+      "variations": [
+        {
+          "id": 10053,
+          "size": "40",
+          "sku": "3468336059241"
+        },
+        {
+          "id": 10052,
+          "size": "38",
+          "sku": "3468336059128"
+        },
+        {
+          "id": 10049,
+          "size": "44",
+          "sku": "3468336058077"
+        },
+        {
+          "id": 10037,
+          "size": "36",
+          "sku": "3468336054956"
+        },
+        {
+          "id": 10035,
+          "size": "42",
+          "sku": "3468336053904"
+        },
+        {
+          "id": 10015,
+          "size": "34",
+          "sku": "3468336050941"
+        }
+      ],
+      "parentImage": 28620
+    },
+    {
+      "product": 10054,
+      "name": "משקפת בוגרים The One",
+      "status": "publish",
+      "color": "844-LIGHT BLUE-BLUE-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10055,
+          "size": "Os",
+          "sku": "3468336073674"
+        }
+      ],
+      "parentImage": 28794
+    },
+    {
+      "product": 10076,
+      "name": "משקפת שחייה נוער The One Junior",
+      "status": "publish",
+      "color": "177-CLEAR-CYAN-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 77636,
+          "size": "Os",
+          "sku": "3468336181256"
+        }
+      ],
+      "parentImage": 28812
+    },
+    {
+      "product": 10076,
+      "name": "משקפת שחייה נוער The One Junior",
+      "status": "publish",
+      "color": "858-LIGHTBLUE-RED-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10077,
+          "size": "Os",
+          "sku": "3468336073766"
+        }
+      ],
+      "parentImage": 28812
+    },
+    {
+      "product": 10083,
+      "name": "כובע שחייה סיליקון Moulded Pro II",
+      "status": "publish",
+      "color": "100-ASSORTMENT",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10094,
+          "size": "Os",
+          "sku": "3468336076545"
+        }
+      ],
+      "parentImage": 28822
+    },
+    {
+      "product": 10083,
+      "name": "כובע שחייה סיליקון Moulded Pro II",
+      "status": "publish",
+      "color": "505-SILVER",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10084,
+          "size": "Os",
+          "sku": "3468336075500"
+        }
+      ],
+      "parentImage": 28822
+    },
+    {
+      "product": 10149,
+      "name": "W TRISUIT ST 2.0 REAR ZIP",
+      "status": "draft",
+      "color": "729-ROYAL/PINK",
+      "count": 4,
+      "variations": [
+        {
+          "id": 10198,
+          "size": "XXS",
+          "sku": "3468336089293"
+        },
+        {
+          "id": 10197,
+          "size": "XS",
+          "sku": "3468336089286"
+        },
+        {
+          "id": 10196,
+          "size": "S",
+          "sku": "3468336089279"
+        },
+        {
+          "id": 10150,
+          "size": "M",
+          "sku": "3468336088722"
+        }
+      ],
+      "parentImage": 28931
+    },
+    {
+      "product": 10157,
+      "name": "M TRISUIT ST 2.0 REAR ZIP",
+      "status": "draft",
+      "color": "508-BLACK/ROYAL",
+      "count": 5,
+      "variations": [
+        {
+          "id": 10204,
+          "size": "S",
+          "sku": "3468336089569"
+        },
+        {
+          "id": 10185,
+          "size": "M",
+          "sku": "3468336089088"
+        },
+        {
+          "id": 10182,
+          "size": "XL",
+          "sku": "3468336088944"
+        },
+        {
+          "id": 10181,
+          "size": "L",
+          "sku": "3468336088876"
+        },
+        {
+          "id": 10158,
+          "size": "XS",
+          "sku": "3468336088739"
+        }
+      ],
+      "parentImage": 28937
+    },
+    {
+      "product": 10209,
+      "name": "מגבת מיקרופייבר גדולה Microfiber Smart Pool",
+      "status": "publish",
+      "color": "560-red wine-shiny green",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10210,
+          "size": "Os",
+          "sku": "3468336100288"
+        }
+      ],
+      "parentImage": 29082
+    },
+    {
+      "product": 10212,
+      "name": "מגבת מיקרופייבר קטנה Microfiber Smart Gym",
+      "status": "draft",
+      "color": "710-NAVY-WHITE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10213,
+          "size": "Os",
+          "sku": "3468336100387"
+        }
+      ],
+      "parentImage": 29083
+    },
+    {
+      "product": 10228,
+      "name": "כובע שחייה סיליקון בועות Silicone Bonnet",
+      "status": "publish",
+      "color": "200-BLACK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10229,
+          "size": "Os",
+          "sku": "3468336111567"
+        }
+      ],
+      "parentImage": 29089
+    },
+    {
+      "product": 10258,
+      "name": "arena One Women's Biglogo Swimsuit",
+      "status": "draft",
+      "color": "552-BLACK-SILVER",
+      "count": 7,
+      "variations": [
+        {
+          "id": 10292,
+          "size": "34",
+          "sku": "3468336162408"
+        },
+        {
+          "id": 10290,
+          "size": "36",
+          "sku": "3468336161944"
+        },
+        {
+          "id": 10289,
+          "size": "40",
+          "sku": "3468336161548"
+        },
+        {
+          "id": 10287,
+          "size": "38",
+          "sku": "3468336161449"
+        },
+        {
+          "id": 10286,
+          "size": "42",
+          "sku": "3468336161111"
+        },
+        {
+          "id": 10266,
+          "size": "30",
+          "sku": "3468336159842"
+        },
+        {
+          "id": 10259,
+          "size": "32",
+          "sku": "3468336159460"
+        }
+      ],
+      "parentImage": 29110
+    },
+    {
+      "product": 10306,
+      "name": "חזיית ספורט Hera C-Cup Sports",
+      "status": "publish",
+      "color": "100-white",
+      "count": 2,
+      "variations": [
+        {
+          "id": 10327,
+          "size": "‎85 (M)‎",
+          "sku": "3468336197202"
+        },
+        {
+          "id": 10307,
+          "size": "‎90 (L)‎",
+          "sku": "3468336196823"
+        }
+      ],
+      "parentImage": 29239
+    },
+    {
+      "product": 10339,
+      "name": "בגד ים גברים Carbonics Pro",
+      "status": "publish",
+      "color": "504-BLACK-RED",
+      "count": 2,
+      "variations": [
+        {
+          "id": 10347,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336212806"
+        },
+        {
+          "id": 10340,
+          "size": "‎90 (L)‎",
+          "sku": "3468336212578"
+        }
+      ],
+      "parentImage": 29279
+    },
+    {
+      "product": 10356,
+      "name": "משקפת שחייה Cruiser Evo",
+      "status": "publish",
+      "color": "565-SMOKED-ARMY-BLACK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10357,
+          "size": "Os",
+          "sku": "3468336214589"
+        }
+      ],
+      "parentImage": 29303
+    },
+    {
+      "product": 10360,
+      "name": "משקפת שחייה מראה Cobra Tri Swipe Mirror",
+      "status": "draft",
+      "color": "355-YELLOW COPPER-BLACK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10361,
+          "size": "Os",
+          "sku": "3468336214596"
+        }
+      ],
+      "parentImage": 29305
+    },
+    {
+      "product": 10369,
+      "name": "משקפת שחייה נוער Cruiser Evo",
+      "status": "publish",
+      "color": "177-CLEAR-BLUE-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10370,
+          "size": "Os",
+          "sku": "3468336214664"
+        }
+      ],
+      "parentImage": 29311
+    },
+    {
+      "product": 10451,
+      "name": "כפכף גברים Watergrip",
+      "status": "publish",
+      "color": "506-BLACK-LIME",
+      "count": 7,
+      "variations": [
+        {
+          "id": 10464,
+          "size": "40",
+          "sku": "3468336217504"
+        },
+        {
+          "id": 10462,
+          "size": "41",
+          "sku": "3468336217481"
+        },
+        {
+          "id": 10460,
+          "size": "42",
+          "sku": "3468336217467"
+        },
+        {
+          "id": 10459,
+          "size": "43",
+          "sku": "3468336217450"
+        },
+        {
+          "id": 10458,
+          "size": "44",
+          "sku": "3468336217443"
+        },
+        {
+          "id": 10457,
+          "size": "45",
+          "sku": "3468336217436"
+        },
+        {
+          "id": 10452,
+          "size": "46",
+          "sku": "3468336217429"
+        }
+      ],
+      "parentImage": 29375
+    },
+    {
+      "product": 10469,
+      "name": "תיק שק לציוד רטוב Team Mesh Pool Sack",
+      "status": "publish",
+      "color": "710-TEAM NAVY",
+      "count": 1,
+      "variations": [
+        {
+          "id": 10470,
+          "size": "Os",
+          "sku": "3468336217757"
+        }
+      ],
+      "parentImage": 29425
+    },
+    {
+      "product": 10698,
+      "name": "חולצת טי גברים קבוצות Icons Men's Team",
+      "status": "publish",
+      "color": "115-WHITE-WHITE-BLACK",
+      "count": 6,
+      "variations": [
+        {
+          "id": 10749,
+          "size": "M",
+          "sku": "3468336275092"
+        },
+        {
+          "id": 10744,
+          "size": "2XL",
+          "sku": "3468336274972"
+        },
+        {
+          "id": 10738,
+          "size": "XL",
+          "sku": "3468336274545"
+        },
+        {
+          "id": 10731,
+          "size": "3XL",
+          "sku": "3468336274293"
+        },
+        {
+          "id": 10715,
+          "size": "L",
+          "sku": "3468336273739"
+        },
+        {
+          "id": 10699,
+          "size": "S",
+          "sku": "3468336273517"
+        }
+      ],
+      "parentImage": 30038
+    },
+    {
+      "product": 10704,
+      "name": "מכנסי גברים קבוצות Icons Men's Team Relax",
+      "status": "publish",
+      "color": "501-BLACK-WHITE-BLACK",
+      "count": 6,
+      "variations": [
+        {
+          "id": 10756,
+          "size": "M",
+          "sku": "3468336275382"
+        },
+        {
+          "id": 10743,
+          "size": "2XL",
+          "sku": "3468336274620"
+        },
+        {
+          "id": 10722,
+          "size": "L",
+          "sku": "3468336274064"
+        },
+        {
+          "id": 10721,
+          "size": "3XL",
+          "sku": "3468336274033"
+        },
+        {
+          "id": 10720,
+          "size": "S",
+          "sku": "3468336273968"
+        },
+        {
+          "id": 10705,
+          "size": "XL",
+          "sku": "3468336273548"
+        }
+      ],
+      "parentImage": 30042
+    },
+    {
+      "product": 11052,
+      "name": "משקפת שחייה מסיכה The One Mask",
+      "status": "publish",
+      "color": "103-LIGHT SMOKE-WHITE-RED",
+      "count": 1,
+      "variations": [
+        {
+          "id": 11053,
+          "size": "Os",
+          "sku": "3468336363553"
+        }
+      ],
+      "parentImage": 30554
+    },
+    {
+      "product": 11056,
+      "name": "משקפת שחייה The One Mirror",
+      "status": "publish",
+      "color": "100-BLUE-WHITE-BLACK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 11057,
+          "size": "Os",
+          "sku": "3468336363560"
+        }
+      ],
+      "parentImage": 30556
+    },
+    {
+      "product": 11089,
+      "name": "כפכפים לילדים Eddy",
+      "status": "publish",
+      "color": "117-ROYAL-LIME SODA",
+      "count": 6,
+      "variations": [
+        {
+          "id": 11140,
+          "size": "30",
+          "sku": "3468336365878"
+        },
+        {
+          "id": 11130,
+          "size": "34",
+          "sku": "3468336365823"
+        },
+        {
+          "id": 11120,
+          "size": "31",
+          "sku": "3468336365649"
+        },
+        {
+          "id": 11110,
+          "size": "35",
+          "sku": "3468336365595"
+        },
+        {
+          "id": 11100,
+          "size": "32",
+          "sku": "3468336365373"
+        },
+        {
+          "id": 11090,
+          "size": "33",
+          "sku": "3468336365182"
+        }
+      ],
+      "parentImage": 30583
+    },
+    {
+      "product": 11153,
+      "name": "סנפירים מקצועיים (זומרס) Powerfin Pro Fed",
+      "status": "publish",
+      "color": "530-BLACK GOLD",
+      "count": 6,
+      "variations": [
+        {
+          "id": 11201,
+          "size": "40/41",
+          "sku": "3468336370018"
+        },
+        {
+          "id": 11194,
+          "size": "42/43",
+          "sku": "3468336369999"
+        },
+        {
+          "id": 11187,
+          "size": "44/45",
+          "sku": "3468336369975"
+        },
+        {
+          "id": 11180,
+          "size": "46/47",
+          "sku": "3468336369951"
+        },
+        {
+          "id": 11161,
+          "size": "36/37",
+          "sku": "3468336369753"
+        },
+        {
+          "id": 11154,
+          "size": "38/39",
+          "sku": "3468336369739"
+        }
+      ],
+      "parentImage": 30633
+    },
+    {
+      "product": 11285,
+      "name": "משקפת שחייה Cobra Core Swipe Mirror",
+      "status": "publish",
+      "color": "EMERALD-PLUM-BLACK-170",
+      "count": 1,
+      "variations": [
+        {
+          "id": 77671,
+          "size": "Os",
+          "sku": "3468337548591"
+        }
+      ],
+      "parentImage": 76105
+    },
+    {
+      "product": 11351,
+      "name": "בגד ים נשים  Shiner Inner Bra",
+      "status": "publish",
+      "color": "580-BLACK-TURQUOISE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 11386,
+          "size": "36",
+          "sku": "3468336419885"
+        },
+        {
+          "id": 11382,
+          "size": "44",
+          "sku": "3468336418079"
+        },
+        {
+          "id": 11379,
+          "size": "38",
+          "sku": "3468336417300"
+        },
+        {
+          "id": 11378,
+          "size": "40",
+          "sku": "3468336417195"
+        },
+        {
+          "id": 11352,
+          "size": "42",
+          "sku": "3468336414590"
+        }
+      ],
+      "parentImage": 30909
+    },
+    {
+      "product": 11398,
+      "name": "בגד ים גברים מכנסון Shiner",
+      "status": "publish",
+      "color": "700-NAVY",
+      "count": 6,
+      "variations": [
+        {
+          "id": 11483,
+          "size": "‎85 (M)‎",
+          "sku": "3468336426777"
+        },
+        {
+          "id": 11472,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468336425343"
+        },
+        {
+          "id": 11444,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336423783"
+        },
+        {
+          "id": 11438,
+          "size": "‎90 (L)‎",
+          "sku": "3468336423059"
+        },
+        {
+          "id": 11421,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336422496"
+        },
+        {
+          "id": 11399,
+          "size": "‎80 (S)‎",
+          "sku": "3468336421741"
+        }
+      ],
+      "parentImage": 31044
+    },
+    {
+      "product": 11413,
+      "name": "בגד ים גברים טיץ Shiner",
+      "status": "publish",
+      "color": "500-BLACK",
+      "count": 6,
+      "variations": [
+        {
+          "id": 11479,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468336426425"
+        },
+        {
+          "id": 11447,
+          "size": "‎90 (L)‎",
+          "sku": "3468336424087"
+        },
+        {
+          "id": 11445,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336423806"
+        },
+        {
+          "id": 11442,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336423585"
+        },
+        {
+          "id": 11423,
+          "size": "‎80 (S)‎",
+          "sku": "3468336422717"
+        },
+        {
+          "id": 11414,
+          "size": "‎85 (M)‎",
+          "sku": "3468336422182"
+        }
+      ],
+      "parentImage": 31060
+    },
+    {
+      "product": 11499,
+      "name": "חזיית נשים אימונים Medium Support Cross Back",
+      "status": "publish",
+      "color": "500-BLACK",
+      "count": 5,
+      "variations": [
+        {
+          "id": 11513,
+          "size": "M",
+          "sku": "3468336432570"
+        },
+        {
+          "id": 11510,
+          "size": "XL",
+          "sku": "3468336432457"
+        },
+        {
+          "id": 11509,
+          "size": "L",
+          "sku": "3468336432266"
+        },
+        {
+          "id": 11506,
+          "size": "XS",
+          "sku": "3468336432204"
+        },
+        {
+          "id": 11500,
+          "size": "S",
+          "sku": "3468336432037"
+        }
+      ],
+      "parentImage": 31246
+    },
+    {
+      "product": 11567,
+      "name": "בגד ים נשים תחרותי  POWERSKIN CARBON CORE FX",
+      "status": "publish",
+      "color": "730-OCEAN BLUE",
+      "count": 7,
+      "variations": [
+        {
+          "id": 11598,
+          "size": "28",
+          "sku": "3468336459478"
+        },
+        {
+          "id": 11597,
+          "size": "38",
+          "sku": "3468336459461"
+        },
+        {
+          "id": 11596,
+          "size": "34",
+          "sku": "3468336459416"
+        },
+        {
+          "id": 11594,
+          "size": "30",
+          "sku": "3468336459355"
+        },
+        {
+          "id": 11592,
+          "size": "40",
+          "sku": "3468336459331"
+        },
+        {
+          "id": 11575,
+          "size": "36",
+          "sku": "3468336459010"
+        },
+        {
+          "id": 11568,
+          "size": "32",
+          "sku": "3468336458952"
+        }
+      ],
+      "parentImage": 31443
+    },
+    {
+      "product": 11576,
+      "name": "בגד ים נשים תחרותי גב סגור POWERSKIN CARBON CORE FX CB",
+      "status": "draft",
+      "color": "730-OCEAN BLUE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 11605,
+          "size": "28",
+          "sku": "3468336459737"
+        },
+        {
+          "id": 11604,
+          "size": "34",
+          "sku": "3468336459652"
+        },
+        {
+          "id": 11599,
+          "size": "30",
+          "sku": "3468336459577"
+        },
+        {
+          "id": 11583,
+          "size": "36",
+          "sku": "3468336459232"
+        },
+        {
+          "id": 11577,
+          "size": "32",
+          "sku": "3468336459195"
+        }
+      ],
+      "parentImage": 31455
+    },
+    {
+      "product": 11606,
+      "name": "בגד ים גברים תחרותי POWERSKIN CARBON GLIDE",
+      "status": "publish",
+      "color": "730-OCEAN BLUE",
+      "count": 4,
+      "variations": [
+        {
+          "id": 11632,
+          "size": "55",
+          "sku": "3468336460054"
+        },
+        {
+          "id": 11631,
+          "size": "‎65 (10-11)‎",
+          "sku": "3468336460047"
+        },
+        {
+          "id": 11614,
+          "size": "60",
+          "sku": "3468336459782"
+        },
+        {
+          "id": 11607,
+          "size": "‎70 (12-13)‎",
+          "sku": "3468336459775"
+        }
+      ],
+      "parentImage": 31552
+    },
+    {
+      "product": 11615,
+      "name": "בגד ים נשים תחרותי POWERSKIN CARBON GLIDE OB",
+      "status": "publish",
+      "color": "730-OCEAN BLUE",
+      "count": 4,
+      "variations": [
+        {
+          "id": 11636,
+          "size": "28",
+          "sku": "3468336460368"
+        },
+        {
+          "id": 11635,
+          "size": "34",
+          "sku": "3468336460313"
+        },
+        {
+          "id": 11634,
+          "size": "30",
+          "sku": "3468336460283"
+        },
+        {
+          "id": 11616,
+          "size": "32",
+          "sku": "3468336459850"
+        }
+      ],
+      "parentImage": 31564
+    },
+    {
+      "product": 11659,
+      "name": "טיץ נשים אימונים  3/4  Te Corsaire",
+      "status": "publish",
+      "color": "500-BLACK",
+      "count": 3,
+      "variations": [
+        {
+          "id": 11681,
+          "size": "S",
+          "sku": "3468336475492"
+        },
+        {
+          "id": 11675,
+          "size": "XS",
+          "sku": "3468336474648"
+        },
+        {
+          "id": 11660,
+          "size": "M",
+          "sku": "3468336474136"
+        }
+      ],
+      "parentImage": 31666
+    },
+    {
+      "product": 11691,
+      "name": "אטמי אף Pro II Nose Clip",
+      "status": "publish",
+      "color": "800-NAVY-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 11692,
+          "size": "Os",
+          "sku": "3468336478165"
+        }
+      ],
+      "parentImage": 31775
+    },
+    {
+      "product": 11696,
+      "name": "בגד ים שומר חום לקטנטנים Neoprene Warmsuit",
+      "status": "publish",
+      "color": "310-YELLOW",
+      "count": 2,
+      "variations": [
+        {
+          "id": 11704,
+          "size": "1-2Y",
+          "sku": "3468336479087"
+        },
+        {
+          "id": 11697,
+          "size": "3-4Y",
+          "sku": "3468336479056"
+        }
+      ],
+      "parentImage": 31777
+    },
+    {
+      "product": 11700,
+      "name": "מצופי ידיים Roll-Up  Armband",
+      "status": "publish",
+      "color": "910-PINK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 11701,
+          "size": "Os",
+          "sku": "3468336479063"
+        }
+      ],
+      "parentImage": 31779
+    },
+    {
+      "product": 11721,
+      "name": "כפכפים יוניסקס Unisex Marco Massage",
+      "status": "publish",
+      "color": "104-WHITE-CYAN-BLACK",
+      "count": 11,
+      "variations": [
+        {
+          "id": 11863,
+          "size": "37",
+          "sku": "3468336481790"
+        },
+        {
+          "id": 11853,
+          "size": "36",
+          "sku": "3468336481592"
+        },
+        {
+          "id": 11848,
+          "size": "46",
+          "sku": "3468336481578"
+        },
+        {
+          "id": 11823,
+          "size": "45",
+          "sku": "3468336481387"
+        },
+        {
+          "id": 11798,
+          "size": "44",
+          "sku": "3468336481219"
+        },
+        {
+          "id": 11773,
+          "size": "43",
+          "sku": "3468336481059"
+        },
+        {
+          "id": 11753,
+          "size": "42",
+          "sku": "3468336480861"
+        },
+        {
+          "id": 11748,
+          "size": "39",
+          "sku": "3468336480779"
+        },
+        {
+          "id": 11738,
+          "size": "41",
+          "sku": "3468336480694"
+        },
+        {
+          "id": 11733,
+          "size": "38",
+          "sku": "3468336480618"
+        },
+        {
+          "id": 11722,
+          "size": "40",
+          "sku": "3468336480526"
+        }
+      ],
+      "parentImage": 31791
+    },
+    {
+      "product": 11872,
+      "name": "סט כובעי כדורמים  WATER POLO CAP 1-15 FINA+LEN",
+      "status": "publish",
+      "color": "300-FINA LEN WHITE TEAM",
+      "count": 1,
+      "variations": [
+        {
+          "id": 11873,
+          "size": "Os",
+          "sku": "3468336483398"
+        }
+      ],
+      "parentImage": 31920
+    },
+    {
+      "product": 11935,
+      "name": "משקפת שחייה Cobra Core Swipe",
+      "status": "publish",
+      "color": "600-SMOKE-BLACK-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 11936,
+          "size": "Os",
+          "sku": "3468336504543"
+        }
+      ],
+      "parentImage": 32050
+    },
+    {
+      "product": 11939,
+      "name": "משקפת שחייה Cobra Ultra Swipe",
+      "status": "publish",
+      "color": "600-DARK_SMOKE,BLACK,BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 11940,
+          "size": "Os",
+          "sku": "3468336504581"
+        }
+      ],
+      "parentImage": 32052
+    },
+    {
+      "product": 12069,
+      "name": "חולצת אימונים נשים  T-Shirt Cool",
+      "status": "publish",
+      "color": "150-WHITE-SILVER",
+      "count": 5,
+      "variations": [
+        {
+          "id": 12138,
+          "size": "L",
+          "sku": "3468336541753"
+        },
+        {
+          "id": 12134,
+          "size": "XL",
+          "sku": "3468336541562"
+        },
+        {
+          "id": 12133,
+          "size": "S",
+          "sku": "3468336541517"
+        },
+        {
+          "id": 12126,
+          "size": "XS",
+          "sku": "3468336541234"
+        },
+        {
+          "id": 12070,
+          "size": "M",
+          "sku": "3468336539453"
+        }
+      ],
+      "parentImage": 32305
+    },
+    {
+      "product": 12112,
+      "name": "גופיית אימונים נשים Tank Top CF Cool",
+      "status": "publish",
+      "color": "165-WHITE-ARMY-SILVER",
+      "count": 4,
+      "variations": [
+        {
+          "id": 12183,
+          "size": "M",
+          "sku": "3468336544167"
+        },
+        {
+          "id": 12131,
+          "size": "L",
+          "sku": "3468336541340"
+        },
+        {
+          "id": 12121,
+          "size": "S",
+          "sku": "3468336541128"
+        },
+        {
+          "id": 12113,
+          "size": "XS",
+          "sku": "3468336540879"
+        }
+      ],
+      "parentImage": 32372
+    },
+    {
+      "product": 12124,
+      "name": "קרש אימונים ארנה Printed Kickboard",
+      "status": "publish",
+      "color": "109-CAMO KIKKO",
+      "count": 1,
+      "variations": [
+        {
+          "id": 79035,
+          "size": "Os",
+          "sku": "3468337191230"
+        }
+      ],
+      "parentImage": 79031
+    },
+    {
+      "product": 12197,
+      "name": "גקט יוניסקס  Full Zip Jacket Te",
+      "status": "publish",
+      "color": "521-MEDIUM GREY MELANGE-WHITE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 12291,
+          "size": "XL",
+          "sku": "3468336551608"
+        },
+        {
+          "id": 12276,
+          "size": "L",
+          "sku": "3468336549629"
+        },
+        {
+          "id": 12246,
+          "size": "M",
+          "sku": "3468336547625"
+        },
+        {
+          "id": 12243,
+          "size": "XS",
+          "sku": "3468336546895"
+        },
+        {
+          "id": 12198,
+          "size": "S",
+          "sku": "3468336545041"
+        }
+      ],
+      "parentImage": 32610
+    },
+    {
+      "product": 12260,
+      "name": "כובע שחייה סיליקון דו צדדי Unisex   Reversible",
+      "status": "publish",
+      "color": "227-CRAZY SKULLS CARNIVAL",
+      "count": 1,
+      "variations": [
+        {
+          "id": 12261,
+          "size": "Os",
+          "sku": "3468336548783"
+        }
+      ],
+      "parentImage": 32728
+    },
+    {
+      "product": 12306,
+      "name": "בגד ים גברים טייץ Spiral Vision",
+      "status": "publish",
+      "color": "700-NAVY",
+      "count": 7,
+      "variations": [
+        {
+          "id": 12478,
+          "size": "‎85 (M)‎",
+          "sku": "3468336562222"
+        },
+        {
+          "id": 12408,
+          "size": "‎110 (4XL)‎",
+          "sku": "3468336556252"
+        },
+        {
+          "id": 12401,
+          "size": "‎90 (L)‎",
+          "sku": "3468336555743"
+        },
+        {
+          "id": 12384,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336554739"
+        },
+        {
+          "id": 12352,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336553886"
+        },
+        {
+          "id": 12312,
+          "size": "‎80 (S)‎",
+          "sku": "3468336553121"
+        },
+        {
+          "id": 12307,
+          "size": "‎105 (3XL)‎",
+          "sku": "3468336553015"
+        }
+      ],
+      "parentImage": 32905
+    },
+    {
+      "product": 12319,
+      "name": "בגד ים גברים טייץ מקוצר Mid  Light Touch",
+      "status": "publish",
+      "color": "580-BLACK-MARTINICA",
+      "count": 7,
+      "variations": [
+        {
+          "id": 12460,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468336560730"
+        },
+        {
+          "id": 12458,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336560679"
+        },
+        {
+          "id": 12452,
+          "size": "‎105 (3XL)‎",
+          "sku": "3468336559871"
+        },
+        {
+          "id": 12410,
+          "size": "‎90 (L)‎",
+          "sku": "3468336556719"
+        },
+        {
+          "id": 12403,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336555897"
+        },
+        {
+          "id": 12362,
+          "size": "‎80 (S)‎",
+          "sku": "3468336554333"
+        },
+        {
+          "id": 12320,
+          "size": "‎85 (M)‎",
+          "sku": "3468336553305"
+        }
+      ],
+      "parentImage": 32917
+    },
+    {
+      "product": 12346,
+      "name": "בגד ים בנים מכנסון Scary JR",
+      "status": "publish",
+      "color": "770-NEON BLUE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 12473,
+          "size": "10-11",
+          "sku": "3468336561829"
+        },
+        {
+          "id": 12463,
+          "size": "8-9",
+          "sku": "3468336560822"
+        },
+        {
+          "id": 12462,
+          "size": "6-7",
+          "sku": "3468336560754"
+        },
+        {
+          "id": 12402,
+          "size": "14-15",
+          "sku": "3468336555774"
+        },
+        {
+          "id": 12347,
+          "size": "12-13",
+          "sku": "3468336553862"
+        }
+      ],
+      "parentImage": 32937
+    },
+    {
+      "product": 12391,
+      "name": "בגד ים גברים   Optimal Short",
+      "status": "publish",
+      "color": "510-BLACK-WHITE",
+      "count": 4,
+      "variations": [
+        {
+          "id": 12483,
+          "size": "‎85 (M)‎",
+          "sku": "3468336562567"
+        },
+        {
+          "id": 12479,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336562239"
+        },
+        {
+          "id": 12406,
+          "size": "‎90 (L)‎",
+          "sku": "3468336556030"
+        },
+        {
+          "id": 12392,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336555088"
+        }
+      ],
+      "parentImage": 33001
+    },
+    {
+      "product": 12486,
+      "name": "משקפת שחייה Cobra Swipe Mirror",
+      "status": "publish",
+      "color": "510-SILVER-WHITE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 12487,
+          "size": "Os",
+          "sku": "3468336563885"
+        }
+      ],
+      "parentImage": 33317
+    },
+    {
+      "product": 12544,
+      "name": "טייץ נשים אימונים 3/4  Inserts",
+      "status": "publish",
+      "color": "200-HAZEL",
+      "count": 4,
+      "variations": [
+        {
+          "id": 13055,
+          "size": "S",
+          "sku": "3468336619834"
+        },
+        {
+          "id": 12644,
+          "size": "XS",
+          "sku": "3468336576472"
+        },
+        {
+          "id": 12624,
+          "size": "L",
+          "sku": "3468336575499"
+        },
+        {
+          "id": 12545,
+          "size": "M",
+          "sku": "3468336573143"
+        }
+      ],
+      "parentImage": 33365
+    },
+    {
+      "product": 12551,
+      "name": "טופ נשים אימונים גב פתוח Tank Top",
+      "status": "publish",
+      "color": "500-BLACK",
+      "count": 5,
+      "variations": [
+        {
+          "id": 13058,
+          "size": "XL",
+          "sku": "3468336619971"
+        },
+        {
+          "id": 12683,
+          "size": "L",
+          "sku": "3468336578568"
+        },
+        {
+          "id": 12629,
+          "size": "M",
+          "sku": "3468336576359"
+        },
+        {
+          "id": 12605,
+          "size": "XS",
+          "sku": "3468336574898"
+        },
+        {
+          "id": 12552,
+          "size": "S",
+          "sku": "3468336573228"
+        }
+      ],
+      "parentImage": 33370
+    },
+    {
+      "product": 12558,
+      "name": "טייץ נשים אימונים ארוך Long Tights Inserts",
+      "status": "publish",
+      "color": "500-BLACK",
+      "count": 4,
+      "variations": [
+        {
+          "id": 13051,
+          "size": "M",
+          "sku": "3468336619230"
+        },
+        {
+          "id": 12697,
+          "size": "XS",
+          "sku": "3468336579268"
+        },
+        {
+          "id": 12676,
+          "size": "S",
+          "sku": "3468336578308"
+        },
+        {
+          "id": 12559,
+          "size": "L",
+          "sku": "3468336573433"
+        }
+      ],
+      "parentImage": 33375
+    },
+    {
+      "product": 12571,
+      "name": "טופ גברים אימונים Shirt Sleeveless",
+      "status": "publish",
+      "color": "656-ARMY-ARMY",
+      "count": 4,
+      "variations": [
+        {
+          "id": 12696,
+          "size": "XL",
+          "sku": "3468336579251"
+        },
+        {
+          "id": 12688,
+          "size": "L",
+          "sku": "3468336579060"
+        },
+        {
+          "id": 12658,
+          "size": "M",
+          "sku": "3468336576922"
+        },
+        {
+          "id": 12572,
+          "size": "S",
+          "sku": "3468336573723"
+        }
+      ],
+      "parentImage": 33385
+    },
+    {
+      "product": 12584,
+      "name": "חולצת גברים אימונים Tee CF Cool",
+      "status": "publish",
+      "color": "656-ARMY-ARMY-SILVER",
+      "count": 5,
+      "variations": [
+        {
+          "id": 12698,
+          "size": "S",
+          "sku": "3468336582817"
+        },
+        {
+          "id": 12648,
+          "size": "L",
+          "sku": "3468336576670"
+        },
+        {
+          "id": 12647,
+          "size": "2XL",
+          "sku": "3468336576663"
+        },
+        {
+          "id": 12591,
+          "size": "M",
+          "sku": "3468336574430"
+        },
+        {
+          "id": 12585,
+          "size": "XL",
+          "sku": "3468336574423"
+        }
+      ],
+      "parentImage": 33395
+    },
+    {
+      "product": 12606,
+      "name": "משקפת ילדים Spider",
+      "status": "publish",
+      "color": "200-LIGHTBLUE-BLUE-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 12607,
+          "size": "Os",
+          "sku": "3468336574980"
+        }
+      ],
+      "parentImage": 33420
+    },
+    {
+      "product": 12649,
+      "name": "משקפת שחייה נוער The One Junior Mask",
+      "status": "publish",
+      "color": "200-BLUE-BLUE-RED",
+      "count": 1,
+      "variations": [
+        {
+          "id": 12650,
+          "size": "Os",
+          "sku": "3468336576687"
+        }
+      ],
+      "parentImage": 33484
+    },
+    {
+      "product": 12749,
+      "name": "בגד ים תחתון גברים  Swim Brief Streak",
+      "status": "publish",
+      "color": "560-BLACK-SOFT GREEN",
+      "count": 7,
+      "variations": [
+        {
+          "id": 12920,
+          "size": "‎110 (4XL)‎",
+          "sku": "3468336607749"
+        },
+        {
+          "id": 12853,
+          "size": "‎85 (M)‎",
+          "sku": "3468336605127"
+        },
+        {
+          "id": 12824,
+          "size": "‎80 (S)‎",
+          "sku": "3468336604656"
+        },
+        {
+          "id": 12807,
+          "size": "‎105 (3XL)‎",
+          "sku": "3468336604311"
+        },
+        {
+          "id": 12787,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336603789"
+        },
+        {
+          "id": 12786,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336603758"
+        },
+        {
+          "id": 12750,
+          "size": "‎90 (L)‎",
+          "sku": "3468336603277"
+        }
+      ],
+      "parentImage": 33738
+    },
+    {
+      "product": 12756,
+      "name": "בגד ים בנות Streak",
+      "status": "publish",
+      "color": "560-BLACK-SOFT GREEN",
+      "count": 5,
+      "variations": [
+        {
+          "id": 12864,
+          "size": "10-11",
+          "sku": "3468336605424"
+        },
+        {
+          "id": 12816,
+          "size": "12-13",
+          "sku": "3468336604489"
+        },
+        {
+          "id": 12764,
+          "size": "14-15",
+          "sku": "3468336603444"
+        },
+        {
+          "id": 12763,
+          "size": "6-7",
+          "sku": "3468336603352"
+        },
+        {
+          "id": 12757,
+          "size": "8-9",
+          "sku": "3468336603314"
+        }
+      ],
+      "parentImage": 33743
+    },
+    {
+      "product": 12808,
+      "name": "בגד ים גברים  Swim Shorts Streak",
+      "status": "publish",
+      "color": "780-NAVY-MARTINICA",
+      "count": 6,
+      "variations": [
+        {
+          "id": 12915,
+          "size": "‎105 (3XL)‎",
+          "sku": "3468336607572"
+        },
+        {
+          "id": 12904,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336607091"
+        },
+        {
+          "id": 12888,
+          "size": "‎85 (M)‎",
+          "sku": "3468336606186"
+        },
+        {
+          "id": 12882,
+          "size": "‎80 (S)‎",
+          "sku": "3468336605684"
+        },
+        {
+          "id": 12850,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336605011"
+        },
+        {
+          "id": 12809,
+          "size": "‎90 (L)‎",
+          "sku": "3468336604458"
+        }
+      ],
+      "parentImage": 33818
+    },
+    {
+      "product": 12817,
+      "name": "בגד ים בנים מכנסון Swim Shorts Streak",
+      "status": "publish",
+      "color": "780-NAVY-MARTINICA",
+      "count": 5,
+      "variations": [
+        {
+          "id": 12889,
+          "size": "10-11",
+          "sku": "3468336606353"
+        },
+        {
+          "id": 12865,
+          "size": "12-13",
+          "sku": "3468336605431"
+        },
+        {
+          "id": 12852,
+          "size": "6-7",
+          "sku": "3468336605097"
+        },
+        {
+          "id": 12851,
+          "size": "8-9",
+          "sku": "3468336605066"
+        },
+        {
+          "id": 12818,
+          "size": "14-15",
+          "sku": "3468336604496"
+        }
+      ],
+      "parentImage": 33833
+    },
+    {
+      "product": 12934,
+      "name": "בגד ים נשים Swimsuit Streak",
+      "status": "publish",
+      "color": "560-BLACK-SOFT GREEN",
+      "count": 5,
+      "variations": [
+        {
+          "id": 13003,
+          "size": "36",
+          "sku": "3468336615232"
+        },
+        {
+          "id": 12995,
+          "size": "42",
+          "sku": "3468336614051"
+        },
+        {
+          "id": 12947,
+          "size": "40",
+          "sku": "3468336610060"
+        },
+        {
+          "id": 12946,
+          "size": "38",
+          "sku": "3468336609989"
+        },
+        {
+          "id": 12935,
+          "size": "44",
+          "sku": "3468336608562"
+        }
+      ],
+      "parentImage": 34179
+    },
+    {
+      "product": 12974,
+      "name": "בגד ים נשים Swimsuit Streak Inner Bra",
+      "status": "draft",
+      "color": "560-BLACK-SOFT GREEN",
+      "count": 3,
+      "variations": [
+        {
+          "id": 13035,
+          "size": "36",
+          "sku": "3468336617953"
+        },
+        {
+          "id": 12980,
+          "size": "40",
+          "sku": "3468336612743"
+        },
+        {
+          "id": 12975,
+          "size": "38",
+          "sku": "3468336612675"
+        }
+      ],
+      "parentImage": 34221
+    },
+    {
+      "product": 13062,
+      "name": "תיק שחייה 40L Fastpack 2.2 Allover",
+      "status": "publish",
+      "color": "131-ALIENS",
+      "count": 1,
+      "variations": [
+        {
+          "id": 13063,
+          "size": "Os",
+          "sku": "3468336629758"
+        }
+      ],
+      "parentImage": 34381
+    },
+    {
+      "product": 13065,
+      "name": "שנורקל מקצועי - מאמץ בנשימה SWIM SNORKEL PRO III",
+      "status": "publish",
+      "color": "605-ACID LIME",
+      "count": 1,
+      "variations": [
+        {
+          "id": 13066,
+          "size": "Os",
+          "sku": "3468336630044"
+        }
+      ],
+      "parentImage": 34391
+    },
+    {
+      "product": 13068,
+      "name": "שנורקל אימונים קלאסי Swim Snorkel III",
+      "status": "publish",
+      "color": "501-BLACK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 13079,
+          "size": "Os",
+          "sku": "3468336630099"
+        }
+      ],
+      "parentImage": 34400
+    },
+    {
+      "product": 13151,
+      "name": "בגד ים ילדות Comet",
+      "status": "publish",
+      "color": "790-NAVY-FREAK ROSE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 13172,
+          "size": "10-11",
+          "sku": "3468336645185"
+        },
+        {
+          "id": 13171,
+          "size": "6-7",
+          "sku": "3468336644386"
+        },
+        {
+          "id": 13170,
+          "size": "8-9",
+          "sku": "3468336644317"
+        },
+        {
+          "id": 13166,
+          "size": "12-13",
+          "sku": "3468336643211"
+        },
+        {
+          "id": 13152,
+          "size": "14-15",
+          "sku": "3468336641576"
+        }
+      ],
+      "parentImage": 34520
+    },
+    {
+      "product": 13243,
+      "name": "משקפת שחייה ילדים מסיכה Kids' Spider Swim Mask",
+      "status": "publish",
+      "color": "102-CLEAR-YELLOW-LIGHTBLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 13244,
+          "size": "Os",
+          "sku": "3468336662465"
+        }
+      ],
+      "parentImage": 34721
+    },
+    {
+      "product": 13319,
+      "name": "מכנסיים קצרים נשים אימונים Team Women's  Solid",
+      "status": "publish",
+      "color": "500-BLACK",
+      "count": 4,
+      "variations": [
+        {
+          "id": 13501,
+          "size": "L",
+          "sku": "3468336688854"
+        },
+        {
+          "id": 13483,
+          "size": "XS",
+          "sku": "3468336687963"
+        },
+        {
+          "id": 13441,
+          "size": "S",
+          "sku": "3468336685297"
+        },
+        {
+          "id": 13320,
+          "size": "M",
+          "sku": "3468336682937"
+        }
+      ],
+      "parentImage": 34880
+    },
+    {
+      "product": 13345,
+      "name": "מעיל שחיינים יוניסקס Team  Parka",
+      "status": "publish",
+      "color": "700-NAVY",
+      "count": 7,
+      "variations": [
+        {
+          "id": 13512,
+          "size": "S",
+          "sku": "3468336689530"
+        },
+        {
+          "id": 13473,
+          "size": "M",
+          "sku": "3468336687208"
+        },
+        {
+          "id": 13471,
+          "size": "XS",
+          "sku": "3468336687185"
+        },
+        {
+          "id": 13465,
+          "size": "2XL",
+          "sku": "3468336686584"
+        },
+        {
+          "id": 13454,
+          "size": "L",
+          "sku": "3468336685563"
+        },
+        {
+          "id": 13373,
+          "size": "3XL",
+          "sku": "3468336683729"
+        },
+        {
+          "id": 13346,
+          "size": "XL",
+          "sku": "3468336683316"
+        }
+      ],
+      "parentImage": 34900
+    },
+    {
+      "product": 13405,
+      "name": "מכנס ברמודה יוניסקס Team Unisex  panel",
+      "status": "publish",
+      "color": "500-BLACK",
+      "count": 7,
+      "variations": [
+        {
+          "id": 78988,
+          "size": "XS",
+          "sku": "3468336683583"
+        },
+        {
+          "id": 13514,
+          "size": "M",
+          "sku": "3468336689899"
+        },
+        {
+          "id": 13487,
+          "size": "L",
+          "sku": "3468336688229"
+        },
+        {
+          "id": 13475,
+          "size": "2XL",
+          "sku": "3468336687291"
+        },
+        {
+          "id": 13472,
+          "size": "XL",
+          "sku": "3468336687192"
+        },
+        {
+          "id": 13416,
+          "size": "S",
+          "sku": "3468336684719"
+        },
+        {
+          "id": 13406,
+          "size": "3XL",
+          "sku": "3468336684542"
+        }
+      ],
+      "parentImage": 35010
+    },
+    {
+      "product": 13556,
+      "name": "בגד ים נשים שכבה כפולה + רוכסן   Water Polo One-piece",
+      "status": "publish",
+      "color": "450-RED-WHITE",
+      "count": 7,
+      "variations": [
+        {
+          "id": 77389,
+          "size": "42",
+          "sku": "3468336696569"
+        },
+        {
+          "id": 77386,
+          "size": "46",
+          "sku": "3468336696507"
+        },
+        {
+          "id": 77385,
+          "size": "40",
+          "sku": "3468336696224"
+        },
+        {
+          "id": 60163,
+          "size": "48",
+          "sku": "3468336696125"
+        },
+        {
+          "id": 13604,
+          "size": "36",
+          "sku": "3468336696477"
+        },
+        {
+          "id": 13576,
+          "size": "44",
+          "sku": "3468336696170"
+        },
+        {
+          "id": 13557,
+          "size": "38",
+          "sku": "3468336696118"
+        }
+      ],
+      "parentImage": 35629
+    },
+    {
+      "product": 13583,
+      "name": "בגד ים גברים שכבה כפולה  SWIM BRIEFS WATERPOLO",
+      "status": "publish",
+      "color": "450-RED-WHITE",
+      "count": 8,
+      "variations": [
+        {
+          "id": 13616,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336696682"
+        },
+        {
+          "id": 13602,
+          "size": "‎90 (L)‎",
+          "sku": "3468336696439"
+        },
+        {
+          "id": 13601,
+          "size": "‎80 (S)‎",
+          "sku": "3468336696422"
+        },
+        {
+          "id": 13600,
+          "size": "‎70 (12-13)‎",
+          "sku": "3468336696415"
+        },
+        {
+          "id": 13592,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336696279"
+        },
+        {
+          "id": 13591,
+          "size": "‎85 (M)‎",
+          "sku": "3468336696262"
+        },
+        {
+          "id": 13590,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468336696255"
+        },
+        {
+          "id": 13584,
+          "size": "‎65 (10-11)‎",
+          "sku": "3468336696248"
+        }
+      ],
+      "parentImage": 35684
+    },
+    {
+      "product": 13619,
+      "name": "בגד ים נשים  Graphic Swim Pro Back",
+      "status": "publish",
+      "color": "790-NAVY-FREAK ROSE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 13650,
+          "size": "40",
+          "sku": "3468336697993"
+        },
+        {
+          "id": 13647,
+          "size": "38",
+          "sku": "3468336697924"
+        },
+        {
+          "id": 13638,
+          "size": "42",
+          "sku": "3468336697641"
+        },
+        {
+          "id": 13632,
+          "size": "44",
+          "sku": "3468336697214"
+        },
+        {
+          "id": 13620,
+          "size": "36",
+          "sku": "3468336696866"
+        }
+      ],
+      "parentImage": 35809
+    },
+    {
+      "product": 13656,
+      "name": "תיק שחיינים  Fastpack 3.0 Backpack",
+      "status": "publish",
+      "color": "104-ICE-SKY",
+      "count": 1,
+      "variations": [
+        {
+          "id": 13657,
+          "size": "Os",
+          "sku": "3468336699645"
+        }
+      ],
+      "parentImage": 35859
+    },
+    {
+      "product": 13665,
+      "name": "חלוק מיקרופייבר יוניסקס Unisex Zeal Plus",
+      "status": "publish",
+      "color": "200-NAVY-LIME",
+      "count": 6,
+      "variations": [
+        {
+          "id": 13743,
+          "size": "M",
+          "sku": "3468336703007"
+        },
+        {
+          "id": 13729,
+          "size": "S",
+          "sku": "3468336701928"
+        },
+        {
+          "id": 13728,
+          "size": "L",
+          "sku": "3468336701812"
+        },
+        {
+          "id": 13677,
+          "size": "XS",
+          "sku": "3468336700679"
+        },
+        {
+          "id": 13676,
+          "size": "XL",
+          "sku": "3468336700549"
+        },
+        {
+          "id": 13666,
+          "size": "2XL",
+          "sku": "3468336700464"
+        }
+      ],
+      "parentImage": 35870
+    },
+    {
+      "product": 13685,
+      "name": "חלוק מיקרופייבר נוער Zeal Plus Junior",
+      "status": "publish",
+      "color": "100-DARK_GREY-SKY",
+      "count": 4,
+      "variations": [
+        {
+          "id": 13744,
+          "size": "8-9",
+          "sku": "3468336703045"
+        },
+        {
+          "id": 13738,
+          "size": "10-11",
+          "sku": "3468336702802"
+        },
+        {
+          "id": 13726,
+          "size": "12-13",
+          "sku": "3468336701782"
+        },
+        {
+          "id": 13686,
+          "size": "14-15",
+          "sku": "3468336700808"
+        }
+      ],
+      "parentImage": 35897
+    },
+    {
+      "product": 13721,
+      "name": "מגבת מיקרופייבר גדולה Smart Plus Pool",
+      "status": "publish",
+      "color": "PINK-WHITE-301",
+      "count": 1,
+      "variations": [
+        {
+          "id": 70764,
+          "size": "Os",
+          "sku": "3468336942864"
+        }
+      ],
+      "parentImage": 70762
+    },
+    {
+      "product": 13785,
+      "name": "בגד ים נשים Placement",
+      "status": "publish",
+      "color": "780-NAVY-MARTINICA",
+      "count": 5,
+      "variations": [
+        {
+          "id": 13827,
+          "size": "36",
+          "sku": "3468336719237"
+        },
+        {
+          "id": 13817,
+          "size": "42",
+          "sku": "3468336718308"
+        },
+        {
+          "id": 13805,
+          "size": "40",
+          "sku": "3468336714690"
+        },
+        {
+          "id": 13803,
+          "size": "38",
+          "sku": "3468336714621"
+        },
+        {
+          "id": 13786,
+          "size": "44",
+          "sku": "3468336713662"
+        }
+      ],
+      "parentImage": 36125
+    },
+    {
+      "product": 13837,
+      "name": "בגד ים גברים Placement Swim Shorts",
+      "status": "publish",
+      "color": "780-NAVY-MARTINICA",
+      "count": 7,
+      "variations": [
+        {
+          "id": 14041,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336726259"
+        },
+        {
+          "id": 14019,
+          "size": "‎90 (L)‎",
+          "sku": "3468336725641"
+        },
+        {
+          "id": 13968,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468336722916"
+        },
+        {
+          "id": 13930,
+          "size": "‎105 (3XL)‎",
+          "sku": "3468336721711"
+        },
+        {
+          "id": 13901,
+          "size": "‎85 (M)‎",
+          "sku": "3468336721247"
+        },
+        {
+          "id": 13888,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336721131"
+        },
+        {
+          "id": 13838,
+          "size": "‎80 (S)‎",
+          "sku": "3468336720585"
+        }
+      ],
+      "parentImage": 36220
+    },
+    {
+      "product": 14276,
+      "name": "בגד ים גברים טייץ Allover Jammers",
+      "status": "publish",
+      "color": "550-BLACK-BLACK MULTI",
+      "count": 7,
+      "variations": [
+        {
+          "id": 14386,
+          "size": "‎105 (3XL)‎",
+          "sku": "3468336745014"
+        },
+        {
+          "id": 14378,
+          "size": "‎85 (M)‎",
+          "sku": "3468336744505"
+        },
+        {
+          "id": 14373,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336744222"
+        },
+        {
+          "id": 14358,
+          "size": "‎80 (S)‎",
+          "sku": "3468336743638"
+        },
+        {
+          "id": 14315,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336742341"
+        },
+        {
+          "id": 14306,
+          "size": "‎110 (4XL)‎",
+          "sku": "3468336742068"
+        },
+        {
+          "id": 14277,
+          "size": "‎90 (L)‎",
+          "sku": "3468336741511"
+        }
+      ],
+      "parentImage": 37020
+    },
+    {
+      "product": 14284,
+      "name": "בגד ים נשים Allover Challenge Back",
+      "status": "publish",
+      "color": "550-BLACK-BLACK MULTI",
+      "count": 7,
+      "variations": [
+        {
+          "id": 14376,
+          "size": "32",
+          "sku": "3468336744345"
+        },
+        {
+          "id": 14363,
+          "size": "34",
+          "sku": "3468336743751"
+        },
+        {
+          "id": 14347,
+          "size": "36",
+          "sku": "3468336743157"
+        },
+        {
+          "id": 14333,
+          "size": "40",
+          "sku": "3468336742747"
+        },
+        {
+          "id": 14329,
+          "size": "38",
+          "sku": "3468336742617"
+        },
+        {
+          "id": 14311,
+          "size": "42",
+          "sku": "3468336742204"
+        },
+        {
+          "id": 14285,
+          "size": "44",
+          "sku": "3468336741634"
+        }
+      ],
+      "parentImage": 37026
+    },
+    {
+      "product": 14469,
+      "name": "משקפת שחייה ילדים Kids' Junior Air",
+      "status": "publish",
+      "color": "100-BLUE-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 14470,
+          "size": "Os",
+          "sku": "3468336748428"
+        }
+      ],
+      "parentImage": 37380
+    },
+    {
+      "product": 14548,
+      "name": "בגד ים גברים תחתון Marbled  Briefs",
+      "status": "publish",
+      "color": "770-NAVY-NAVY MULTI",
+      "count": 8,
+      "variations": [
+        {
+          "id": 14616,
+          "size": "‎105 (3XL)‎",
+          "sku": "3468336778289"
+        },
+        {
+          "id": 14614,
+          "size": "‎95 (XL)‎",
+          "sku": "3468336778203"
+        },
+        {
+          "id": 14601,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468336777534"
+        },
+        {
+          "id": 14599,
+          "size": "‎90 (L)‎",
+          "sku": "3468336777503"
+        },
+        {
+          "id": 14588,
+          "size": "‎110 (4XL)‎",
+          "sku": "3468336775585"
+        },
+        {
+          "id": 14584,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468336774168"
+        },
+        {
+          "id": 14570,
+          "size": "‎85 (M)‎",
+          "sku": "3468336772263"
+        },
+        {
+          "id": 14549,
+          "size": "‎80 (S)‎",
+          "sku": "3468336771495"
+        }
+      ],
+      "parentImage": 37597
+    },
+    {
+      "product": 14562,
+      "name": "תיק שחיינים Spiky III Backpack 45",
+      "status": "publish",
+      "color": "101-DARK_SMOKE-NEON_YELLOW",
+      "count": 1,
+      "variations": [
+        {
+          "id": 14563,
+          "size": "Os",
+          "sku": "3468336772126"
+        }
+      ],
+      "parentImage": 37609
+    },
+    {
+      "product": 22910,
+      "name": "POWERSKIN CARBON AIR2 LE OB חליפת תחרות נשים",
+      "status": "publish",
+      "color": "303",
+      "count": 2,
+      "variations": [
+        {
+          "id": 77326,
+          "size": "34",
+          "sku": "3468337315681"
+        },
+        {
+          "id": 62923,
+          "size": "30",
+          "sku": "3468337315667"
+        }
+      ],
+      "parentImage": 67983
+    },
+    {
+      "product": 22910,
+      "name": "POWERSKIN CARBON AIR2 LE OB חליפת תחרות נשים",
+      "status": "publish",
+      "color": "303-Aurora Cayman",
+      "count": 4,
+      "variations": [
+        {
+          "id": 62927,
+          "size": "40",
+          "sku": "3468337315711"
+        },
+        {
+          "id": 62926,
+          "size": "36",
+          "sku": "3468337315698"
+        },
+        {
+          "id": 62924,
+          "size": "32",
+          "sku": "3468337315674"
+        },
+        {
+          "id": 62922,
+          "size": "28",
+          "sku": "3468337315650"
+        }
+      ],
+      "parentImage": 67983
+    },
+    {
+      "product": 41385,
+      "name": "תיק שחייה 35 ליטר SPIKY III BACKPACK",
+      "status": "publish",
+      "color": "104-ICE-SKY",
+      "count": 1,
+      "variations": [
+        {
+          "id": 41386,
+          "size": "Os",
+          "sku": "3468336769560"
+        }
+      ],
+      "parentImage": 41387
+    },
+    {
+      "product": 41405,
+      "name": "תיק שחייה חדש FASTPACK 3.0",
+      "status": "publish",
+      "color": "107-ALLOVER HERO",
+      "count": 1,
+      "variations": [
+        {
+          "id": 41406,
+          "size": "Os",
+          "sku": "3468336891070"
+        }
+      ],
+      "parentImage": 41407
+    },
+    {
+      "product": 41411,
+      "name": "תיק שחייה חדש 45 ליטר SPIKY III BACKPACK",
+      "status": "publish",
+      "color": "109-",
+      "count": 1,
+      "variations": [
+        {
+          "id": 41554,
+          "size": "Os",
+          "sku": "3468336893975"
+        }
+      ],
+      "parentImage": 41555
+    },
+    {
+      "product": 44114,
+      "name": "גופייה מנדפת גבר TED",
+      "status": "publish",
+      "color": "11-LIGHT.MELANG",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44124,
+          "size": "11",
+          "sku": "7297423925222"
+        },
+        {
+          "id": 44123,
+          "size": "11",
+          "sku": "7297423925215"
+        },
+        {
+          "id": 44115,
+          "size": "11",
+          "sku": "7297423925178"
+        },
+        {
+          "id": 44122,
+          "size": "11",
+          "sku": "7297423925208"
+        },
+        {
+          "id": 44121,
+          "size": "11",
+          "sku": "7297423925185"
+        }
+      ],
+      "parentImage": 44116
+    },
+    {
+      "product": 44135,
+      "name": "גופייה מנדפת גבר BRUNO",
+      "status": "publish",
+      "color": "12-GRAY",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44145,
+          "size": "12",
+          "sku": "7297423925376"
+        },
+        {
+          "id": 44144,
+          "size": "12",
+          "sku": "7297423925369"
+        },
+        {
+          "id": 44136,
+          "size": "12",
+          "sku": "7297423925338"
+        },
+        {
+          "id": 44143,
+          "size": "12",
+          "sku": "7297423925352"
+        },
+        {
+          "id": 44142,
+          "size": "12",
+          "sku": "7297423925345"
+        }
+      ],
+      "parentImage": 44137
+    },
+    {
+      "product": 44179,
+      "name": "חולצת טי שרוול קצר מנדפת גבר DOLEV",
+      "status": "publish",
+      "color": "55-GRAY MELANGE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44188,
+          "size": "55",
+          "sku": "7297423925628"
+        },
+        {
+          "id": 44187,
+          "size": "55",
+          "sku": "7297423925611"
+        },
+        {
+          "id": 44180,
+          "size": "55",
+          "sku": "7297423925581"
+        },
+        {
+          "id": 44186,
+          "size": "55",
+          "sku": "7297423925604"
+        },
+        {
+          "id": 44185,
+          "size": "55",
+          "sku": "7297423925598"
+        }
+      ],
+      "parentImage": 44181
+    },
+    {
+      "product": 44209,
+      "name": "חולצת טי שרוול קצר מנדפת גבר DEAN",
+      "status": "publish",
+      "color": "11-LIGHT.MELANG",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44219,
+          "size": "11",
+          "sku": "7297423925772"
+        },
+        {
+          "id": 44218,
+          "size": "11",
+          "sku": "7297423925765"
+        },
+        {
+          "id": 44210,
+          "size": "11",
+          "sku": "7297423925734"
+        },
+        {
+          "id": 44217,
+          "size": "11",
+          "sku": "7297423925758"
+        },
+        {
+          "id": 44216,
+          "size": "11",
+          "sku": "7297423925741"
+        }
+      ],
+      "parentImage": 44211
+    },
+    {
+      "product": 44242,
+      "name": "מכנס ריצה קצר גבר ADAM",
+      "status": "publish",
+      "color": "12-GRAY",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44251,
+          "size": "12",
+          "sku": "7297423925925"
+        },
+        {
+          "id": 44250,
+          "size": "12",
+          "sku": "7297423925918"
+        },
+        {
+          "id": 44243,
+          "size": "12",
+          "sku": "7297423925888"
+        },
+        {
+          "id": 44249,
+          "size": "12",
+          "sku": "7297423925901"
+        },
+        {
+          "id": 44248,
+          "size": "12",
+          "sku": "7297423925895"
+        }
+      ],
+      "parentImage": 44244
+    },
+    {
+      "product": 44271,
+      "name": "מכנס ריצה קצר גבר PETER",
+      "status": "publish",
+      "color": "12-GRAY",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44281,
+          "size": "12",
+          "sku": "7297423926076"
+        },
+        {
+          "id": 44280,
+          "size": "12",
+          "sku": "7297423926069"
+        },
+        {
+          "id": 44272,
+          "size": "12",
+          "sku": "7297423926038"
+        },
+        {
+          "id": 44279,
+          "size": "12",
+          "sku": "7297423926052"
+        },
+        {
+          "id": 44278,
+          "size": "12",
+          "sku": "7297423926045"
+        }
+      ],
+      "parentImage": 44273
+    },
+    {
+      "product": 44300,
+      "name": "מכנס ריצה עם טייץ גבר PAUL",
+      "status": "publish",
+      "color": "12-GRAY",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44311,
+          "size": "12",
+          "sku": "7297423926311"
+        },
+        {
+          "id": 44310,
+          "size": "12",
+          "sku": "7297423926304"
+        },
+        {
+          "id": 44301,
+          "size": "12",
+          "sku": "7297423926274"
+        },
+        {
+          "id": 44309,
+          "size": "12",
+          "sku": "7297423926298"
+        },
+        {
+          "id": 44308,
+          "size": "12",
+          "sku": "7297423926281"
+        }
+      ],
+      "parentImage": 44302
+    },
+    {
+      "product": 44333,
+      "name": "גופייה מנדפת נשים PERRI LOOS",
+      "status": "publish",
+      "color": "00-WHITE",
+      "count": 7,
+      "variations": [
+        {
+          "id": 44340,
+          "size": "3XL",
+          "sku": "7297423946586"
+        },
+        {
+          "id": 44339,
+          "size": "2XL",
+          "sku": "7297423946579"
+        },
+        {
+          "id": 44338,
+          "size": "XL",
+          "sku": "7297423946562"
+        },
+        {
+          "id": 44337,
+          "size": "L",
+          "sku": "7297423946555"
+        },
+        {
+          "id": 44334,
+          "size": "XS",
+          "sku": "7297423946524"
+        },
+        {
+          "id": 44336,
+          "size": "M",
+          "sku": "7297423946548"
+        },
+        {
+          "id": 44335,
+          "size": "S",
+          "sku": "7297423946531"
+        }
+      ],
+      "parentImage": 41978
+    },
+    {
+      "product": 44372,
+      "name": "גופייה מנדפת נשים SABINA",
+      "status": "publish",
+      "color": "00-WHITE",
+      "count": 6,
+      "variations": [
+        {
+          "id": 44378,
+          "size": "2XL",
+          "sku": "7297423946852"
+        },
+        {
+          "id": 44373,
+          "size": "XS",
+          "sku": "7297423946807"
+        },
+        {
+          "id": 44377,
+          "size": "XL",
+          "sku": "7297423946845"
+        },
+        {
+          "id": 44376,
+          "size": "L",
+          "sku": "7297423946838"
+        },
+        {
+          "id": 44375,
+          "size": "M",
+          "sku": "7297423946821"
+        },
+        {
+          "id": 44374,
+          "size": "S",
+          "sku": "7297423946814"
+        }
+      ],
+      "parentImage": 42012
+    },
+    {
+      "product": 44396,
+      "name": "גופייה מנדפת נשים SKY",
+      "status": "publish",
+      "color": "00-WHITE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44401,
+          "size": "XL",
+          "sku": "7297423947118"
+        },
+        {
+          "id": 44400,
+          "size": "L",
+          "sku": "7297423947101"
+        },
+        {
+          "id": 44399,
+          "size": "M",
+          "sku": "7297423947095"
+        },
+        {
+          "id": 44397,
+          "size": "XS",
+          "sku": "7297423947071"
+        },
+        {
+          "id": 44398,
+          "size": "S",
+          "sku": "7297423947088"
+        }
+      ],
+      "parentImage": 42035
+    },
+    {
+      "product": 44429,
+      "name": "גוזיית ספורט מנדפת נשים GAYA",
+      "status": "publish",
+      "color": "71-ORCHID",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44438,
+          "size": "XL",
+          "sku": "7297423947477"
+        },
+        {
+          "id": 44437,
+          "size": "L",
+          "sku": "7297423947460"
+        },
+        {
+          "id": 44436,
+          "size": "M",
+          "sku": "7297423947453"
+        },
+        {
+          "id": 44430,
+          "size": "XS",
+          "sku": "7297423947439"
+        },
+        {
+          "id": 44435,
+          "size": "S",
+          "sku": "7297423947446"
+        }
+      ],
+      "parentImage": 44431
+    },
+    {
+      "product": 44450,
+      "name": "גופייה מנדפת נשים JADE",
+      "status": "publish",
+      "color": "22-LIME 22",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44459,
+          "size": "XXL",
+          "sku": "7297423947583"
+        },
+        {
+          "id": 44458,
+          "size": "XL",
+          "sku": "7297423947576"
+        },
+        {
+          "id": 44457,
+          "size": "L",
+          "sku": "7297423947569"
+        },
+        {
+          "id": 44451,
+          "size": "S",
+          "sku": "7297423947545"
+        },
+        {
+          "id": 44456,
+          "size": "M",
+          "sku": "7297423947552"
+        }
+      ],
+      "parentImage": 44452
+    },
+    {
+      "product": 44479,
+      "name": "גופיית מנדפת נשים  JOANA",
+      "status": "publish",
+      "color": "00-WHITE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44484,
+          "size": "XXL",
+          "sku": "7297423947774"
+        },
+        {
+          "id": 44483,
+          "size": "XL",
+          "sku": "7297423947750"
+        },
+        {
+          "id": 44482,
+          "size": "L",
+          "sku": "7297423947743"
+        },
+        {
+          "id": 44480,
+          "size": "S",
+          "sku": "7297423947729"
+        },
+        {
+          "id": 44481,
+          "size": "M",
+          "sku": "7297423947736"
+        }
+      ],
+      "parentImage": 42087
+    },
+    {
+      "product": 44490,
+      "name": "חולצת טי נשים JULIET-V",
+      "status": "draft",
+      "color": "99-BLACK",
+      "count": 7,
+      "variations": [
+        {
+          "id": 44511,
+          "size": "3XL",
+          "sku": "7297423948115"
+        },
+        {
+          "id": 44510,
+          "size": "2XL",
+          "sku": "7297423948108"
+        },
+        {
+          "id": 44509,
+          "size": "XL",
+          "sku": "7297423948092"
+        },
+        {
+          "id": 44508,
+          "size": "L",
+          "sku": "7297423948085"
+        },
+        {
+          "id": 44507,
+          "size": "M",
+          "sku": "7297423948078"
+        },
+        {
+          "id": 44506,
+          "size": "S",
+          "sku": "7297423948061"
+        },
+        {
+          "id": 44505,
+          "size": "XS",
+          "sku": "7297423948054"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 44490,
+      "name": "חולצת טי נשים JULIET-V",
+      "status": "draft",
+      "color": "88-NAVY",
+      "count": 7,
+      "variations": [
+        {
+          "id": 44504,
+          "size": "3XL",
+          "sku": "7297423948047"
+        },
+        {
+          "id": 44503,
+          "size": "2XL",
+          "sku": "7297423948030"
+        },
+        {
+          "id": 44502,
+          "size": "XL",
+          "sku": "7297423948023"
+        },
+        {
+          "id": 44501,
+          "size": "L",
+          "sku": "7297423948016"
+        },
+        {
+          "id": 44500,
+          "size": "M",
+          "sku": "7297423948009"
+        },
+        {
+          "id": 44499,
+          "size": "S",
+          "sku": "7297423947996"
+        },
+        {
+          "id": 44498,
+          "size": "XS",
+          "sku": "7297423947989"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 44490,
+      "name": "חולצת טי נשים JULIET-V",
+      "status": "draft",
+      "color": "72-LILACH",
+      "count": 7,
+      "variations": [
+        {
+          "id": 44497,
+          "size": "3XL",
+          "sku": "7297423947972"
+        },
+        {
+          "id": 44496,
+          "size": "2XL",
+          "sku": "7297423947965"
+        },
+        {
+          "id": 44495,
+          "size": "XL",
+          "sku": "7297423947958"
+        },
+        {
+          "id": 44494,
+          "size": "L",
+          "sku": "7297423947934"
+        },
+        {
+          "id": 44493,
+          "size": "M",
+          "sku": "7297423947927"
+        },
+        {
+          "id": 44491,
+          "size": "XS",
+          "sku": "7297423947866"
+        },
+        {
+          "id": 44492,
+          "size": "S",
+          "sku": "7297423947897"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 44512,
+      "name": "טי שירט מנדפת נשים  SARIT",
+      "status": "draft",
+      "color": "99-BLACK",
+      "count": 6,
+      "variations": [
+        {
+          "id": 44530,
+          "size": "3XL",
+          "sku": "7297423948290"
+        },
+        {
+          "id": 44529,
+          "size": "XXL",
+          "sku": "7297423948283"
+        },
+        {
+          "id": 44528,
+          "size": "XL",
+          "sku": "7297423948276"
+        },
+        {
+          "id": 44527,
+          "size": "L",
+          "sku": "7297423948269"
+        },
+        {
+          "id": 44526,
+          "size": "M",
+          "sku": "7297423948252"
+        },
+        {
+          "id": 44525,
+          "size": "S",
+          "sku": "7297423948245"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 44512,
+      "name": "טי שירט מנדפת נשים  SARIT",
+      "status": "draft",
+      "color": "88-NAVY",
+      "count": 6,
+      "variations": [
+        {
+          "id": 44524,
+          "size": "3XL",
+          "sku": "7297423948238"
+        },
+        {
+          "id": 44523,
+          "size": "XXL",
+          "sku": "7297423948221"
+        },
+        {
+          "id": 44522,
+          "size": "XL",
+          "sku": "7297423948214"
+        },
+        {
+          "id": 44521,
+          "size": "L",
+          "sku": "7297423948207"
+        },
+        {
+          "id": 44520,
+          "size": "M",
+          "sku": "7297423948191"
+        },
+        {
+          "id": 44519,
+          "size": "S",
+          "sku": "7297423948184"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 44512,
+      "name": "טי שירט מנדפת נשים  SARIT",
+      "status": "draft",
+      "color": "72-LILACH",
+      "count": 6,
+      "variations": [
+        {
+          "id": 44518,
+          "size": "3XL",
+          "sku": "7297423948177"
+        },
+        {
+          "id": 44517,
+          "size": "XXL",
+          "sku": "7297423948160"
+        },
+        {
+          "id": 44516,
+          "size": "XL",
+          "sku": "7297423948153"
+        },
+        {
+          "id": 44515,
+          "size": "L",
+          "sku": "7297423948146"
+        },
+        {
+          "id": 44514,
+          "size": "M",
+          "sku": "7297423948139"
+        },
+        {
+          "id": 44513,
+          "size": "S",
+          "sku": "7297423948122"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 44531,
+      "name": "גופייה מנדפת נשים EFRAT",
+      "status": "draft",
+      "color": "99-BLACK",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44541,
+          "size": "XL",
+          "sku": "7297423948399"
+        },
+        {
+          "id": 44540,
+          "size": "L",
+          "sku": "7297423948382"
+        },
+        {
+          "id": 44539,
+          "size": "M",
+          "sku": "7297423948375"
+        },
+        {
+          "id": 44538,
+          "size": "S",
+          "sku": "7297423948368"
+        },
+        {
+          "id": 44537,
+          "size": "XS",
+          "sku": "7297423948351"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 44531,
+      "name": "גופייה מנדפת נשים EFRAT",
+      "status": "draft",
+      "color": "72-LILACH",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44536,
+          "size": "XL",
+          "sku": "7297423948344"
+        },
+        {
+          "id": 44535,
+          "size": "L",
+          "sku": "7297423948337"
+        },
+        {
+          "id": 44532,
+          "size": "XS",
+          "sku": "7297423948306"
+        },
+        {
+          "id": 44534,
+          "size": "M",
+          "sku": "7297423948320"
+        },
+        {
+          "id": 44533,
+          "size": "S",
+          "sku": "7297423948313"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 44542,
+      "name": "גוזיית ספורט מנדפת נשים LIYA",
+      "status": "draft",
+      "color": "99-BLACK",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44552,
+          "size": "XL",
+          "sku": "7297423948597"
+        },
+        {
+          "id": 44551,
+          "size": "L",
+          "sku": "7297423948580"
+        },
+        {
+          "id": 44550,
+          "size": "M",
+          "sku": "7297423948573"
+        },
+        {
+          "id": 44549,
+          "size": "S",
+          "sku": "7297423948566"
+        },
+        {
+          "id": 44548,
+          "size": "XS",
+          "sku": "7297423948559"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 44542,
+      "name": "גוזיית ספורט מנדפת נשים LIYA",
+      "status": "draft",
+      "color": "85-NIAGARA",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44547,
+          "size": "‎85 (M)‎",
+          "sku": "7297423948542"
+        },
+        {
+          "id": 44546,
+          "size": "‎85 (M)‎",
+          "sku": "7297423948535"
+        },
+        {
+          "id": 44543,
+          "size": "‎85 (M)‎",
+          "sku": "7297423948504"
+        },
+        {
+          "id": 44545,
+          "size": "‎85 (M)‎",
+          "sku": "7297423948528"
+        },
+        {
+          "id": 44544,
+          "size": "‎85 (M)‎",
+          "sku": "7297423948511"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 44553,
+      "name": "טייץ ארוך נשים NETA",
+      "status": "publish",
+      "color": "00-WHITE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44558,
+          "size": "XL",
+          "sku": "7297423948771"
+        },
+        {
+          "id": 44557,
+          "size": "L",
+          "sku": "7297423948634"
+        },
+        {
+          "id": 44554,
+          "size": "XS",
+          "sku": "7297423948603"
+        },
+        {
+          "id": 44556,
+          "size": "M",
+          "sku": "7297423948627"
+        },
+        {
+          "id": 44555,
+          "size": "S",
+          "sku": "7297423948610"
+        }
+      ],
+      "parentImage": 42165
+    },
+    {
+      "product": 44570,
+      "name": "טייץ ארוך נשים LIAN",
+      "status": "publish",
+      "color": "71-ORCHID 71",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44580,
+          "size": "XL",
+          "sku": "7297423948870"
+        },
+        {
+          "id": 44579,
+          "size": "L",
+          "sku": "7297423948863"
+        },
+        {
+          "id": 44571,
+          "size": "XS",
+          "sku": "7297423948832"
+        },
+        {
+          "id": 44578,
+          "size": "M",
+          "sku": "7297423948856"
+        },
+        {
+          "id": 44577,
+          "size": "S",
+          "sku": "7297423948849"
+        }
+      ],
+      "parentImage": 44572
+    },
+    {
+      "product": 44592,
+      "name": "טייץ ברך נשים NOGA",
+      "status": "publish",
+      "color": "71-ORCHID 71",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44602,
+          "size": "XL",
+          "sku": "7297423948979"
+        },
+        {
+          "id": 44601,
+          "size": "L",
+          "sku": "7297423948962"
+        },
+        {
+          "id": 44593,
+          "size": "XS",
+          "sku": "7297423948931"
+        },
+        {
+          "id": 44600,
+          "size": "M",
+          "sku": "7297423948955"
+        },
+        {
+          "id": 44599,
+          "size": "S",
+          "sku": "7297423948948"
+        }
+      ],
+      "parentImage": 44594
+    },
+    {
+      "product": 44614,
+      "name": "טייץ קצר נשים DONA",
+      "status": "publish",
+      "color": "72-LILACH",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44621,
+          "size": "XL",
+          "sku": "7297423949075"
+        },
+        {
+          "id": 44620,
+          "size": "L",
+          "sku": "7297423949068"
+        },
+        {
+          "id": 44615,
+          "size": "XS",
+          "sku": "7297423949037"
+        },
+        {
+          "id": 44619,
+          "size": "M",
+          "sku": "7297423949051"
+        },
+        {
+          "id": 44618,
+          "size": "S",
+          "sku": "7297423949044"
+        }
+      ],
+      "parentImage": 44616
+    },
+    {
+      "product": 44639,
+      "name": "טייץ ברך נשים MAYA",
+      "status": "publish",
+      "color": "00-WHITE",
+      "count": 6,
+      "variations": [
+        {
+          "id": 44740,
+          "size": "XXL",
+          "sku": "7297423950163"
+        },
+        {
+          "id": 44644,
+          "size": "XL",
+          "sku": "7297423949228"
+        },
+        {
+          "id": 44643,
+          "size": "L",
+          "sku": "7297423949211"
+        },
+        {
+          "id": 44640,
+          "size": "XS",
+          "sku": "7297423949181"
+        },
+        {
+          "id": 44642,
+          "size": "M",
+          "sku": "7297423949204"
+        },
+        {
+          "id": 44641,
+          "size": "S",
+          "sku": "7297423949198"
+        }
+      ],
+      "parentImage": 42218
+    },
+    {
+      "product": 44645,
+      "name": "טייץ ארוך נשים SHIRA",
+      "status": "publish",
+      "color": "72-LILACH",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44654,
+          "size": "XL",
+          "sku": "7297423949273"
+        },
+        {
+          "id": 44653,
+          "size": "L",
+          "sku": "7297423949266"
+        },
+        {
+          "id": 44646,
+          "size": "XS",
+          "sku": "7297423949235"
+        },
+        {
+          "id": 44652,
+          "size": "M",
+          "sku": "7297423949259"
+        },
+        {
+          "id": 44651,
+          "size": "S",
+          "sku": "7297423949242"
+        }
+      ],
+      "parentImage": 44647
+    },
+    {
+      "product": 44664,
+      "name": "טייץ ברך נשים SIA",
+      "status": "publish",
+      "color": "85-NIAGARA",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44672,
+          "size": "‎85 (M)‎",
+          "sku": "7297423949372"
+        },
+        {
+          "id": 44671,
+          "size": "‎85 (M)‎",
+          "sku": "7297423949365"
+        },
+        {
+          "id": 44665,
+          "size": "‎85 (M)‎",
+          "sku": "7297423949334"
+        },
+        {
+          "id": 44670,
+          "size": "‎85 (M)‎",
+          "sku": "7297423949358"
+        },
+        {
+          "id": 44669,
+          "size": "‎85 (M)‎",
+          "sku": "7297423949341"
+        }
+      ],
+      "parentImage": 44666
+    },
+    {
+      "product": 44683,
+      "name": "טייץ מבריק נשים AMANDA",
+      "status": "publish",
+      "color": "72-LILACH",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44693,
+          "size": "XL",
+          "sku": "7297423949471"
+        },
+        {
+          "id": 44692,
+          "size": "L",
+          "sku": "7297423949464"
+        },
+        {
+          "id": 44684,
+          "size": "XS",
+          "sku": "7297423949433"
+        },
+        {
+          "id": 44691,
+          "size": "M",
+          "sku": "7297423949457"
+        },
+        {
+          "id": 44690,
+          "size": "S",
+          "sku": "7297423949440"
+        }
+      ],
+      "parentImage": 44685
+    },
+    {
+      "product": 44711,
+      "name": "טייץ ארוך נשים SHACHAR",
+      "status": "publish",
+      "color": "85-NIAGARA",
+      "count": 5,
+      "variations": [
+        {
+          "id": 44721,
+          "size": "‎85 (M)‎",
+          "sku": "7297423949969"
+        },
+        {
+          "id": 44720,
+          "size": "‎85 (M)‎",
+          "sku": "7297423949952"
+        },
+        {
+          "id": 44712,
+          "size": "‎85 (M)‎",
+          "sku": "7297423949921"
+        },
+        {
+          "id": 44719,
+          "size": "‎85 (M)‎",
+          "sku": "7297423949945"
+        },
+        {
+          "id": 44718,
+          "size": "‎85 (M)‎",
+          "sku": "7297423949938"
+        }
+      ],
+      "parentImage": 44713
+    },
+    {
+      "product": 45069,
+      "name": "GOR חולצת אנטיסאן שרוול ארוך גבר",
+      "status": "publish",
+      "color": "88-NAVY",
+      "count": 3,
+      "variations": [
+        {
+          "id": 45078,
+          "size": "2XL",
+          "sku": "7297423939779"
+        },
+        {
+          "id": 45070,
+          "size": "L",
+          "sku": "7297423939755"
+        },
+        {
+          "id": 45077,
+          "size": "XL",
+          "sku": "7297423939762"
+        }
+      ],
+      "parentImage": 45071
+    },
+    {
+      "product": 45090,
+      "name": "בגד ים שרוול ארוך נשים NELI",
+      "status": "publish",
+      "color": "86-NEW CANCUN",
+      "count": 6,
+      "variations": [
+        {
+          "id": 45102,
+          "size": "2XL",
+          "sku": "7297423939892"
+        },
+        {
+          "id": 45101,
+          "size": "XL",
+          "sku": "7297423939885"
+        },
+        {
+          "id": 45091,
+          "size": "XS",
+          "sku": "7297423939847"
+        },
+        {
+          "id": 45100,
+          "size": "L",
+          "sku": "7297423939878"
+        },
+        {
+          "id": 45099,
+          "size": "M",
+          "sku": "7297423939861"
+        },
+        {
+          "id": 45098,
+          "size": "S",
+          "sku": "7297423939854"
+        }
+      ],
+      "parentImage": 45092
+    },
+    {
+      "product": 45126,
+      "name": "צת אנטיסן שרוול ארוך נשים SHARON",
+      "status": "draft",
+      "color": "88-NAVY",
+      "count": 6,
+      "variations": [
+        {
+          "id": 45132,
+          "size": "2XL",
+          "sku": "7297423940102"
+        },
+        {
+          "id": 45131,
+          "size": "XL",
+          "sku": "7297423940096"
+        },
+        {
+          "id": 45130,
+          "size": "L",
+          "sku": "7297423940089"
+        },
+        {
+          "id": 45129,
+          "size": "M",
+          "sku": "7297423940072"
+        },
+        {
+          "id": 45128,
+          "size": "S",
+          "sku": "7297423940065"
+        },
+        {
+          "id": 45127,
+          "size": "XS",
+          "sku": "7297423940058"
+        }
+      ],
+      "parentImage": 971
+    },
+    {
+      "product": 45144,
+      "name": "חולצת אנטיסן שרוול קצר נשים RIAHNA",
+      "status": "publish",
+      "color": "88-NAVY",
+      "count": 6,
+      "variations": [
+        {
+          "id": 45156,
+          "size": "2XL",
+          "sku": "7297423940256"
+        },
+        {
+          "id": 45155,
+          "size": "XL",
+          "sku": "7297423940249"
+        },
+        {
+          "id": 45145,
+          "size": "XS",
+          "sku": "7297423940171"
+        },
+        {
+          "id": 45154,
+          "size": "L",
+          "sku": "7297423940232"
+        },
+        {
+          "id": 45153,
+          "size": "M",
+          "sku": "7297423940225"
+        },
+        {
+          "id": 45152,
+          "size": "S",
+          "sku": "7297423940188"
+        }
+      ],
+      "parentImage": 45146
+    },
+    {
+      "product": 45169,
+      "name": "טייץ קצר נשים MADONA",
+      "status": "publish",
+      "color": "67-PAVONE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 45181,
+          "size": "XL",
+          "sku": "7297423940362"
+        },
+        {
+          "id": 45180,
+          "size": "L",
+          "sku": "7297423940355"
+        },
+        {
+          "id": 45179,
+          "size": "M",
+          "sku": "7297423940348"
+        },
+        {
+          "id": 45170,
+          "size": "XS",
+          "sku": "7297423940324"
+        },
+        {
+          "id": 45177,
+          "size": "S",
+          "sku": "7297423940331"
+        }
+      ],
+      "parentImage": 45171
+    },
+    {
+      "product": 45201,
+      "name": "בגד ים טייץ ארוך נשים KIM",
+      "status": "publish",
+      "color": "88-NAVY",
+      "count": 5,
+      "variations": [
+        {
+          "id": 45210,
+          "size": "XL",
+          "sku": "7297423940546"
+        },
+        {
+          "id": 45209,
+          "size": "L",
+          "sku": "7297423940539"
+        },
+        {
+          "id": 45208,
+          "size": "M",
+          "sku": "7297423940522"
+        },
+        {
+          "id": 45202,
+          "size": "XS",
+          "sku": "7297423940478"
+        },
+        {
+          "id": 45207,
+          "size": "S",
+          "sku": "7297423940485"
+        }
+      ],
+      "parentImage": 45203
+    },
+    {
+      "product": 45219,
+      "name": "בגד ים צנוע, טוניקה נשים ADELE",
+      "status": "publish",
+      "color": "88-NAVY",
+      "count": 6,
+      "variations": [
+        {
+          "id": 45231,
+          "size": "2XL",
+          "sku": "7297423940652"
+        },
+        {
+          "id": 45230,
+          "size": "XL",
+          "sku": "7297423940645"
+        },
+        {
+          "id": 45229,
+          "size": "L",
+          "sku": "7297423940638"
+        },
+        {
+          "id": 45228,
+          "size": "M",
+          "sku": "7297423940621"
+        },
+        {
+          "id": 45220,
+          "size": "XS",
+          "sku": "7297423940607"
+        },
+        {
+          "id": 45227,
+          "size": "S",
+          "sku": "7297423940614"
+        }
+      ],
+      "parentImage": 45221
+    },
+    {
+      "product": 45242,
+      "name": "בגד ים אוברול נשים NELI",
+      "status": "publish",
+      "color": "88-NAVY",
+      "count": 6,
+      "variations": [
+        {
+          "id": 45254,
+          "size": "2XL",
+          "sku": "7297423940812"
+        },
+        {
+          "id": 45253,
+          "size": "XL",
+          "sku": "7297423940782"
+        },
+        {
+          "id": 45252,
+          "size": "L",
+          "sku": "7297423940775"
+        },
+        {
+          "id": 45251,
+          "size": "M",
+          "sku": "7297423940768"
+        },
+        {
+          "id": 45250,
+          "size": "S",
+          "sku": "7297423940751"
+        },
+        {
+          "id": 45243,
+          "size": "XS",
+          "sku": "7297423940744"
+        }
+      ],
+      "parentImage": 45244
+    },
+    {
+      "product": 45267,
+      "name": "טייץ ברך נשים MARINA",
+      "status": "publish",
+      "color": "88-NAVY",
+      "count": 5,
+      "variations": [
+        {
+          "id": 45275,
+          "size": "XL",
+          "sku": "7297423941048"
+        },
+        {
+          "id": 45274,
+          "size": "L",
+          "sku": "7297423941031"
+        },
+        {
+          "id": 45268,
+          "size": "XS",
+          "sku": "7297423940980"
+        },
+        {
+          "id": 45273,
+          "size": "M",
+          "sku": "7297423941017"
+        },
+        {
+          "id": 45272,
+          "size": "S",
+          "sku": "7297423941000"
+        }
+      ],
+      "parentImage": 45269
+    },
+    {
+      "product": 45281,
+      "name": "חיג'אב עמיד בכלור נשים JENIFER",
+      "status": "publish",
+      "color": "88-NAVY",
+      "count": 3,
+      "variations": [
+        {
+          "id": 45282,
+          "size": "XS",
+          "sku": "7297423941123"
+        },
+        {
+          "id": 45287,
+          "size": "M",
+          "sku": "7297423941147"
+        },
+        {
+          "id": 45286,
+          "size": "S",
+          "sku": "7297423941130"
+        }
+      ],
+      "parentImage": 45283
+    },
+    {
+      "product": 45294,
+      "name": "חולצת אנטיסן שרוול קצר נערים JOHN",
+      "status": "publish",
+      "color": "86-NEW CANCUN",
+      "count": 5,
+      "variations": [
+        {
+          "id": 45305,
+          "size": "16",
+          "sku": "7297423941222"
+        },
+        {
+          "id": 45304,
+          "size": "14",
+          "sku": "7297423941215"
+        },
+        {
+          "id": 45303,
+          "size": "12",
+          "sku": "7297423941208"
+        },
+        {
+          "id": 45295,
+          "size": "8",
+          "sku": "7297423941185"
+        },
+        {
+          "id": 45302,
+          "size": "10",
+          "sku": "7297423941192"
+        }
+      ],
+      "parentImage": 45296
+    },
+    {
+      "product": 45317,
+      "name": "בגד ים 2 חלקים נערות CINDY",
+      "status": "publish",
+      "color": "32-FUNNY",
+      "count": 5,
+      "variations": [
+        {
+          "id": 45328,
+          "size": "16",
+          "sku": "7297423941321"
+        },
+        {
+          "id": 45327,
+          "size": "14",
+          "sku": "7297423941314"
+        },
+        {
+          "id": 45326,
+          "size": "12",
+          "sku": "7297423941307"
+        },
+        {
+          "id": 45318,
+          "size": "8",
+          "sku": "7297423941284"
+        },
+        {
+          "id": 45325,
+          "size": "10",
+          "sku": "7297423941291"
+        }
+      ],
+      "parentImage": 45319
+    },
+    {
+      "product": 45350,
+      "name": "לצת אנטיסן שרוול קצר נערים TOMAS",
+      "status": "publish",
+      "color": "12-GRAY",
+      "count": 5,
+      "variations": [
+        {
+          "id": 45361,
+          "size": "16",
+          "sku": "7297423941529"
+        },
+        {
+          "id": 45360,
+          "size": "14",
+          "sku": "7297423941512"
+        },
+        {
+          "id": 45359,
+          "size": "12",
+          "sku": "7297423941505"
+        },
+        {
+          "id": 45351,
+          "size": "8",
+          "sku": "7297423941482"
+        },
+        {
+          "id": 45358,
+          "size": "10",
+          "sku": "7297423941499"
+        }
+      ],
+      "parentImage": 45352
+    },
+    {
+      "product": 45372,
+      "name": "חולצת אנטיסן שרוול ארוך נערות LISA",
+      "status": "publish",
+      "color": "33-GAME PINK",
+      "count": 5,
+      "variations": [
+        {
+          "id": 45382,
+          "size": "16",
+          "sku": "7297423941628"
+        },
+        {
+          "id": 45381,
+          "size": "14",
+          "sku": "7297423941611"
+        },
+        {
+          "id": 45380,
+          "size": "12",
+          "sku": "7297423941604"
+        },
+        {
+          "id": 45373,
+          "size": "8",
+          "sku": "7297423941581"
+        },
+        {
+          "id": 45379,
+          "size": "10",
+          "sku": "7297423941598"
+        }
+      ],
+      "parentImage": 45374
+    },
+    {
+      "product": 45414,
+      "name": "בגד ים 2 חלקים ילדים ORI",
+      "status": "publish",
+      "color": "32-FUNNY",
+      "count": 4,
+      "variations": [
+        {
+          "id": 45420,
+          "size": "8",
+          "sku": "7297423941819"
+        },
+        {
+          "id": 45419,
+          "size": "6",
+          "sku": "7297423941802"
+        },
+        {
+          "id": 45415,
+          "size": "2",
+          "sku": "7297423941789"
+        },
+        {
+          "id": 45418,
+          "size": "4",
+          "sku": "7297423941796"
+        }
+      ],
+      "parentImage": 45416
+    },
+    {
+      "product": 45466,
+      "name": "כובע שחייה לפעוטות ROY",
+      "status": "publish",
+      "color": "00-WHITE",
+      "count": 4,
+      "variations": [
+        {
+          "id": 45472,
+          "size": "24-36",
+          "sku": "7297423942137"
+        },
+        {
+          "id": 45471,
+          "size": "18-24",
+          "sku": "7297423942120"
+        },
+        {
+          "id": 45470,
+          "size": "12-18",
+          "sku": "7297423942113"
+        },
+        {
+          "id": 45467,
+          "size": "6-12",
+          "sku": "7297423942106"
+        }
+      ],
+      "parentImage": 45468
+    },
+    {
+      "product": 45500,
+      "name": "בגד ים שרוול ארוך ילדות KELLY",
+      "status": "publish",
+      "color": "86-NEW CANCUN",
+      "count": 6,
+      "variations": [
+        {
+          "id": 45508,
+          "size": "14",
+          "sku": "7297423972752"
+        },
+        {
+          "id": 45507,
+          "size": "12",
+          "sku": "7297423972745"
+        },
+        {
+          "id": 45506,
+          "size": "10",
+          "sku": "7297423972738"
+        },
+        {
+          "id": 45505,
+          "size": "8",
+          "sku": "7297423972721"
+        },
+        {
+          "id": 45504,
+          "size": "6",
+          "sku": "7297423972714"
+        },
+        {
+          "id": 45501,
+          "size": "4",
+          "sku": "7297423972707"
+        }
+      ],
+      "parentImage": 45502
+    },
+    {
+      "product": 47333,
+      "name": "בגד ים שרוול ארוך נשים NELI (העתק)",
+      "status": "draft",
+      "color": "86-NEW CANCUN",
+      "count": 6,
+      "variations": [
+        {
+          "id": 47339,
+          "size": "2XL",
+          "sku": "223290006"
+        },
+        {
+          "id": 47338,
+          "size": "XL",
+          "sku": "223290005"
+        },
+        {
+          "id": 47337,
+          "size": "L",
+          "sku": "223290004"
+        },
+        {
+          "id": 47336,
+          "size": "M",
+          "sku": "223290003"
+        },
+        {
+          "id": 47335,
+          "size": "S",
+          "sku": "223290002"
+        },
+        {
+          "id": 47334,
+          "size": "XS",
+          "sku": "223290001"
+        }
+      ],
+      "parentImage": 45092
+    },
+    {
+      "product": 54652,
+      "name": "בגד ים ילדות ונשים  TEAM CHALLENGE SOLID",
+      "status": "draft",
+      "color": "720-ROYAL-WHITE",
+      "count": 11,
+      "variations": [
+        {
+          "id": 54710,
+          "size": "24",
+          "sku": "47669042"
+        },
+        {
+          "id": 54704,
+          "size": "30",
+          "sku": "47669036"
+        },
+        {
+          "id": 54703,
+          "size": "28",
+          "sku": "47669035"
+        },
+        {
+          "id": 54699,
+          "size": "34",
+          "sku": "47669031"
+        },
+        {
+          "id": 54693,
+          "size": "40",
+          "sku": "47669025"
+        },
+        {
+          "id": 54692,
+          "size": "38",
+          "sku": "47669024"
+        },
+        {
+          "id": 54688,
+          "size": "44",
+          "sku": "47669020"
+        },
+        {
+          "id": 54683,
+          "size": "26",
+          "sku": "47669015"
+        },
+        {
+          "id": 54678,
+          "size": "32",
+          "sku": "47669010"
+        },
+        {
+          "id": 54674,
+          "size": "36",
+          "sku": "47669006"
+        },
+        {
+          "id": 54653,
+          "size": "42",
+          "sku": "47669001"
+        }
+      ],
+      "parentImage": 54654
+    },
+    {
+      "product": 63030,
+      "name": "AIR-SOFT משקפת",
+      "status": "publish",
+      "color": "170-CLEAR-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 63031,
+          "size": "One size",
+          "sku": "805221001"
+        }
+      ],
+      "parentImage": 62641
+    },
+    {
+      "product": 63040,
+      "name": "בגד ים ילדות TEAM SWIMSUIT SWIM PRO SOLID",
+      "status": "publish",
+      "color": "450-RED-WHITE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 77291,
+          "size": "6-7",
+          "sku": "3468336646342"
+        },
+        {
+          "id": 77290,
+          "size": "8-9",
+          "sku": "3468336646311"
+        },
+        {
+          "id": 63057,
+          "size": "10-11",
+          "sku": "3468336645949"
+        },
+        {
+          "id": 63053,
+          "size": "12-13",
+          "sku": "3468336643846"
+        },
+        {
+          "id": 63041,
+          "size": "14-15",
+          "sku": "3468336641965"
+        }
+      ],
+      "parentImage": 62671
+    },
+    {
+      "product": 65641,
+      "name": "בגד ים תחרותי גברים POWERSKIN CARBON AIR2 LE JAMMER",
+      "status": "publish",
+      "color": "200-BISCAY BAY",
+      "count": 1,
+      "variations": [
+        {
+          "id": 65642,
+          "size": "55",
+          "sku": "3468336945919"
+        }
+      ],
+      "parentImage": 64980
+    },
+    {
+      "product": 65646,
+      "name": "REAL BRIEF R תחתון ביקיני",
+      "status": "publish",
+      "color": "503-BLACK-YELLOW STAR",
+      "count": 5,
+      "variations": [
+        {
+          "id": 77267,
+          "size": "L",
+          "sku": "3468336959626"
+        },
+        {
+          "id": 65675,
+          "size": "M",
+          "sku": "3468336959992"
+        },
+        {
+          "id": 65667,
+          "size": "S",
+          "sku": "3468336959312"
+        },
+        {
+          "id": 65651,
+          "size": "XL",
+          "sku": "3468336958247"
+        },
+        {
+          "id": 65647,
+          "size": "XS",
+          "sku": "3468336958070"
+        }
+      ],
+      "parentImage": 64985
+    },
+    {
+      "product": 65654,
+      "name": "בגד ים  טופ ביקיני BANDEAU PLAY R",
+      "status": "publish",
+      "color": "503-BLACK-YELLOW STAR",
+      "count": 5,
+      "variations": [
+        {
+          "id": 77264,
+          "size": "M",
+          "sku": "3468336960097"
+        },
+        {
+          "id": 77262,
+          "size": "L",
+          "sku": "3468336959695"
+        },
+        {
+          "id": 65670,
+          "size": "S",
+          "sku": "3468336959459"
+        },
+        {
+          "id": 65669,
+          "size": "XL",
+          "sku": "3468336959381"
+        },
+        {
+          "id": 65665,
+          "size": "XS",
+          "sku": "3468336959138"
+        }
+      ],
+      "parentImage": 64996
+    },
+    {
+      "product": 65654,
+      "name": "בגד ים  טופ ביקיני BANDEAU PLAY R",
+      "status": "publish",
+      "color": "-NEON BLUE MULTI-YELLOW STAR",
+      "count": 5,
+      "variations": [
+        {
+          "id": 77263,
+          "size": "M",
+          "sku": "3468336959749"
+        },
+        {
+          "id": 65668,
+          "size": "L",
+          "sku": "3468336959350"
+        },
+        {
+          "id": 65664,
+          "size": "S",
+          "sku": "3468336959114"
+        },
+        {
+          "id": 65663,
+          "size": "XL",
+          "sku": "3468336959046"
+        },
+        {
+          "id": 65655,
+          "size": "XS",
+          "sku": "3468336958841"
+        }
+      ],
+      "parentImage": 64996
+    },
+    {
+      "product": 65687,
+      "name": "משקפי שחייה COBRA EDGE SWIPE MR",
+      "status": "publish",
+      "color": "110-AQUA-BLACK-BLACK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 65688,
+          "size": "Os",
+          "sku": "3468337081241"
+        }
+      ],
+      "parentImage": 65029
+    },
+    {
+      "product": 65692,
+      "name": "COBRA EDGE SWIPE",
+      "status": "publish",
+      "color": "120-SMOKE-PEACOCK-BLACK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 65693,
+          "size": "Os",
+          "sku": "3468337081630"
+        }
+      ],
+      "parentImage": 65034
+    },
+    {
+      "product": 65719,
+      "name": "בגד ים נשים POWERSKIN ST NEXT LE OB",
+      "status": "publish",
+      "color": "203-Gator",
+      "count": 7,
+      "variations": [
+        {
+          "id": 65730,
+          "size": "28",
+          "sku": "3468337103189"
+        },
+        {
+          "id": 65729,
+          "size": "38",
+          "sku": "3468337103165"
+        },
+        {
+          "id": 65728,
+          "size": "36",
+          "sku": "3468337103158"
+        },
+        {
+          "id": 65727,
+          "size": "34",
+          "sku": "3468337103127"
+        },
+        {
+          "id": 65726,
+          "size": "32",
+          "sku": "3468337103097"
+        },
+        {
+          "id": 65725,
+          "size": "30",
+          "sku": "3468337103080"
+        },
+        {
+          "id": 65720,
+          "size": "40",
+          "sku": "3468337103073"
+        }
+      ],
+      "parentImage": 65075
+    },
+    {
+      "product": 65775,
+      "name": "בגד ים לגברים POWERSKIN ST NEXT LE JAMMER",
+      "status": "publish",
+      "color": "203-Abyss Cayman",
+      "count": 7,
+      "variations": [
+        {
+          "id": 65785,
+          "size": "‎85 (M)‎",
+          "sku": "3468337316596"
+        },
+        {
+          "id": 65784,
+          "size": "‎80 (S)‎",
+          "sku": "3468337316589"
+        },
+        {
+          "id": 65783,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468337316572"
+        },
+        {
+          "id": 65782,
+          "size": "‎70 (12-13)‎",
+          "sku": "3468337316565"
+        },
+        {
+          "id": 65781,
+          "size": "‎65 (10-11)‎",
+          "sku": "3468337316558"
+        },
+        {
+          "id": 65780,
+          "size": "60",
+          "sku": "3468337316541"
+        },
+        {
+          "id": 65776,
+          "size": "55",
+          "sku": "3468337316534"
+        }
+      ],
+      "parentImage": 65149
+    },
+    {
+      "product": 65794,
+      "name": "בגד ים גברים POWERSKIN PRIMO JAMMER",
+      "status": "publish",
+      "color": "100-BLACK - TEAL",
+      "count": 7,
+      "variations": [
+        {
+          "id": 77251,
+          "size": "‎85 (M)‎",
+          "sku": "3468337340737"
+        },
+        {
+          "id": 77250,
+          "size": "‎80 (S)‎",
+          "sku": "3468337340720"
+        },
+        {
+          "id": 77249,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468337340713"
+        },
+        {
+          "id": 77248,
+          "size": "‎70 (12-13)‎",
+          "sku": "3468337340706"
+        },
+        {
+          "id": 77247,
+          "size": "60",
+          "sku": "3468337340683"
+        },
+        {
+          "id": 65802,
+          "size": "‎65 (10-11)‎",
+          "sku": "3468337340690"
+        },
+        {
+          "id": 65795,
+          "size": "55",
+          "sku": "3468337340676"
+        }
+      ],
+      "parentImage": 65387
+    },
+    {
+      "product": 65810,
+      "name": "בגד ים נשים POWERSKIN PRIMO SL OB",
+      "status": "publish",
+      "color": "100-BLACK - TEAL",
+      "count": 7,
+      "variations": [
+        {
+          "id": 77244,
+          "size": "34LT",
+          "sku": "3468337352372"
+        },
+        {
+          "id": 77243,
+          "size": "34",
+          "sku": "3468337352365"
+        },
+        {
+          "id": 77242,
+          "size": "32LT",
+          "sku": "3468337352358"
+        },
+        {
+          "id": 77241,
+          "size": "32",
+          "sku": "3468337352341"
+        },
+        {
+          "id": 77240,
+          "size": "30LT",
+          "sku": "3468337352334"
+        },
+        {
+          "id": 77239,
+          "size": "28",
+          "sku": "3468337352310"
+        },
+        {
+          "id": 65816,
+          "size": "30",
+          "sku": "3468337352327"
+        }
+      ],
+      "parentImage": 65407
+    },
+    {
+      "product": 69228,
+      "name": "כובע שחייה סיליקון CLASSIC SILICONE",
+      "status": "publish",
+      "color": "65-LIME-SMOKE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 69229,
+          "size": "Os",
+          "sku": "91662065"
+        }
+      ],
+      "parentImage": 69241
+    },
+    {
+      "product": 69275,
+      "name": "בגד ים ילדות (קטנות) TEAM CHALLENGE SOLID",
+      "status": "publish",
+      "color": "720-ROYAL-WHITE",
+      "count": 4,
+      "variations": [
+        {
+          "id": 69347,
+          "size": "4-5",
+          "sku": "3468336650271"
+        },
+        {
+          "id": 69335,
+          "size": "10-11",
+          "sku": "3468336649015"
+        },
+        {
+          "id": 69333,
+          "size": "8-9",
+          "sku": "3468336648933"
+        },
+        {
+          "id": 69293,
+          "size": "6-7",
+          "sku": "3468336644713"
+        }
+      ],
+      "parentImage": 78797
+    },
+    {
+      "product": 69288,
+      "name": "בגד ים נשים TEAM CHALLENGE SOLID",
+      "status": "publish",
+      "color": "720-ROYAL-WHITE",
+      "count": 7,
+      "variations": [
+        {
+          "id": 69354,
+          "size": "34",
+          "sku": "3468336647912"
+        },
+        {
+          "id": 69342,
+          "size": "40",
+          "sku": "3468336646779"
+        },
+        {
+          "id": 69340,
+          "size": "38",
+          "sku": "3468336646649"
+        },
+        {
+          "id": 69332,
+          "size": "44",
+          "sku": "3468336645451"
+        },
+        {
+          "id": 69312,
+          "size": "32",
+          "sku": "3468336643419"
+        },
+        {
+          "id": 69303,
+          "size": "36",
+          "sku": "3468336642184"
+        },
+        {
+          "id": 69291,
+          "size": "42",
+          "sku": "3468336641040"
+        }
+      ],
+      "parentImage": 54654
+    },
+    {
+      "product": 74599,
+      "name": "בגד ים בנות MULTI COLOURS SWIMSUIT V BACK",
+      "status": "publish",
+      "color": "PINK FUCHSIA-908",
+      "count": 4,
+      "variations": [
+        {
+          "id": 74609,
+          "size": "14-15",
+          "sku": "3468337783466"
+        },
+        {
+          "id": 74607,
+          "size": "8-9",
+          "sku": "3468337783480"
+        },
+        {
+          "id": 74605,
+          "size": "12-13",
+          "sku": "3468337783459"
+        },
+        {
+          "id": 74603,
+          "size": "10-11",
+          "sku": "3468337783442"
+        }
+      ],
+      "parentImage": 74614
+    },
+    {
+      "product": 75496,
+      "name": "בגד ים נשים ARENA FIREFLOW SWIMSUIT CHALLENGE",
+      "status": "publish",
+      "color": "ROYAL-200",
+      "count": 6,
+      "variations": [
+        {
+          "id": 75529,
+          "size": "32",
+          "sku": "3468337623137"
+        },
+        {
+          "id": 75528,
+          "size": "34",
+          "sku": "3468337623144"
+        },
+        {
+          "id": 75527,
+          "size": "36",
+          "sku": "3468337623151"
+        },
+        {
+          "id": 75526,
+          "size": "38",
+          "sku": "3468337623168"
+        },
+        {
+          "id": 75525,
+          "size": "40",
+          "sku": "3468337623175"
+        },
+        {
+          "id": 75524,
+          "size": "42",
+          "sku": "3468337623182"
+        }
+      ],
+      "parentImage": 75503
+    },
+    {
+      "product": 76163,
+      "name": "תיק 45 ליטר ARENA ALL SET",
+      "status": "publish",
+      "color": "100--BLACK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 76178,
+          "size": "Os",
+          "sku": "3468337636083"
+        }
+      ],
+      "parentImage": 76167
+    },
+    {
+      "product": 76190,
+      "name": "תיק 45 ליטר ARENA ONE GO",
+      "status": "publish",
+      "color": "100--BLACK",
+      "count": 1,
+      "variations": [
+        {
+          "id": 76194,
+          "size": "Os",
+          "sku": "3468337635918"
+        }
+      ],
+      "parentImage": 76193
+    },
+    {
+      "product": 76231,
+      "name": "שק לציוד רטוב ARENA ONE GO MESH BAG",
+      "status": "publish",
+      "color": "NAVY-400",
+      "count": 1,
+      "variations": [
+        {
+          "id": 76232,
+          "size": "Os",
+          "sku": "3468337636328"
+        }
+      ],
+      "parentImage": 76233
+    },
+    {
+      "product": 76302,
+      "name": "GOGGLE ZOOM X-FIT משקפת ארנה",
+      "status": "publish",
+      "color": "17-BLUE-CLEAR-CLEAR",
+      "count": 1,
+      "variations": [
+        {
+          "id": 77660,
+          "size": "Os",
+          "sku": "3468335680385"
+        }
+      ],
+      "parentImage": 76664
+    },
+    {
+      "product": 76302,
+      "name": "GOGGLE ZOOM X-FIT משקפת ארנה",
+      "status": "publish",
+      "color": "71-BLUE-CLEAR-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 77659,
+          "size": "",
+          "sku": "3468334180701"
+        }
+      ],
+      "parentImage": 76664
+    },
+    {
+      "product": 76302,
+      "name": "GOGGLE ZOOM X-FIT משקפת ארנה",
+      "status": "publish",
+      "color": "55-BLACK-SMOKE-CLEAR",
+      "count": 1,
+      "variations": [
+        {
+          "id": 76306,
+          "size": "Os",
+          "sku": "3468334180688"
+        }
+      ],
+      "parentImage": 76664
+    },
+    {
+      "product": 76517,
+      "name": "בגד ים נשים GRAPHIC SWIM PRO BACKLB",
+      "status": "publish",
+      "color": "NAVY-SHOCKING PINK-790",
+      "count": 7,
+      "variations": [
+        {
+          "id": 76531,
+          "size": "48",
+          "sku": "3468337725350"
+        },
+        {
+          "id": 76530,
+          "size": "46",
+          "sku": "3468337725343"
+        },
+        {
+          "id": 76529,
+          "size": "44",
+          "sku": "3468337725336"
+        },
+        {
+          "id": 76528,
+          "size": "42",
+          "sku": "3468337725329"
+        },
+        {
+          "id": 76527,
+          "size": "40",
+          "sku": "3468337725312"
+        },
+        {
+          "id": 76526,
+          "size": "38",
+          "sku": "3468337725305"
+        },
+        {
+          "id": 76525,
+          "size": "36",
+          "sku": "3468337725299"
+        }
+      ],
+      "parentImage": 76765
+    },
+    {
+      "product": 76532,
+      "name": "כפכפים ARENA FLIP FLOP",
+      "status": "publish",
+      "color": "black-115",
+      "count": 13,
+      "variations": [
+        {
+          "id": 76545,
+          "size": "48",
+          "sku": "3468337726791"
+        },
+        {
+          "id": 76544,
+          "size": "47",
+          "sku": "3468337726777"
+        },
+        {
+          "id": 76543,
+          "size": "46",
+          "sku": "3468337726753"
+        },
+        {
+          "id": 76542,
+          "size": "45",
+          "sku": "3468337726739"
+        },
+        {
+          "id": 76541,
+          "size": "44",
+          "sku": "3468337726715"
+        },
+        {
+          "id": 76540,
+          "size": "43",
+          "sku": "3468337726692"
+        },
+        {
+          "id": 76539,
+          "size": "42",
+          "sku": "3468337726678"
+        },
+        {
+          "id": 76538,
+          "size": "41",
+          "sku": "3468337726654"
+        },
+        {
+          "id": 76537,
+          "size": "40",
+          "sku": "3468337726630"
+        },
+        {
+          "id": 76536,
+          "size": "39",
+          "sku": "3468337726616"
+        },
+        {
+          "id": 76535,
+          "size": "38",
+          "sku": "3468337726593"
+        },
+        {
+          "id": 76534,
+          "size": "37",
+          "sku": "3468337726579"
+        },
+        {
+          "id": 76533,
+          "size": "36",
+          "sku": "3468337726555"
+        }
+      ],
+      "parentImage": 76727
+    },
+    {
+      "product": 76555,
+      "name": "מכנסי ים FUNDAMENTALS ARENA LOGO BOXER",
+      "status": "publish",
+      "color": "511-BLACK-WHITE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 76565,
+          "size": "XL",
+          "sku": "3468337145486"
+        },
+        {
+          "id": 76564,
+          "size": "M",
+          "sku": "3468337145387"
+        },
+        {
+          "id": 76561,
+          "size": "S",
+          "sku": "3468337143710"
+        },
+        {
+          "id": 76559,
+          "size": "2XL",
+          "sku": "3468337142430"
+        },
+        {
+          "id": 76556,
+          "size": "L",
+          "sku": "3468337141051"
+        }
+      ],
+      "parentImage": 76706
+    },
+    {
+      "product": 76571,
+      "name": "בגד ים טייץ שחייה נערים B ARENA DESIGN SWIM JAMMER",
+      "status": "publish",
+      "color": "703-NAVY-YELLOW STAR-WATER",
+      "count": 5,
+      "variations": [
+        {
+          "id": 76581,
+          "size": "8-9",
+          "sku": "3468337753018"
+        },
+        {
+          "id": 76580,
+          "size": "6-7",
+          "sku": "3468337753001"
+        },
+        {
+          "id": 76579,
+          "size": "14-15",
+          "sku": "3468337752998"
+        },
+        {
+          "id": 76578,
+          "size": "12-13",
+          "sku": "3468337752981"
+        },
+        {
+          "id": 76577,
+          "size": "10-11",
+          "sku": "3468337752974"
+        }
+      ],
+      "parentImage": 76745
+    },
+    {
+      "product": 76592,
+      "name": "בגד ים טייץ גברים ARENA DESIGN SWIM JAMMER",
+      "status": "publish",
+      "color": "703-NAVY-YELLOW STAR-WATER",
+      "count": 6,
+      "variations": [
+        {
+          "id": 76604,
+          "size": "‎95 (XL)‎",
+          "sku": "3468337756569"
+        },
+        {
+          "id": 76603,
+          "size": "‎90 (L)‎",
+          "sku": "3468337756552"
+        },
+        {
+          "id": 76602,
+          "size": "‎85 (M)‎",
+          "sku": "3468337756545"
+        },
+        {
+          "id": 76601,
+          "size": "‎80 (S)‎",
+          "sku": "3468337756538"
+        },
+        {
+          "id": 76600,
+          "size": "‎75 (14-15)‎",
+          "sku": "3468337756521"
+        },
+        {
+          "id": 76599,
+          "size": "‎100 (2XL)‎",
+          "sku": "3468337756491"
+        }
+      ],
+      "parentImage": 76714
+    },
+    {
+      "product": 76605,
+      "name": "בגד ים נשים SHIMMERING SWIMSUIT U BACK",
+      "status": "publish",
+      "color": "NAVY-ROYAL-708",
+      "count": 6,
+      "variations": [
+        {
+          "id": 76617,
+          "size": "48",
+          "sku": "3468337757665"
+        },
+        {
+          "id": 76616,
+          "size": "46",
+          "sku": "3468337757658"
+        },
+        {
+          "id": 76615,
+          "size": "44",
+          "sku": "3468337757641"
+        },
+        {
+          "id": 76614,
+          "size": "42",
+          "sku": "3468337757634"
+        },
+        {
+          "id": 76613,
+          "size": "40",
+          "sku": "3468337757627"
+        },
+        {
+          "id": 76612,
+          "size": "38",
+          "sku": "3468337757610"
+        }
+      ],
+      "parentImage": 76778
+    },
+    {
+      "product": 76994,
+      "name": "בגד ים שלם לנשים WOMEN'S SWIMSUIT LACE BACK SOLID",
+      "status": "publish",
+      "color": "501-BLACK-WHITE",
+      "count": 6,
+      "variations": [
+        {
+          "id": 77000,
+          "size": "42",
+          "sku": "3468337123231"
+        },
+        {
+          "id": 76999,
+          "size": "38",
+          "sku": "3468337122883"
+        },
+        {
+          "id": 76998,
+          "size": "40",
+          "sku": "3468337122777"
+        },
+        {
+          "id": 76997,
+          "size": "36",
+          "sku": "3468337122388"
+        },
+        {
+          "id": 76996,
+          "size": "34",
+          "sku": "3468337121947"
+        },
+        {
+          "id": 76995,
+          "size": "32",
+          "sku": "3468337121428"
+        }
+      ],
+      "parentImage": 77147
+    },
+    {
+      "product": 77007,
+      "name": "בגד ים שלם לנשים WOMEN'S TEAM SWIMSUIT SWIM TECH SOLID",
+      "status": "publish",
+      "color": "550-BLACK-WHITE",
+      "count": 6,
+      "variations": [
+        {
+          "id": 77013,
+          "size": "34",
+          "sku": "3468336647899"
+        },
+        {
+          "id": 77012,
+          "size": "40",
+          "sku": "3468336646762"
+        },
+        {
+          "id": 77011,
+          "size": "38",
+          "sku": "3468336646588"
+        },
+        {
+          "id": 77010,
+          "size": "32",
+          "sku": "3468336643402"
+        },
+        {
+          "id": 77009,
+          "size": "36",
+          "sku": "3468336642122"
+        },
+        {
+          "id": 77008,
+          "size": "42",
+          "sku": "3468336641019"
+        }
+      ],
+      "parentImage": 77167
+    },
+    {
+      "product": 77020,
+      "name": "בגד ים נשים TEAM SWIMSUIT SWIM PRO SOLID",
+      "status": "publish",
+      "color": "803-NEON BLUE-TEAM ORANGE",
+      "count": 5,
+      "variations": [
+        {
+          "id": 77030,
+          "size": "44",
+          "sku": "3468337729440"
+        },
+        {
+          "id": 77029,
+          "size": "42",
+          "sku": "3468337729433"
+        },
+        {
+          "id": 77028,
+          "size": "40",
+          "sku": "3468337729426"
+        },
+        {
+          "id": 77027,
+          "size": "38",
+          "sku": "3468337729419"
+        },
+        {
+          "id": 77026,
+          "size": "36",
+          "sku": "3468337729402"
+        }
+      ],
+      "parentImage": 77162
+    },
+    {
+      "product": 77039,
+      "name": "משקפת THE ONE PLUS",
+      "status": "publish",
+      "color": "301-CLEAR-WHITE-BLUE",
+      "count": 1,
+      "variations": [
+        {
+          "id": 77041,
+          "size": "Os",
+          "sku": "3468337827023"
+        }
+      ],
+      "parentImage": 77095
+    },
+    {
+      "product": 77043,
+      "name": "בגד ים שלם לנשים WOMEN'S ARENA SWIMSUIT TIE BACK SOLID",
+      "status": "publish",
+      "color": "BLACK-510",
+      "count": 5,
+      "variations": [
+        {
+          "id": 77048,
+          "size": "42",
+          "sku": "3468337652557"
+        },
+        {
+          "id": 77047,
+          "size": "40",
+          "sku": "3468337652540"
+        },
+        {
+          "id": 77046,
+          "size": "38",
+          "sku": "3468337652533"
+        },
+        {
+          "id": 77045,
+          "size": "36",
+          "sku": "3468337652526"
+        },
+        {
+          "id": 77044,
+          "size": "34",
+          "sku": "3468337652519"
+        }
+      ],
+      "parentImage": 77176
+    },
+    {
+      "product": 77054,
+      "name": "בגד ים שלם לנשים WOMEN'S TEAM SWIMSUIT CHALLENGE SOLID",
+      "status": "publish",
+      "color": "803-NEON BLUE-TEAM ORANGE",
+      "count": 6,
+      "variations": [
+        {
+          "id": 77060,
+          "size": "42",
+          "sku": "3468337730200"
+        },
+        {
+          "id": 77059,
+          "size": "40",
+          "sku": "3468337730194"
+        },
+        {
+          "id": 77058,
+          "size": "38",
+          "sku": "3468337730187"
+        },
+        {
+          "id": 77057,
+          "size": "36",
+          "sku": "3468337730170"
+        },
+        {
+          "id": 77056,
+          "size": "34",
+          "sku": "3468337730163"
+        },
+        {
+          "id": 77055,
+          "size": "32",
+          "sku": "3468337730156"
+        }
+      ],
+      "parentImage": 77117
+    },
+    {
+      "product": 78178,
+      "name": "II FREEFLOW PULLBUOY פולי שחייה",
+      "status": "publish",
+      "color": "130-sage-artic_lime",
+      "count": 1,
+      "variations": [
+        {
+          "id": 78179,
+          "size": "Os",
+          "sku": "3468337524601"
+        }
+      ],
+      "parentImage": 78188
+    },
+    {
+      "product": 78760,
+      "name": "סנפירי אימון POWERFIN PRO II FLEX",
+      "status": "draft",
+      "color": "100-MIDNIGHT BLUE",
+      "count": 6,
+      "variations": [
+        {
+          "id": 78766,
+          "size": "46/47",
+          "sku": "3468337923855"
+        },
+        {
+          "id": 78765,
+          "size": "44/45",
+          "sku": "3468337923848"
+        },
+        {
+          "id": 78764,
+          "size": "42/43",
+          "sku": "3468337923831"
+        },
+        {
+          "id": 78763,
+          "size": "40/41",
+          "sku": "3468337923824"
+        },
+        {
+          "id": 78762,
+          "size": "38/39",
+          "sku": "3468337923817"
+        },
+        {
+          "id": 78761,
+          "size": "36/37",
+          "sku": "3468337923800"
+        }
+      ],
+      "parentImage": 78750
+    },
+    {
+      "product": 78830,
+      "name": "חולצת טי יוניסקס Team Unisex Solid T-Shirt",
+      "status": "publish",
+      "color": "700-NAVY",
+      "count": 7,
+      "variations": [
+        {
+          "id": 78837,
+          "size": "XS",
+          "sku": "3468336688724"
+        },
+        {
+          "id": 78836,
+          "size": "3XL",
+          "sku": "3468336683071"
+        },
+        {
+          "id": 78835,
+          "size": "S",
+          "sku": "3468336687406"
+        },
+        {
+          "id": 78834,
+          "size": "M",
+          "sku": "3468336685136"
+        },
+        {
+          "id": 78833,
+          "size": "XXL",
+          "sku": "3468336685761"
+        },
+        {
+          "id": 78832,
+          "size": "L",
+          "sku": "3468336683477"
+        },
+        {
+          "id": 78831,
+          "size": "XL",
+          "sku": "3468336684832"
+        }
+      ],
+      "parentImage": 78821
+    },
+    {
+      "product": 78925,
+      "name": "ז'קט יוניסקס Teamline Knitted Poly Jacket",
+      "status": "publish",
+      "color": "50-BLACK",
+      "count": 7,
+      "variations": [
+        {
+          "id": 78932,
+          "size": "3XL",
+          "sku": "3468335506111"
+        },
+        {
+          "id": 78931,
+          "size": "XXL",
+          "sku": "3468335506104"
+        },
+        {
+          "id": 78930,
+          "size": "XL",
+          "sku": "3468335506098"
+        },
+        {
+          "id": 78929,
+          "size": "L",
+          "sku": "3468335506081"
+        },
+        {
+          "id": 78928,
+          "size": "M",
+          "sku": "3468335506074"
+        },
+        {
+          "id": 78927,
+          "size": "S",
+          "sku": "3468335506067"
+        },
+        {
+          "id": 78926,
+          "size": "XS",
+          "sku": "3468335506050"
+        }
+      ],
+      "parentImage": 78884
+    },
+    {
+      "product": 78947,
+      "name": "קפוצ'ון יוניסקס Teamline Hooded Jacket",
+      "status": "publish",
+      "color": "50-BLACK",
+      "count": 6,
+      "variations": [
+        {
+          "id": 78967,
+          "size": "3XL",
+          "sku": "3468335504742"
+        },
+        {
+          "id": 78966,
+          "size": "XXL",
+          "sku": "3468335504735"
+        },
+        {
+          "id": 78965,
+          "size": "XL",
+          "sku": "3468335504728"
+        },
+        {
+          "id": 78964,
+          "size": "L",
+          "sku": "3468335504711"
+        },
+        {
+          "id": 78963,
+          "size": "M",
+          "sku": "3468335504704"
+        },
+        {
+          "id": 78962,
+          "size": "S",
+          "sku": "3468335504698"
+        }
+      ],
+      "parentImage": 78904
+    }
+  ],
+  "fixed": [],
+  "failed": []
+}

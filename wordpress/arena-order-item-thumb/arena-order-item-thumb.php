@@ -25,6 +25,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 if ( ! function_exists( 'arena_oit_thumbnail' ) ) :
 
 	/**
+	 * כמה צבעים יש למוצר האב — התשובה נשמרת, כי במסך הזמנה יש כמה שורות.
+	 *
+	 * ⚠️ זה מה שמבדיל תקלה ממצב תקין. מוצר **חד-צבעי** מציג את התמונה הראשית
+	 * של האב לכל המידות, וזו בדיוק התמונה של הצבע היחיד — אין שם מה לתקן ואין
+	 * על מה להתריע. נמדד 15/09/2026: מתוך 463 מוצרי אב באתר, 190 הם חד-צבעיים,
+	 * ואזהרה עליהם הייתה הופכת את הסימון לרעש שאיש לא מסתכל עליו.
+	 */
+	function arena_oit_color_count( $product_id ) {
+		static $cache = array();
+		if ( isset( $cache[ $product_id ] ) ) {
+			return $cache[ $product_id ];
+		}
+		$count  = 0;
+		$parent = wc_get_product( $product_id );
+		if ( $parent && $parent->is_type( 'variable' ) ) {
+			$attrs = $parent->get_variation_attributes();
+			foreach ( $attrs as $name => $options ) {
+				if ( false !== stripos( $name, 'color' ) ) {
+					$count = count( $options );
+					break;
+				}
+			}
+		}
+		$cache[ $product_id ] = $count;
+		return $count;
+	}
+
+	/**
 	 * התמונה של שורת ההזמנה — של הווריאציה שהוזמנה, ועטופה בקישור להגדלה.
 	 *
 	 * ⚠️ הבדיקה היא `get_post_thumbnail_id` על הווריאציה ולא `$product->get_image()`:
@@ -69,10 +97,14 @@ if ( ! function_exists( 'arena_oit_thumbnail' ) ) :
 			$full = wp_get_attachment_image_url( $image_id, 'full' );
 		}
 
+		// מתריעים רק כשהתמונה באמת עלולה להטעות: אין לווריאציה תמונה משלה,
+		// **ולמוצר יש יותר מצבע אחד**. בחד-צבעי תמונת האב היא הצבע הנכון.
+		$ambiguous = ! $is_actual && arena_oit_color_count( $product_id ) > 1;
+
 		// הכיתוב שמוצג מתחת להגדלה: שם הפריט כולל הצבע והמידה שהוזמנו.
 		$caption = wp_strip_all_tags( $item->get_name() );
-		if ( ! $is_actual ) {
-			$caption .= ' — ⚠ תמונת מוצר האב: לווריאציה הזאת אין תמונה משלה';
+		if ( $ambiguous ) {
+			$caption .= ' — ⚠ תמונת מוצר האב: לצבע הזה אין תמונה משלו, ייתכן שזה לא הצבע שהוזמן';
 		}
 
 		// ⚠️ בלי תכונות data-* : הטמפלייט של WooCommerce מעביר את הפלט דרך
@@ -81,7 +113,7 @@ if ( ! function_exists( 'arena_oit_thumbnail' ) ) :
 		return sprintf(
 			'<a href="%1$s" class="arena-oit-zoom%2$s" title="%3$s">%4$s</a>',
 			esc_url( $full ),
-			$is_actual ? '' : ' arena-oit-parent',
+			$ambiguous ? ' arena-oit-parent' : '',
 			esc_attr( $caption ),
 			$img
 		);
