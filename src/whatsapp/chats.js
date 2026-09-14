@@ -186,14 +186,33 @@ export async function readChatDirect(client, jid, limit = 60) {
         if (!loaded || loaded.length === 0) break;
       }
 
+      // ⚠️ A media message carries its base64 payload in `body`.
+      //
+      // Measured 14/09/2026: reading a chat that contained one photo printed
+      // several kilobytes of raw base64 into the output. Harmless-looking and
+      // genuinely damaging — it drowns the surrounding conversation and can
+      // blow the context of any summary built on the read.
+      //
+      // So a body that looks like encoded media is replaced by a marker. The
+      // test is deliberately structural (very long, and no whitespace) rather
+      // than a type check: `type` was 'chat' on the offending message.
+      const looksLikeMedia = (s) =>
+        typeof s === 'string' &&
+        s.length > 500 &&
+        !/s/.test(s.slice(0, 200));
+
       const msgs = have()
         .filter((m) => !m.isNotification)
-        .map((m) => ({
-          fromMe: !!(m.id?.fromMe ?? m.fromMe),
-          t: m.t ?? null,
-          type: m.type ?? null,
-          body: m.body ?? m.caption ?? null,
-        }))
+        .map((m) => {
+          const raw = m.body ?? m.caption ?? null;
+          const type = m.type ?? null;
+          return {
+            fromMe: !!(m.id?.fromMe ?? m.fromMe),
+            t: m.t ?? null,
+            type,
+            body: looksLikeMedia(raw) ? `[${type || 'מדיה'} — ${Math.round(raw.length / 1024)}KB]` : raw,
+          };
+        })
         .sort((a, b) => (a.t || 0) - (b.t || 0));
 
       return {

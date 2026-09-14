@@ -304,10 +304,40 @@ const fwdScore = decide(
 );
 ok('forwardingScore גם נתפס', fwdScore.act === false && fwdScore.quiet === false);
 
+
+// ═══════════════════════════════════════════════════════════════════════════
+// מדיה כ-base64 — לא מגיעה לפלט
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Measured on a real read (14/09/2026): a photo Dror sent arrived with its
+// base64 payload in `body`, and several KB of it printed into the conversation
+// output. The guard is structural (long + no whitespace) because `type` was
+// 'chat' on that message, so a type check would have missed it.
+
+console.log('');
+console.log('סינון מדיה מקודדת');
+{
+  const looksLikeMedia = (s) =>
+    typeof s === 'string' && s.length > 500 && !/\s/.test(s.slice(0, 200));
+
+  const realBase64 = '/9j/4AAQSkZJRgABAQAAAQABAAD' + 'A'.repeat(900);
+  ok('base64 ארוך מזוהה', looksLikeMedia(realBase64));
+  ok('הודעה עברית רגילה לא מזוהה', !looksLikeMedia('הצעה ראשונה: 6cpu 16gb ram'));
+  ok('הודעה ארוכה עם רווחים לא מזוהה', !looksLikeMedia('מילה '.repeat(300)));
+  ok('הודעה קצרה בלי רווחים לא מזוהה', !looksLikeMedia('אישור'));
+  ok('null עובר בשלום', !looksLikeMedia(null));
+  // A long URL has no whitespace but is under the length bar — and must survive,
+  // because the vendor's signup link is exactly that and it matters.
+  ok(
+    'קישור ארוך שורד',
+    !looksLikeMedia('https://www.jetclients.co.il/register.php?ref=' + 'x'.repeat(300)),
+  );
+}
+
 console.log('');
 console.log('─'.repeat(46));
 if (failures.length === 0) {
-  console.log(`✅ סה"כ ${pass} בדיקות עברו — שערים והרשאות.`);
+  console.log(`✅ סה"כ ${pass} בדיקות עברו — שערים, הרשאות וסינון מדיה.`);
 } else {
   console.log(`❌ ${failures.length} כשלונות:`);
   for (const f of failures) console.log(`   · ${f}`);

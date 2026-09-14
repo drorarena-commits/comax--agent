@@ -94,6 +94,24 @@ function report() {
     console.log('   לסדר:  npm run wa-kill  ואז  npm run wa-start');
     return false;
   }
+  // ⚠️ A LIVE PROCESS IS NOT A WORKING BRIDGE.
+  //
+  // Measured 14/09/2026: the daemon process was alive while its state was
+  // 'failed' (it had stalled in loading and given up), and this reported
+  // "✅ running" — on the strength of which I told Dror his queued answer had
+  // been sent. It had not. Same class of mistake as hasProfile() meaning
+  // "linked": checking the cheap proxy instead of the thing that matters.
+  const bad = st?.state === 'failed' || st?.state === 'disconnected' || st?.state === 'stopped';
+  if (bad) {
+    console.log(`⛔ הדמון לא תקין — התהליך חי (PID ${pids[0]}) אבל מצבו: ${st.state}`);
+    if (st.error) console.log(`   ${st.error}`);
+    const q = st.queued ?? 0;
+    if (q > 0) {
+      console.log(`   ⚠️ ${q} פריטים בתור לא יטופלו עד שהוא יעלה מחדש.`);
+    }
+    console.log('   לסדר:  npm run wa-kill  ואז  npm run wa-start');
+    return false;
+  }
   console.log(`✅ הדמון רץ (PID ${pids[0]}).`);
   if (st?.state) {
     const age = st.updatedAt
@@ -144,13 +162,25 @@ if (checkOnly) {
       // Wait on the FACT of listening, not on a timer. Reporting success before
       // the daemon is listening would be the same mistake that broke the pairing
       // code earlier today.
-      const deadline = Date.now() + 300000;
+      // ⚠️ Measured 14/09/2026: the deadline is counted from SPAWN, and the
+      // spawn-to-"connecting" gap alone ate five minutes on one run while the
+      // page load that followed took THIRTEEN seconds. The old 5-minute budget
+      // therefore reported failure on a start that succeeded moments later —
+      // and a launcher that cries wolf gets ignored, which is how a genuinely
+      // dead bridge ends up unnoticed. Ten minutes, and the message below says
+      // to check rather than asserting anything.
+      const deadline = Date.now() + 600000;
+      // ⚠️ Read ONLY what this run appends — measured 14/09/2026, the first
+      // version sliced from `before - 2000` and so re-read the PREVIOUS run's
+      // "מאזין" line, declaring success within a second of launching. A
+      // readiness check that can pass on stale output is worse than none: it
+      // reports a live bridge when nothing came up.
       const before = existsSync(LOG) ? statSync(LOG).size : 0;
       const poll = setInterval(() => {
         let tail = '';
         try {
           const buf = readFileSync(LOG, 'utf8');
-          tail = buf.slice(Math.max(0, before - 2000));
+          tail = buf.length > before ? buf.slice(before) : '';
         } catch {
           tail = '';
         }
@@ -174,7 +204,8 @@ if (checkOnly) {
         if (Date.now() > deadline) {
           clearInterval(poll);
           console.log('');
-          console.log('⚠️ חמש דקות ולא הגיע ל"מאזין". הוא עדיין עשוי לעלות —');
+          console.log('⚠️ עשר דקות ולא הגיע ל"מאזין" — אבל הוא עדיין עשוי לעלות.');
+          console.log('   זה לא בהכרח כשל. לבדוק לפני שמסיקים:');
           console.log('   לבדוק:  npm run wa-up');
           process.exit(1);
         }
