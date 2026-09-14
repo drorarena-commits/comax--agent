@@ -35,7 +35,8 @@
     "catalog-sync": "node tools/catalog-sync.js",
     "mail-send": "node tools/gmail-send.js",
     "mail-get": "node tools/gmail-attach.js",
-    "items-import": "node tools/run.js items-import"
+    "items-import": "node tools/run.js items-import",
+    "orders": "node orders-app/start.js"
   },
   "dependencies": {
     "exceljs": "^4.4.0",
