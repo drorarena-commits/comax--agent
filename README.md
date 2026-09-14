@@ -35,13 +35,14 @@ npm run mail-send -- --to <כתובת> --subject "..." --body-file b.txt --attac
 npm run mail-send -- ... --confirm                    # ורק זה שולח בפועל
 npm run mail-get -- <messageId> <חלק-משם-הקובץ>       # מוריד קובץ מצורף ממייל לדיסק
 npm run wa-link -- 05XXXXXXXX      # קישור וואטסאפ — קוד בן 8 תווים להקליד בטלפון
-npm run wa-daemon                  # ← הגשר. חייב לרוץ כדי ש"הי קלוד" יעבוד
+npm run wa-start                   # ← הגשר, מנותק. חייב לרוץ כדי ש"הי קלוד" יעבוד
+npm run wa-up                      # הגשר רץ?
+npm run wa-kill                    # עוצר — SIGTERM ראשון, כדי שלא ייתקע בהפעלה הבאה
 npm run wa -- ask find "שם"        # חיפוש בשמות שיחות (דרך הדמון)
 npm run wa -- ask search "מילה"    # חיפוש בתוכן ההודעות
 npm run wa -- result <id>          # התוצאה
 npm run wa -- queue                # הוראות שהגיעו מהטלפון
 npm run wa -- answer <id> "תשובה"  # הדמון שולח אותה לוואטסאפ
-npm run wa-kill                    # סוגר רק את הכרום של הגשר
 npm run wa-test                    # 57 בדיקות — שערים והרשאות (אופליין)
 npm run items-file                 # בונה את קובץ ההקמה + מריץ את שערי האימות
 npm run items-import -- --json '{"file":"data/exports/הקמה-קומקס-175.xlsx"}'  # יבוא פריטים (יבש)
@@ -496,15 +497,23 @@ npm run orders -- test       # שולח לטלגרם את ההזמנה האחר�
 ב-[`orders-app/README.md`](orders-app/README.md). בדיקות: `node orders-app/selftest.js`
 (33 בדיקות מול WooCommerce מדומה), צילומי ממשק: `node orders-app/preview.js`.
 
-## `npm run wa-daemon` — גשר הוואטסאפ
+## `npm run wa-start` — גשר הוואטסאפ
 
 גישה לוואטסאפ הפרטי של דרור (שהוא גם העסקי) **כמו שיש לסוכן גישה למייל**:
 לראות הודעות אחורה בשניות, לחפש, ולתת תובנות.
 
 ```bash
 npm run wa-link -- 0501234567      # פעם אחת: קוד בן 8 תווים להקליד בטלפון
-npm run wa-daemon                  # ← זה מה שרץ ביום-יום
+npm run wa-start                   # ← זה מה שרץ ביום-יום. מנותק, שורד סגירת סשן
 ```
+
+⛔ **`npm run wa-daemon` רץ בחזית ומת עם הסשן** — הוא לדיבוג. `wa-start`
+משגר מנותק וממתין עד שהגשר **באמת** מאזין, לא לפי טיימר.
+
+⛔ **ואל תהרוג את הכרום בכוח.** נמדד 14/09: SIGKILL משאיר IndexedDB לא נקי
+וההפעלה הבאה נתקעת ב-99% — זה היה הגורם לכל התקיעות של אותו יום, ולא הגשר
+עצמו. `npm run wa-kill` מבקש SIGTERM, ממתין 15 שניות, ואומר במפורש אם נאלץ
+לכפות.
 
 **ומהטלפון:** `הי קלוד מי מחכה לי` בשיחה עם עצמך. הדמון מאשר קבלה מיד,
 התשובה חוזרת לאותה שיחה. גם נועה מ-050-2993009, עם אותן הרשאות.

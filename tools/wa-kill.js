@@ -77,6 +77,36 @@ function listOwnChrome() {
     .filter((s) => /^\d+$/.test(s));
 }
 
+/**
+ * Ask first, force second.
+ *
+ * ⚠️ MEASURED 14/09/2026 — SIGKILL ON CHROME HAS A COST.
+ * The daemon already handles SIGTERM: it calls `shutdown()`, which closes
+ * Chrome through puppeteer so the profile is left consistent. SIGKILL skips all
+ * of that, and a Chrome killed mid-write leaves IndexedDB dirty — after which
+ * the NEXT startup stalls at 99% reading it. Four starts succeeded today after
+ * orderly stops; the one that followed a forced kill hung.
+ *
+ * So: SIGTERM, a grace period, and SIGKILL only for what refuses to go.
+ */
+function alive(pid) {
+  try {
+    process.kill(Number(pid), 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function askToStop(pid) {
+  try {
+    process.kill(Number(pid), 'SIGTERM');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function kill(pid) {
   try {
     process.kill(Number(pid), 'SIGKILL');
@@ -86,17 +116,38 @@ function kill(pid) {
   }
 }
 
+function waitGone(pids, ms) {
+  const deadline = Date.now() + ms;
+  while (Date.now() < deadline) {
+    if (!pids.some(alive)) return true;
+    // Busy-wait: this is a short-lived CLI, and pulling in a sleep helper for
+    // a few seconds of shutdown is not worth the dependency.
+    execFileSync('powershell.exe', ['-NoProfile', '-Command', 'Start-Sleep -Milliseconds 400']);
+  }
+  return !pids.some(alive);
+}
+
 // Daemon first, then Chrome: killing Chrome out from under a live daemon makes
 // it log a disconnect and thrash before it exits.
 const daemons = listOwnDaemons();
 if (daemons.length > 0) {
-  console.log(`נמצאו ${daemons.length} תהליכי דמון — סוגר.`);
-  for (const pid of daemons) kill(pid);
+  console.log(`נמצאו ${daemons.length} תהליכי דמון — מבקש סגירה מסודרת.`);
+  for (const pid of daemons) askToStop(pid);
+  if (waitGone(daemons, 15000)) {
+    console.log('  נסגרו מסודר — הכרום נסגר דרך puppeteer והפרופיל נשאר נקי.');
+  } else {
+    const stubborn = daemons.filter(alive);
+    console.log(`  ⚠️ ${stubborn.length} לא נסגרו תוך 15 שניות — אין ברירה, SIGKILL.`);
+    console.log('     ייתכן שהטעינה הבאה תהיה איטית או תיתקע ב-99%.');
+    for (const pid of stubborn) kill(pid);
+  }
 }
 
+// Only Chrome that OUTLIVED its daemon gets forced: an orderly daemon shutdown
+// takes its own Chrome with it, so anything still here is already orphaned.
 const pids = listOwnChrome();
 if (pids.length > 0) {
-  console.log(`נמצאו ${pids.length} תהליכי כרום של הגשר — סוגר.`);
+  console.log(`נשארו ${pids.length} תהליכי כרום יתומים — סוגר.`);
   for (const pid of pids) kill(pid);
 }
 
