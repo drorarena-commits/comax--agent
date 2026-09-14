@@ -41,7 +41,8 @@
     "wa-link": "node tools/wa-link.js",
     "wa-test": "node tools/wa-selftest.js",
     "wa-kill": "node tools/wa-kill.js",
-    "wa-measure": "node tools/wa-measure.js"
+    "wa-measure": "node tools/wa-measure.js",
+    "wa-daemon": "node tools/wa-daemon.js"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

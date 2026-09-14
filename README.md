@@ -31,11 +31,14 @@ npm run mail-send -- --to <כתובת> --subject "..." --body-file b.txt --attac
 npm run mail-send -- ... --confirm                    # ורק זה שולח בפועל
 npm run mail-get -- <messageId> <חלק-משם-הקובץ>       # מוריד קובץ מצורף ממייל לדיסק
 npm run wa-link -- 05XXXXXXXX      # קישור וואטסאפ — קוד בן 8 תווים להקליד בטלפון
-npm run wa -- chats --unread       # וואטסאפ: שיחות עם הודעות שלא נקראו
-npm run wa -- read 050... --limit 80   # הודעות משיחה
-npm run wa -- search "חשבונית"     # חיפוש חוצה שיחות
-npm run wa -- send 050... "טקסט" --confirm   # שליחה — רק לשיחה קיימת
-npm run wa-test                    # 32 בדיקות שהשערים חוסמים (אופליין)
+npm run wa-daemon                  # ← הגשר. חייב לרוץ כדי ש"הי קלוד" יעבוד
+npm run wa -- ask find "שם"        # חיפוש בשמות שיחות (דרך הדמון)
+npm run wa -- ask search "מילה"    # חיפוש בתוכן ההודעות
+npm run wa -- result <id>          # התוצאה
+npm run wa -- queue                # הוראות שהגיעו מהטלפון
+npm run wa -- answer <id> "תשובה"  # הדמון שולח אותה לוואטסאפ
+npm run wa-kill                    # סוגר רק את הכרום של הגשר
+npm run wa-test                    # 57 בדיקות — שערים והרשאות (אופליין)
 npm run items-file                 # בונה את קובץ ההקמה + מריץ את שערי האימות
 npm run items-import -- --json '{"file":"data/exports/הקמה-קומקס-175.xlsx"}'  # יבוא פריטים (יבש)
 npm run cost-file -- --import      # מחירי עלות מדוח רכישות -> שני קבצי CSV
@@ -489,17 +492,27 @@ npm run orders -- test       # שולח לטלגרם את ההזמנה האחר�
 ב-[`orders-app/README.md`](orders-app/README.md). בדיקות: `node orders-app/selftest.js`
 (33 בדיקות מול WooCommerce מדומה), צילומי ממשק: `node orders-app/preview.js`.
 
-## `npm run wa` — גשר הוואטסאפ
+## `npm run wa-daemon` — גשר הוואטסאפ
 
 גישה לוואטסאפ הפרטי של דרור (שהוא גם העסקי) **כמו שיש לסוכן גישה למייל**:
 לראות הודעות אחורה בשניות, לחפש, ולתת תובנות.
 
 ```bash
 npm run wa-link -- 0501234567      # פעם אחת: קוד בן 8 תווים להקליד בטלפון
-npm run wa -- status               # מקושר? כמה שיחות, כמה לא נקראו
-npm run wa -- chats --unread       # מי מחכה לתשובה
-npm run wa -- read 0501234567      # הודעות משיחה
-npm run wa -- search "הזמנה"       # חיפוש חוצה שיחות
+npm run wa-daemon                  # ← זה מה שרץ ביום-יום
+```
+
+**ומהטלפון:** `הי קלוד מי מחכה לי` בשיחה עם עצמך. הדמון מאשר קבלה מיד,
+התשובה חוזרת לאותה שיחה. גם נועה מ-050-2993009, עם אותן הרשאות.
+
+⛔ **בלי דמון פתוח — הוראות מהטלפון נעלמות בשקט.** נמדד: ההאזנה הייתה כבויה,
+דרור שלח, ושום דבר לא נכשל בקול. זו הסיבה הראשונה לבדוק כשהגשר "לא מגיב".
+
+```bash
+npm run wa -- queue                # מה הגיע מהטלפון
+npm run wa -- ask search "מיזונו"  # קריאה עוברת דרך הדמון, לא בחיבור שני
+npm run wa -- result <id>
+npm run wa -- answer <id> "תשובה"
 ```
 
 **קריאה חופשית. שליחה — שער.** דרור אישר את הגשר (14/09/2026) בתנאי שלוש

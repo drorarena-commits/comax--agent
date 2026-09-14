@@ -159,6 +159,25 @@ ok('שיחה קיימת עוברת', known.chat && known.warning === null);
 const oneSided = await assertExistingConversation(client, OUTBOUND_ONLY);
 ok('שיחה חד-צדדית עוברת עם אזהרה', !!oneSided.warning);
 
+// The self-chat exemption. Measured on the first live instruction: the gate
+// refused to acknowledge into Dror's own self-chat, while his message was
+// itself proof the chat exists. Exempt because he cannot spam-report himself.
+const SELF_JID = '972502205178@c.us';
+const selfClient = {
+  info: { wid: { _serialized: SELF_JID } },
+  async getChatById(jid) {
+    if (jid !== SELF_JID) throw new Error('no such chat');
+    return { name: 'עצמי', id: { _serialized: jid }, async fetchMessages() { return []; }, async sendMessage() {} };
+  },
+};
+const selfRes = await assertExistingConversation(selfClient, SELF_JID);
+ok('שיחה עם עצמי מותרת', selfRes.selfChat === true);
+await refuses(
+  'ומספר אחר עדיין נחסם באותו client',
+  async () => assertExistingConversation(selfClient, '972509999999@c.us'),
+  'אין שיחה קיימת',
+);
+
 console.log('');
 console.log('שער 4 — התוכן הוכתב');
 await refuses('הודעה ריקה נחסמת', async () => assertAuthoredBody('   '), 'ריקה');

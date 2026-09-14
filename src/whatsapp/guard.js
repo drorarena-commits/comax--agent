@@ -117,6 +117,32 @@ export function assertSingleIndividual(target) {
  * does not block, because a customer who only ever reads is legitimate.
  */
 export async function assertExistingConversation(client, jid) {
+  // ── The self-chat is exempt, and this is NOT a weakening of the gate.
+  //
+  // Measured 14/09/2026, on the very first real instruction: Dror sent
+  // "הי קלוד ..." to his own self-chat, the daemon tried to acknowledge it
+  // there, and this gate refused with "no existing conversation" — while his
+  // message was itself standing proof that the conversation exists.
+  //
+  // The gate exists against ONE failure: messaging someone who never messaged
+  // you, which draws spam reports and bans the number. Dror cannot report
+  // himself, so the self-chat sits outside the entire rationale. Reading the
+  // identity from the live connection (never from config) keeps the exemption
+  // pinned to the actual linked account.
+  const me = client?.info?.wid?._serialized;
+  if (me && jid === me) {
+    return {
+      chat: await client.getChatById(jid).catch(() => ({
+        name: 'השיחה שלי עם עצמי',
+        id: { _serialized: jid },
+        sendMessage: (text) => client.sendMessage(jid, text),
+      })),
+      messageCount: null,
+      warning: null,
+      selfChat: true,
+    };
+  }
+
   let chat;
   try {
     chat = await client.getChatById(jid);

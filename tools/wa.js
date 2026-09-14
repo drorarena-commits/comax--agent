@@ -28,6 +28,14 @@ import {
 } from '../src/whatsapp/client.js';
 import { guardedSend, toJid, jidToNumber } from '../src/whatsapp/guard.js';
 import { safeGetChats, completenessNote } from '../src/whatsapp/chats.js';
+import {
+  pending as queuePending,
+  all as queueAll,
+  byId as queueById,
+  queueAnswer,
+  markSkipped,
+  requestRead,
+} from '../src/whatsapp/queue.js';
 
 const argv = process.argv.slice(2);
 const cmd = (argv[0] || '').toLowerCase();
@@ -281,7 +289,131 @@ async function cmdSend() {
   });
 }
 
+async function cmdQueue() {
+  const items = flags.has('--all') ? queueAll() : queuePending();
+  if (asJson) {
+    console.log(JSON.stringify({ count: items.length, items }, null, 2));
+    return;
+  }
+  if (items.length === 0) {
+    console.log('התור ריק.');
+    return;
+  }
+  console.log(`${items.length} פריטים${flags.has('--all') ? ' (הכל)' : ' ממתינים'}:`);
+  console.log('');
+  for (const i of items) {
+    const when = new Date(i.at).toLocaleString('he-IL');
+    const mark = i.status === 'needs-approval' ? ' ⚠️ דורש אישור' : '';
+    console.log(`[${i.id}] ${when} · ${i.principal}${mark}`);
+    console.log(`        "${i.instruction}"`);
+    if (i.note) console.log(`        ${i.note}`);
+    if (i.status === 'send-failed') console.log(`        ⛔ שליחה נדחתה: ${i.sendError}`);
+    if (i.status === 'answered') console.log(`        ✓ נענה: ${i.answer}`);
+  }
+  console.log('');
+  console.log('לענות:  npm run wa -- answer <id> "התשובה"');
+}
+
+async function cmdAnswer() {
+  const [id, text] = positional;
+  if (!id || !text) {
+    console.error('שימוש: npm run wa -- answer <id> "התשובה"');
+    process.exitCode = 2;
+    return;
+  }
+  const item = queueById(id);
+  if (!item) {
+    console.error(`אין פריט בתור עם מזהה ${id}. לראות: npm run wa -- queue`);
+    process.exitCode = 1;
+    return;
+  }
+  try {
+    queueAnswer(id, text);
+    console.log(`✓ התשובה נרשמה ל-${id}.`);
+    console.log('  הדמון ישלח אותה — הוא מחזיק את החיבור.');
+    console.log('  אם הדמון אינו רץ, היא תישלח כשיעלה:  npm run wa-daemon');
+  } catch (e) {
+    console.error(`נכשל: ${e.message}`);
+    process.exitCode = 1;
+  }
+}
+
+async function cmdSkip() {
+  const [id, why] = positional;
+  if (!id) {
+    console.error('שימוש: npm run wa -- skip <id> [סיבה]');
+    process.exitCode = 2;
+    return;
+  }
+  try {
+    markSkipped(id, why ?? 'ללא סיבה');
+    console.log(`${id} סומן כמדולג — לא תישלח תשובה.`);
+  } catch (e) {
+    console.error(`נכשל: ${e.message}`);
+    process.exitCode = 1;
+  }
+}
+
+/**
+ * Ask the daemon to look something up.
+ *
+ * Does not connect: the daemon holds the profile, and opening a second
+ * connection is what forced the daemon to be stopped earlier — during which an
+ * instruction Dror sent was silently never captured.
+ */
+async function cmdAsk() {
+  const [kind, target] = positional;
+  const kinds = ['chats', 'find', 'read', 'search'];
+  if (!kind || !kinds.includes(kind)) {
+    console.error(`שימוש: npm run wa -- ask <${kinds.join('|')}> [ערך] [--limit N]`);
+    console.error('  npm run wa -- ask find "מאיר"');
+    console.error('  npm run wa -- ask search "הזמנה"');
+    console.error('  npm run wa -- ask read 0501234567 --limit 80');
+    process.exitCode = 2;
+    return;
+  }
+  if (kind !== 'chats' && !target) {
+    console.error(`${kind} דורש ערך`);
+    process.exitCode = 2;
+    return;
+  }
+  const item = requestRead({ kind, target, limit: Number(flagValue('limit', 0)) || null });
+  console.log(`בקשה נרשמה: ${item.id}`);
+  console.log('  הדמון יבצע אותה — לראות את התוצאה:');
+  console.log(`  npm run wa -- result ${item.id}`);
+}
+
+async function cmdResult() {
+  const id = positional[0];
+  if (!id) {
+    console.error('שימוש: npm run wa -- result <id>');
+    process.exitCode = 2;
+    return;
+  }
+  const item = queueById(id);
+  if (!item) {
+    console.error(`אין פריט עם מזהה ${id}`);
+    process.exitCode = 1;
+    return;
+  }
+  if (item.status === 'read-pending') {
+    console.log('עוד לא בוצע. הדמון רץ?  npm run wa-daemon');
+    return;
+  }
+  if (item.status === 'read-failed') {
+    console.log(`❌ נכשל: ${item.error}`);
+    process.exitCode = 1;
+    return;
+  }
+  console.log(JSON.stringify(item.result, null, 2));
+}
+
 const COMMANDS = {
+  ask: cmdAsk,
+  result: cmdResult,
+  queue: cmdQueue,
+  answer: cmdAnswer,
+  skip: cmdSkip,
   status: cmdStatus,
   chats: cmdChats,
   read: cmdRead,
@@ -291,10 +423,12 @@ const COMMANDS = {
 
 const run = COMMANDS[cmd];
 if (!run) {
-  console.error('פקודות: status · chats · read · search · send');
+  console.error('פקודות: status · chats · read · search · send · queue · answer · skip');
   console.error('  npm run wa -- chats --unread');
   console.error('  npm run wa -- read 0501234567 --limit 80');
   console.error('  npm run wa -- search "חשבונית"');
+  console.error('  npm run wa -- queue                 (לא דורש חיבור)');
+  console.error('  npm run wa -- answer <id> "תשובה"   (הדמון שולח)');
   process.exitCode = 2;
 } else {
   run().catch((e) => {
