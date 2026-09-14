@@ -22,9 +22,43 @@
  */
 
 import { execFileSync } from 'node:child_process';
+import { rmSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { PROFILE_DIR } from '../src/whatsapp/client.js';
 
 const MARKER = '.whatsapp-profile';
+const DAEMON_MARKER = 'wa-daemon';
+
+/**
+ * ⚠️ THE DAEMON PROCESS MUST BE CLOSED TOO — this was missing and it cost.
+ *
+ * The first version killed only Chrome. So every "clean up and restart" left
+ * the previous daemon's NODE process alive, and by the end of 14/09/2026 ten of
+ * them were running at once. The `claimPid` guard exists precisely to stop
+ * that, and it was defeated by deleting `daemon.pid` before each start —
+ * a guard is only as good as the habit around it.
+ *
+ * Two daemons can answer the SAME instruction, which means two WhatsApp
+ * messages to a real person. That is the harm being prevented here.
+ */
+function listOwnDaemons() {
+  const ps = [
+    '-NoProfile',
+    '-Command',
+    `Get-CimInstance Win32_Process -Filter "Name='node.exe'" | ` +
+      `Where-Object { $_.CommandLine -like '*${DAEMON_MARKER}*' } | ` +
+      `ForEach-Object { $_.ProcessId }`,
+  ];
+  try {
+    return execFileSync('powershell.exe', ps, { encoding: 'utf8' })
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter((s) => /^\d+$/.test(s))
+      .filter((pid) => Number(pid) !== process.pid);
+  } catch {
+    return [];
+  }
+}
 
 function listOwnChrome() {
   // CIM over tasklist: tasklist cannot filter on the command line, which is the
@@ -52,21 +86,37 @@ function kill(pid) {
   }
 }
 
-const pids = listOwnChrome();
+// Daemon first, then Chrome: killing Chrome out from under a live daemon makes
+// it log a disconnect and thrash before it exits.
+const daemons = listOwnDaemons();
+if (daemons.length > 0) {
+  console.log(`נמצאו ${daemons.length} תהליכי דמון — סוגר.`);
+  for (const pid of daemons) kill(pid);
+}
 
-if (pids.length === 0) {
-  console.log('אין תהליכי כרום של הגשר. הפרופיל פנוי.');
+const pids = listOwnChrome();
+if (pids.length > 0) {
+  console.log(`נמצאו ${pids.length} תהליכי כרום של הגשר — סוגר.`);
+  for (const pid of pids) kill(pid);
+}
+
+// The pid file is state, not a process: a stale one blocks the next start with
+// "daemon already running" when nothing is.
+try {
+  rmSync(resolve(PROFILE_DIR, '..', 'runs', 'whatsapp', 'daemon.pid'), { force: true });
+} catch {
+  /* nothing to clear */
+}
+
+const leftD = listOwnDaemons();
+const leftC = listOwnChrome();
+if (daemons.length === 0 && pids.length === 0) {
+  console.log('אין תהליכי גשר פתוחים. הפרופיל פנוי.');
   console.log(`(${PROFILE_DIR})`);
 } else {
-  console.log(`נמצאו ${pids.length} תהליכי כרום של הגשר — סוגר.`);
-  let killed = 0;
-  for (const pid of pids) {
-    if (kill(pid)) killed += 1;
-  }
-  const left = listOwnChrome();
-  console.log(`נסגרו ${killed}. נשארו: ${left.length}`);
-  if (left.length > 0) {
-    console.log('⚠️ נשארו תהליכים. ייתכן שצריך להריץ שוב.');
+  console.log(`נשארו: דמון=${leftD.length} כרום=${leftC.length}`);
+  if (leftD.length > 0 || leftC.length > 0) {
+    console.log('⚠️ נשארו תהליכים. להריץ שוב.');
     process.exitCode = 1;
   }
 }
