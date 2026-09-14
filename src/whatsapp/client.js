@@ -21,7 +21,7 @@
  */
 
 import { createRequire } from 'node:module';
-import { existsSync } from 'node:fs';
+import { existsSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ROOT } from '../config.js';
 
@@ -60,14 +60,47 @@ function findChrome() {
 }
 
 /**
- * Is there a session on disk at all?
+ * Is there a Chrome profile on disk?
  *
- * Used to tell "you never linked" apart from "you linked and it expired" — two
- * situations with different answers, and the QR flow should only run for the
- * first one unless asked.
+ * ⚠️ THIS IS NOT "AM I LINKED". Measured 14/09/2026: a pairing attempt that
+ * failed mid-flow still left a 22 MB profile behind, and this returned true
+ * with no link whatsoever — which then refused a retry as "already linked".
+ *
+ * That is the same lie `isLoggedIn()` tells about Comax (finding 4 in MAP.md:
+ * a dead session is indistinguishable from a live one when inspected from
+ * outside). The only proof of a link is a successful `connect()`, so callers
+ * must treat this as "a profile exists, worth trying" and nothing more.
  */
-export function hasSession() {
+export function hasProfile() {
   return existsSync(resolve(PROFILE_DIR, 'session', 'Default'));
+}
+
+/** @deprecated Misleading name kept only so older callers keep working. */
+export const hasSession = hasProfile;
+
+/**
+ * Delete the profile. Used when a half-finished link has to be started over.
+ *
+ * Windows holds file handles open for a moment after a process dies, and a
+ * killed run leaves ORPHANED Chrome children behind that keep the profile
+ * locked — measured 14/09/2026: eight chrome.exe processes survived killing the
+ * npm parent, and this threw `EPERM` on the directory. `maxRetries` covers the
+ * brief-handle case; a still-running Chrome is a different problem and the
+ * error message has to say so rather than read as a permissions mystery.
+ */
+export function clearProfile() {
+  try {
+    rmSync(PROFILE_DIR, { recursive: true, force: true, maxRetries: 5, retryDelay: 300 });
+  } catch (e) {
+    if (e.code === 'EPERM' || e.code === 'EBUSY') {
+      throw new Error(
+        `הפרופיל נעול — כמעט בוודאי יש כרום של הגשר שעוד רץ. לסגור אותו:\n` +
+          `  npm run wa-kill\n` +
+          `(המקורי: ${e.code})`,
+      );
+    }
+    throw e;
+  }
 }
 
 /**
@@ -93,10 +126,18 @@ export function makeClient({ onQr, headed = false } = {}) {
         '--disable-blink-features=AutomationControlled',
       ],
     },
-    // Ask WhatsApp to push chat history on link. Without this the bridge only
-    // ever sees messages that arrive after it connects — which is precisely
-    // NOT what Dror asked for ("לראות הודעות אחורה").
-    syncFullHistory: true,
+    // ⚠️ MEASURED 14/09/2026 — THIS SETTING IS A TRADE, NOT A FREE WIN.
+    //
+    // It asks WhatsApp to push full chat history, which is exactly what Dror
+    // wants ("לראות הודעות אחורה"). But with 899 chats the sync pins the load
+    // screen at 99% and `ready` never fires — the first runs after linking
+    // succeeded in 40s, and once WhatsApp actually started pushing, every run
+    // timed out at 7 minutes. A setting that fetches the history and prevents
+    // reading it is worse than one that fetches less.
+    //
+    // Default is therefore OFF, with WA_FULL_HISTORY=1 to run a deliberate,
+    // long, one-off sync. Not a guess: both states are measured by wa-syncmode.
+    syncFullHistory: process.env.WA_FULL_HISTORY === '1',
   });
 
   if (onQr) client.on('qr', onQr);
@@ -110,7 +151,7 @@ export function makeClient({ onQr, headed = false } = {}) {
  * timeout — and a timeout with no session on disk means "not linked yet",
  * which is reported as such rather than as a crash.
  */
-export function connect(client, { timeoutMs = 120000 } = {}) {
+export function connect(client, { timeoutMs = 420000, onProgress } = {}) {
   return new Promise((resolveReady, reject) => {
     let settled = false;
     const done = (fn, arg) => {
@@ -125,12 +166,26 @@ export function connect(client, { timeoutMs = 120000 } = {}) {
         reject,
         new Error(
           hasSession()
-            ? `הסשן קיים אבל לא נטען תוך ${Math.round(timeoutMs / 1000)} שניות — ייתכן שהקישור פג. הרץ: npm run wa-link`
+            ? [
+                `הטעינה לא הסתיימה תוך ${Math.round(timeoutMs / 1000)} שניות.`,
+                'זה כמעט בוודאי אינו קישור שפג — אלא WhatsApp Web שנתקע בטעינה (נמדד: 99%).',
+                'הגורם הוא אתחול חוזר של האפליקציה בכל פקודה. אין לסרוק QR מחדש.',
+                'לנקות ולנסות:  npm run wa-kill',
+              ].join(' ')
             : 'אין סשן מקושר. הרץ: npm run wa-link כדי לקבל קוד QR',
         ),
       );
     }, timeoutMs);
 
+    // WhatsApp Web reports load progress in steps, and the steps matter: a run
+    // pinned at 99% is NOT a slow run. Measured 14/09/2026 on this account —
+    // 40s to ready on early runs, then repeated 99% stalls past 7 minutes with
+    // no setting changed (including with syncFullHistory off, which disproved
+    // the obvious suspect). Surfacing the percentage is what makes the two
+    // distinguishable at all.
+    client.on('loading_screen', (percent, message) => {
+      onProgress?.(Number(percent) || 0, message || '');
+    });
     client.on('ready', () => done(resolveReady, client));
     client.on('auth_failure', (m) =>
       done(reject, new Error(`אימות נכשל: ${m}`)),

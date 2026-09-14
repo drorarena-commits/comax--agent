@@ -39,7 +39,9 @@
     "orders": "node orders-app/start.js",
     "wa": "node tools/wa.js",
     "wa-link": "node tools/wa-link.js",
-    "wa-test": "node tools/wa-selftest.js"
+    "wa-test": "node tools/wa-selftest.js",
+    "wa-kill": "node tools/wa-kill.js",
+    "wa-measure": "node tools/wa-measure.js"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

@@ -22,11 +22,12 @@
 import {
   makeClient,
   connect,
-  hasSession,
+  hasProfile,
   selfJid,
   shutdown,
 } from '../src/whatsapp/client.js';
 import { guardedSend, toJid, jidToNumber } from '../src/whatsapp/guard.js';
+import { safeGetChats, completenessNote } from '../src/whatsapp/chats.js';
 
 const argv = process.argv.slice(2);
 const cmd = (argv[0] || '').toLowerCase();
@@ -59,14 +60,17 @@ function bodyOf(m) {
 }
 
 async function withClient(fn) {
-  if (!hasSession()) {
+  if (!hasProfile()) {
     console.error('לא מקושר לוואטסאפ. להתחיל: npm run wa-link -- 05XXXXXXXX');
     process.exitCode = 2;
     return;
   }
   const client = makeClient({ headed: flags.has('--headed') });
   try {
-    await connect(client);
+    await connect(client, {
+      onProgress: (p, m) => process.stderr.write(`   טוען WhatsApp Web… ${p}% ${m}   `),
+    });
+    console.error('');
     await fn(client);
   } finally {
     await shutdown(client);
@@ -76,7 +80,7 @@ async function withClient(fn) {
 async function cmdStatus() {
   await withClient(async (client) => {
     const me = selfJid(client);
-    const chats = await client.getChats();
+    const { chats, total, failed } = await safeGetChats(client);
     const unread = chats.filter((c) => c.unreadCount > 0);
     if (asJson) {
       console.log(
@@ -85,6 +89,8 @@ async function cmdStatus() {
             linked: true,
             self: jidToNumber(me),
             chats: chats.length,
+            chatsTotal: total,
+            chatsUnreadable: failed,
             unread: unread.length,
           },
           null,
@@ -95,28 +101,42 @@ async function cmdStatus() {
     }
     console.log(`✅ מקושר כ-${jidToNumber(me)}`);
     console.log(`   ${chats.length} שיחות · ${unread.length} עם הודעות שלא נקראו`);
+    const note = completenessNote(total, failed);
+    if (note) console.log(`   ${note}`);
   });
 }
 
 async function cmdChats() {
   await withClient(async (client) => {
-    let chats = await client.getChats();
+    const listing = await safeGetChats(client);
+    let chats = listing.chats;
     if (flags.has('--unread')) chats = chats.filter((c) => c.unreadCount > 0);
     chats.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     const shown = chats.slice(0, limit);
 
     const rows = shown.map((c) => ({
-      name: c.name || c.formattedTitle || jidToNumber(c.id._serialized),
-      jid: c.id._serialized,
-      number: c.isGroup ? null : jidToNumber(c.id._serialized),
-      group: !!c.isGroup,
-      unread: c.unreadCount || 0,
+      name: c.title || (c.jid ? jidToNumber(c.jid) : '(ללא זיהוי)'),
+      jid: c.jid,
+      number: c.isGroup || c.isChannel || !c.jid ? null : jidToNumber(c.jid),
+      group: c.isGroup,
+      channel: c.isChannel,
+      unread: c.unreadCount,
       last: when(c.timestamp),
     }));
 
     if (asJson) {
       console.log(
-        JSON.stringify({ total: chats.length, shown: rows.length, rows }, null, 2),
+        JSON.stringify(
+          {
+            total: chats.length,
+            chatsTotal: listing.total,
+            chatsUnreadable: listing.failed,
+            shown: rows.length,
+            rows,
+          },
+          null,
+          2,
+        ),
       );
       return;
     }
@@ -124,13 +144,18 @@ async function cmdChats() {
     console.log('');
     for (const r of rows) {
       const mark = r.unread ? ` [${r.unread} חדשות]` : '';
-      const kind = r.group ? ' (קבוצה)' : '';
+      const kind = r.group ? ' (קבוצה)' : r.channel ? ' (ערוץ)' : '';
       console.log(`${r.last}  ${r.name}${kind}${mark}`);
       if (r.number) console.log(`         ${r.number}`);
     }
     if (chats.length > rows.length) {
       console.log('');
       console.log(`— עוד ${chats.length - rows.length} שיחות לא הוצגו. --limit להרחבה.`);
+    }
+    const note = completenessNote(listing.total, listing.failed);
+    if (note) {
+      console.log('');
+      console.log(note);
     }
   });
 }

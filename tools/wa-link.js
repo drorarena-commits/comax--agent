@@ -21,6 +21,7 @@
  *   npm run wa-link -- 0501234567      pairing code for that number
  *   npm run wa-link -- --qr            QR PNG instead
  *   npm run wa-link -- --status        is it already linked?
+ *   npm run wa-link -- <n> --force     wipe a half-finished profile and retry
  */
 
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -30,7 +31,8 @@ import { ROOT } from '../src/config.js';
 import {
   makeClient,
   connect,
-  hasSession,
+  hasProfile,
+  clearProfile,
   selfJid,
   shutdown,
 } from '../src/whatsapp/client.js';
@@ -46,6 +48,7 @@ const argv = process.argv.slice(2);
 const wantQr = argv.includes('--qr');
 const wantStatus = argv.includes('--status');
 const headed = argv.includes('--headed');
+const force = argv.includes('--force');
 const phoneArg = argv.find((a) => !a.startsWith('-'));
 
 function digitsFor(input) {
@@ -64,12 +67,12 @@ function digitsFor(input) {
 
 async function main() {
   if (wantStatus) {
-    if (!hasSession()) {
-      console.log('לא מקושר. אין סשן על הדיסק.');
+    if (!hasProfile()) {
+      console.log('לא מקושר. אין פרופיל על הדיסק.');
       console.log('להתחיל: npm run wa-link -- 05XXXXXXXX');
       return;
     }
-    console.log('יש סשן על הדיסק — בודק שהוא עוד חי...');
+    console.log('יש פרופיל על הדיסק — בודק אם הוא באמת מקושר...');
     const client = makeClient({ headed });
     try {
       await connect(client, { timeoutMs: 90000 });
@@ -80,10 +83,19 @@ async function main() {
     return;
   }
 
-  if (hasSession()) {
-    console.log('⚠️ כבר קיים סשן. לבדיקה: npm run wa-link -- --status');
-    console.log('   לקישור מחדש — למחוק את .whatsapp-profile/ קודם.');
+  if (hasProfile() && !force) {
+    // Deliberately worded as "profile", not "session": a link that failed
+    // halfway still leaves one behind, and calling that "already linked" is
+    // what blocked the retry after the 14/09 failure.
+    console.log('⚠️ קיים פרופיל כרום לוואטסאפ — אבל זו אינה הוכחה שהוא מקושר.');
+    console.log('   לבדוק אם הוא חי:   npm run wa-link -- --status');
+    console.log('   להתחיל קישור מאפס: npm run wa-link -- <מספר> --force');
     return;
+  }
+
+  if (force && hasProfile()) {
+    clearProfile();
+    console.log('הפרופיל הקודם נמחק — מתחיל קישור מאפס.');
   }
 
   mkdirSync(OUT_DIR, { recursive: true });
@@ -121,9 +133,48 @@ async function main() {
   }
 
   const phone = digitsFor(phoneArg);
-  const client = makeClient({ headed });
+
+  /**
+   * WHY THIS WAITS FOR THE `qr` EVENT
+   * ---------------------------------
+   * The first version asked for a pairing code after a fixed 12-second wait.
+   * That guessed at when WhatsApp Web would be ready, and on 14/09/2026 it
+   * guessed wrong: `requestPairingCode` ran before the auth store existed and
+   * the `evaluate` tore the page down — Invariant Violation #56367 inside
+   * `allUserPrefsIdb`, then the browser closed and nothing recovered.
+   *
+   * The `qr` event is the page SAYING it reached the auth screen with its store
+   * loaded. Waiting for that fact instead of estimating it is the whole fix.
+   * And because WhatsApp rotates the QR every ~20s, a failed attempt gets
+   * another chance on the next rotation rather than ending the run.
+   */
+  let attempts = 0;
+  let requesting = false;
+  let gotCode = false;
+
+  const client = makeClient({
+    headed,
+    onQr: async () => {
+      if (requesting || gotCode || attempts >= 3) return;
+      requesting = true;
+      attempts += 1;
+      try {
+        await client.requestPairingCode(phone, true);
+      } catch (e) {
+        console.error(`ניסיון ${attempts}/3 לבקש קוד נכשל: ${e.message}`);
+        if (attempts >= 3) {
+          console.error('');
+          console.error('שלושת הניסיונות נכשלו. מסלול הגיבוי:');
+          console.error('  npm run wa-link -- --qr --force');
+        }
+      } finally {
+        requesting = false;
+      }
+    },
+  });
 
   client.on('code', (code) => {
+    gotCode = true;
     const pretty = String(code).replace(/(.{4})(.*)/, '$1-$2');
     console.log('');
     console.log('┌──────────────────────────────┐');
@@ -135,36 +186,27 @@ async function main() {
     console.log('');
   });
 
-  // The client must be initialising before a pairing code can be requested —
-  // the code is produced by the page's own auth store, not by us.
-  let ready = false;
-  const readyPromise = connect(client, { timeoutMs: 600000 }).then((c) => {
-    ready = true;
-    return c;
-  });
-
-  // Give the page time to load WhatsApp Web and expose the auth store.
-  await new Promise((r) => setTimeout(r, 12000));
-  if (!ready) {
-    try {
-      await client.requestPairingCode(phone, true);
-    } catch (e) {
-      console.error(`לא הצלחתי לבקש קוד קישור: ${e.message}`);
-      console.error('נסה את מסלול ה-QR: npm run wa-link -- --qr');
-      await shutdown(client);
-      process.exitCode = 1;
-      return;
-    }
-  }
+  console.log('פותח את WhatsApp Web וממתין שהדף יהיה מוכן...');
+  console.log('(הקוד יופיע כאן ברגע שוואטסאפ מגיעה למסך האימות)');
 
   try {
-    await readyPromise;
+    await connect(client, { timeoutMs: 600000 });
     console.log(`✅ מקושר. המספר: ${jidToNumber(selfJid(client))}`);
     console.log('מעתה: npm run wa -- chats');
   } finally {
     await shutdown(client);
   }
 }
+
+// puppeteer surfaces a TargetCloseError as an unhandled rejection when the
+// browser dies mid-flow — that is how the 14/09 failure ended, with a stack
+// trace and exit 0 instead of a readable message. Report and exit non-zero.
+process.on('unhandledRejection', (e) => {
+  const msg = e instanceof Error ? e.message : String(e);
+  console.error(`הדפדפן נפל באמצע: ${msg}`);
+  console.error('לנסות שוב: npm run wa-link -- <מספר> --force');
+  process.exit(1);
+});
 
 main().catch((e) => {
   console.error(`נכשל: ${e.message}`);
