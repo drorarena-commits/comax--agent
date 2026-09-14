@@ -58,12 +58,20 @@ export function openWhatsapp({ phone, text, app }) {
   const web = `https://wa.me/${number}?text=${encodeURIComponent(text || '')}`;
 
   if (app === 'business') {
-    const started = Date.now();
+    // הנפילה חזרה מבוטלת ברגע שהדף מאבד מיקוד — כלומר ברגע ש-iOS מתחיל
+    // לעבור לאפליקציה. בלי הביטול הזה הטיימר יורה גם כשהמעבר כבר בדרך,
+    // והמסך "קופץ" דרך הקישור הרגיל בדרכו לביזנס. נמדד אצל דרור 14/09/2026:
+    // הסכימה עובדת, אבל המעבר לוקח יותר מ-1.2 שניות.
+    let cancelled = false;
+    const cancel = () => { cancelled = true; };
+    document.addEventListener('visibilitychange', cancel, { once: true });
+    window.addEventListener('pagehide', cancel, { once: true });
+    window.addEventListener('blur', cancel, { once: true });
+
     location.href = `whatsapp-business://send?${q}`;
-    // אם הסכימה לא הוכרה, הדף לא איבד מיקוד — אז פותחים את הקישור הרגיל.
     setTimeout(() => {
-      if (!document.hidden && Date.now() - started < 2500) location.href = web;
-    }, 1200);
+      if (!cancelled && !document.hidden) location.href = web;
+    }, 2500);
     return true;
   }
 
