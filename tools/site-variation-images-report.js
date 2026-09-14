@@ -11,11 +11,23 @@
  * לראות את התמונה עצמה כדי לדעת שהצבע הנכון הוצמד, ו-CSV או טבלת מזהים לא
  * עונים על זה.
  *
- *   node tools/site-variation-images-report.js <קובץ-json> [--out <קובץ-html>]
+ * ⚠️ **ברירת המחדל מסננת לפריטים עם מלאי במחסן ראשי.** כלל של דרור
+ * (15/09/2026): "מעניין רק וריאציות שיש להן מלאי זמין". פריט שאין ממנו סחורה
+ * אינו פריט לטיפול, ורשימה שמערבבת את השניים היא רשימה שלא נקראת — 831 שורות
+ * נכונות־טכנית שמתוכן רק עשרות ברות פעולה.
+ *
+ * ⚠️ **והמלאי נמדד בקומקס, לא באתר.** הכמות שרשומה בוורדפרס יכולה להיות שארית
+ * ישנה שלא משקפת סחורה בחנות — נמדד על קרש `002024`, שבו לצבע 114 היו 28
+ * יחידות רשומות באתר ודרור הורה להוריד אותו בכל זאת. המקור הוא הייצוא המקומי
+ * שב-`content/`, וההצלבה לפי מק"ט/ברקוד. המחסן הוא **ראשי**, כי האתר מוכר ממנו
+ * בלבד.
+ *
+ *   node tools/site-variation-images-report.js <קובץ-json> [--out <קובץ-html>] [--all]
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve, basename } from 'node:path';
 import { config } from '../orders-app/config.js';
+import { stock } from '../src/catalog/local-stock.js';
 
 const args = process.argv.slice(2);
 const jsonPath = args.find(a => !a.startsWith('--'));
@@ -25,6 +37,37 @@ if (!jsonPath) {
 }
 const outArg = args.indexOf('--out');
 const outPath = outArg >= 0 ? args[outArg + 1] : jsonPath.replace(/\.json$/, '.html');
+const SHOW_ALL = args.includes('--all');
+
+/**
+ * מלאי מקומי לפי מק"ט האתר.
+ *
+ * ⚠️ האינדקס נבנה על **שלושה** שדות — קוד הפריט, הברקוד והמק"ט החלופי — ולא
+ * על אחד. בקטלוג של דרור המק"ט והברקוד זהים ב-13,283 מתוך 13,316 הפריטים,
+ * אבל לא בכולם, והשארית היא בדיוק המקום שבו "לא נמצא" היה נקרא בטעות כ"אין
+ * מלאי". בלי שום נרמול: ערך ממקור חיצוני נבדק כפי שהוא.
+ */
+function stockIndex() {
+  const s = stock();
+  const by = new Map();
+  const put = (k, r) => { if (k && !by.has(k)) by.set(k, r); };
+  for (const r of s.items.values()) {
+    put(r.code, r);
+    put(r.barcode, r);
+    put(r.altCode, r);
+  }
+  const main = s.warehouses.find(w => w === 'ראשי') || 'ראשי';
+  return {
+    source: s.source,
+    warehouses: s.warehouses,
+    /** מחזיר null כשהמק"ט אינו בייצוא כלל — זה לא אפס, זה "לא ידוע". */
+    look(sku) {
+      const r = sku ? by.get(String(sku).trim()) : null;
+      if (!r) return null;
+      return { main: r.per?.[main] ?? 0, total: r.total ?? 0, label: r.altCode || r.model || r.name };
+    },
+  };
+}
 
 const auth = 'Basic ' + Buffer.from(`${config.site.key}:${config.site.secret}`).toString('base64');
 const wc = async path => {
@@ -80,9 +123,41 @@ async function main() {
   const bad = verified.filter(v => !v.ok);
   console.log(bad.length ? `⚠️  ${bad.length} שורות לא אומתו` : `✅ כל ${verified.length} השורות אומתו מול האתר`);
 
-  // --- תמונות האב לקבוצות שאין להן מקור ---
-  console.log('\nמביא תמונות אב לקבוצות החסרות...');
-  const noSource = report.noSource || [];
+  // --- סינון למלאי זמין (ברירת מחדל), מהייצוא המקומי של קומקס ---
+  const idx = stockIndex();
+  console.log(`\nמלאי מ-${basename(idx.source.named || idx.source.matrix || '?')}${idx.source.matrix ? ` + ${basename(idx.source.matrix)}` : ''}`);
+
+  let noSource = report.noSource || [];
+  const before = noSource.reduce((s, x) => s + x.count, 0);
+  const skipped = { noStock: 0, unknown: 0, otherWarehouse: 0 };
+
+  for (const g of noSource) {
+    // ⚠️ הסינון הוא **ברמת הווריאציה**, לא ברמת קבוצת הצבע: לצבע אחד יכולה
+    // להיות מידה אחת במלאי ושש שלא, ולזרוק את כולן יחד היה מסתיר עבודה אמיתית.
+    for (const v of g.variations) {
+      const st = idx.look(v.sku);
+      v.mainStock = st ? st.main : null;
+      v.totalStock = st ? st.total : null;
+    }
+    g.inStock = g.variations.filter(v => (v.mainStock ?? 0) > 0);
+    g.elsewhere = g.variations.filter(v => (v.mainStock ?? 0) <= 0 && (v.totalStock ?? 0) > 0);
+    skipped.unknown += g.variations.filter(v => v.mainStock === null).length;
+    skipped.otherWarehouse += g.elsewhere.length;
+  }
+  skipped.noStock = before - noSource.reduce((s, g) => s + g.inStock.length, 0);
+
+  if (!SHOW_ALL) {
+    noSource = noSource.filter(g => g.inStock.length);
+    for (const g of noSource) { g.variations = g.inStock; g.count = g.inStock.length; }
+  }
+  const after = noSource.reduce((s, x) => s + x.count, 0);
+  console.log(
+    SHOW_ALL
+      ? `מציג הכל: ${before} ווריאציות`
+      : `מלאי זמין בראשי: ${after} מתוך ${before} · ${skipped.otherWarehouse} עם מלאי במחסן אחר בלבד · ${skipped.unknown} לא נמצאו בייצוא`,
+  );
+
+  console.log('\nמביא תמונות אב לקבוצות שנשארו...');
   for (const g of noSource) g.parentSrc = await mediaSrc(g.parentImage);
 
   // --- קיבוץ לפי מוצר ---
@@ -129,7 +204,14 @@ async function main() {
       const total = groups.reduce((s, x) => s + x.count, 0);
       const src = groups[0].parentSrc;
       const list = groups
-        .map(g => `<li><b>${esc(g.color)}</b> — ${g.count} ${g.count === 1 ? 'מידה' : 'מידות'}</li>`)
+        .map(g => {
+          // המידות עצמן, עם הכמות שיושבת בראשי — זה מה שהופך את השורה למטלה.
+          const sizes = g.variations
+            .map(v => `${esc(v.size || '—')}<span class="q">${v.mainStock ?? '?'}</span>`)
+            .join(' ');
+          return `<li><b>${esc(g.color)}</b> — ${g.count} ${g.count === 1 ? 'מידה' : 'מידות'}
+            <div class="sizerow">${sizes}</div></li>`;
+        })
         .join('');
       const status = groups[0].status === 'draft' ? '<span class="draft">טיוטה</span>' : '';
       return `<section class="product">
@@ -175,6 +257,11 @@ async function main() {
   .sizes, .from { color: #666; font-size: 13px; }
   .from { color: #1a7f37; }
   .colors { margin: 6px 0 0; padding-inline-start: 20px; font-size: 14px; }
+  .sizerow { margin-top: 3px; display: flex; flex-wrap: wrap; gap: 5px; }
+  .sizerow > span, .sizerow { font-size: 12px; }
+  .sizerow { color: #444; }
+  .q { background: #e7f3ea; color: #1a7f37; border-radius: 8px; padding: 0 5px; margin-inline-start: 3px; font-weight: 600; }
+  .filter { background: #fff8e6; border-radius: 8px; padding: 10px 13px; font-size: 14px; margin: 0 0 22px; }
   .bad { color: #b32d2e; font-weight: 600; }
   footer { color: #777; font-size: 13px; margin-top: 36px; }
 </style>
@@ -186,8 +273,11 @@ async function main() {
   <div class="card"><b>${t.products ?? '—'}</b><span>מוצרי אב עם ווריאציות</span></div>
   <div class="card"><b>${t.variations ?? '—'}</b><span>ווריאציות נסרקו</span></div>
   <div class="card good"><b>${verified.length}</b><span>תמונות שוכפלו</span></div>
-  <div class="card warn"><b>${noSource.reduce((s, x) => s + x.count, 0)}</b><span>עדיין בלי תמונת צבע</span></div>
+  <div class="card warn"><b>${after}</b><span>${SHOW_ALL ? 'עדיין בלי תמונת צבע' : 'חסרות — ויש מהן מלאי'}</span></div>
 </div>
+${SHOW_ALL ? '' : `<p class="filter">מסונן למלאי זמין במחסן <b>ראשי</b>: ${after} מתוך ${before} הווריאציות החסרות.
+  ${skipped.otherWarehouse} נוספות יש מהן מלאי במחסן אחר בלבד (האתר מוכר מראשי בלבד), ו-${skipped.unknown} לא נמצאו בייצוא —
+  וחוסר בייצוא הוא &quot;≤0 במחסנים שהדוח כיסה&quot;, לא אפס ודאי. המלאי מקומקס (<code>${esc(basename(idx.source.named || ''))}</code>), לא מוורדפרס.</p>`}
 
 <h2>מה תוקן
   <span class="sub">${verified.length} ווריאציות ב-${fixedByProduct.size} מוצרים. לכל אחת הוצמדה התמונה של <b>אותו צבע בדיוק</b>, ממידה אחרת של אותו מוצר — ${bad.length ? `<span class="bad">${bad.length} לא אומתו</span>` : 'כולן אומתו בקריאה חוזרת מהאתר'}.</span>
@@ -195,7 +285,7 @@ async function main() {
 ${fixedHtml || '<p>אין.</p>'}
 
 <h2>מה לא ניתן לתקן בשכפול
-  <span class="sub">${noSource.reduce((s, x) => s + x.count, 0)} ווריאציות ב-${missingByProduct.size} מוצרים. כאן <b>לאף מידה בצבע אין תמונה</b>, ולכן אין ממה לשכפל — צריך תמונה חדשה מה-PIM של ארנה. מסודר לפי מספר הווריאציות המושפעות.</span>
+  <span class="sub">${after} ווריאציות ב-${missingByProduct.size} מוצרים${SHOW_ALL ? "" : " <b>שיש מהן מלאי בראשי</b>"}. כאן <b>לאף מידה בצבע אין תמונה</b>, ולכן אין ממה לשכפל — צריך תמונה חדשה מה-PIM של ארנה. המספר שליד כל מידה הוא הכמות בראשי. מסודר לפי מספר הווריאציות המושפעות.</span>
 </h2>
 ${missingHtml || '<p>אין.</p>'}
 
