@@ -7,3 +7,7 @@ data/
 # ספורט אנד מור — קבצי עבודה. הייחוס ב-sportmore/reference/ כן נשמר.
 sportmore/in/
 sportmore/out/
+.env.bak-*
+
+# גשר הוואטסאפ — סשן חי, שווה ערך לסיסמה. לא נשמר בגיט בשום מצב.
+.whatsapp-profile/
