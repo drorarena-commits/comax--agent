@@ -398,6 +398,9 @@ tools/memory-backup.js            מסנכרן אותו לכאן. כיוון א�
 knowledge/arena-site-items.md    הקמת מוצרים באתר ארנה ישראל — מפת השדות, הווריאציות, שלושת השערים
 tools/site-swatch.js             ריבועי בחירת הצבע לאתר — 50×50 מדגימת צבע מצילום המוצר
 tools/xlsx.js                    קורא את ה-Product Matrix של ארנה — מקור התיאורים והמפרט
+wordpress/                       קוד PHP שרץ בתוך אתר ארנה — התקנה ידנית, אין API שמתקין תוסף
+wordpress/arena-order-item-thumb/  תמונת הווריאציה (הצבע) במסך ההזמנה בווקומרס, עם הגדלה בלחיצה
+                                 מתקן את תוצר הלוואי של התוסף arena-parent-display שמציג את מוצר האב
 orders-app/                       אפליקציית ההזמנות — מחליפה את WeManage Edge
 orders-app/README.md              ההתקנה: מפתחות WooCommerce, בוט טלגרם, מנהרה
 orders-app/watch.js               הלולאה שמזהה הזמנה חדשה ושולחת לטלגרם
