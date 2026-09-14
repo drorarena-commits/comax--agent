@@ -282,6 +282,57 @@ body {
 .item-top { display: flex; justify-content: space-between; gap: .8rem; font-weight: 600; }
 .item-sub { color: var(--ink-soft); font-size: .85rem; margin-top: .1rem; }
 
+/* שורת פריט עם תמונה — התמונה בצד, הפרטים לצידה */
+.item-row { display: flex; gap: .7rem; align-items: flex-start; }
+.item-info { flex: 1; min-width: 0; }
+
+.item-img {
+  width: 68px; height: 68px;
+  flex: 0 0 auto;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: zoom-in;
+}
+
+/* הברקוד נקרא ספרה-ספרה מול המדבקה — גופן רחב, ריווח, וכיוון LTR */
+.item-code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .9rem;
+  letter-spacing: .04em;
+  direction: ltr;
+  text-align: start;
+  margin-top: .2rem;
+  color: var(--ink);
+}
+
+.item-comax { font-size: .82rem; color: #1a7f42; margin-top: .1rem; }
+@media (prefers-color-scheme: dark) { .item-comax { color: #6fdc98; } }
+
+/* ---------- תמונה מוגדלת ---------- */
+
+.lb {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(0,0,0,.97);
+  backdrop-filter: blur(6px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: calc(env(safe-area-inset-top) + 1rem) 1rem calc(env(safe-area-inset-bottom) + 1rem);
+  gap: 1rem;
+  cursor: zoom-out;
+}
+.lb-img { max-width: 100%; max-height: 68vh; object-fit: contain; border-radius: 10px; background: #fff; }
+.lb-cap { text-align: center; color: #fff; max-width: 100%; }
+.lb-name { font-weight: 600; margin-bottom: .45rem; }
+.lb-code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 1.35rem;
+  letter-spacing: .09em;
+  direction: ltr;
+}
+.lb-comax { color: #6fdc98; font-size: .95rem; margin-top: .45rem; }
+
 .block.warn { background: var(--warn-bg); border-color: var(--warn-line); }
 .block.warn h3 { color: var(--warn-ink); }
 .block.warn .item-sub { color: var(--warn-ink); opacity: .85; }

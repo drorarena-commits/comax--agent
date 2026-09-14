@@ -88,13 +88,30 @@ export function checkOrderItems(order) {
   }
 
   const missing = [];
+  // מה שנמצא — מוחזר גם הוא, לפי מזהה השורה. זה מה שמאפשר למלקט לאמת
+  // ליד התמונה שהדגם, הצבע והמידה בקומקס הם אלה שהוא מחזיק ביד, במקום
+  // להשוות מק"ט בן 13 ספרות בעיניים.
+  const matched = {};
+
   for (const li of lines) {
     const sku = (li.sku || '').trim();
     if (!sku) {
       missing.push({ sku: '', name: li.name, note: 'לשורה באתר אין מק"ט כלל' });
       continue;
     }
-    if (cat.known.has(sku)) continue;
+
+    const row = cat.known.get(sku);
+    if (row) {
+      const val = (i) => (i >= 0 ? (row[i] || '').trim() : '');
+      matched[li.id] = {
+        barcode: val(cat.col.bar) || val(cat.col.sku),
+        name: val(cat.col.name),
+        model: val(cat.col.model),
+        color: val(cat.col.color),
+        size: val(cat.col.size),
+      };
+      continue;
+    }
 
     // רמז בלבד: אולי המק"ט באתר הוא ברקוד עם סיומת מידה.
     const base = sku.includes('-') ? sku.slice(0, sku.indexOf('-')) : '';
@@ -106,6 +123,7 @@ export function checkOrderItems(order) {
   return {
     checked: true,
     missing,
+    matched,
     catalog: { path: cat.path, exportedAt: cat.exportedAt.toISOString(), ageDays },
   };
 }

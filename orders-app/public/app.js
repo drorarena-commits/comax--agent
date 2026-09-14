@@ -233,6 +233,37 @@ function whatsappDialog(order) {
   box.focus();
 }
 
+/* ---------- הגדלת תמונה ---------- */
+
+/**
+ * תמונה במסך מלא עם הברקוד והפרטים מתחתיה.
+ *
+ * הפרטים נשארים על המסך **יחד עם** התמונה ולא מוחלפים בה: הרגע שבו מגדילים
+ * את התמונה הוא בדיוק הרגע שבו משווים אותה לפריט שביד, ואז צריך לראות גם
+ * את הברקוד. תמונה לבדה מחזירה את המלקט למסך הקודם.
+ */
+function lightbox(line, comaxRow) {
+  const wrap = el('div', 'lb');
+  wrap.dataset.close = '';
+
+  const img = el('img', 'lb-img');
+  img.src = line.image.src;
+  img.alt = line.name;
+  wrap.append(img);
+
+  const cap = el('div', 'lb-cap');
+  cap.append(el('div', 'lb-name', line.name));
+  if (line.sku) cap.append(el('div', 'lb-code', line.sku));
+  if (comaxRow) {
+    const parts = [comaxRow.model, comaxRow.color, comaxRow.size].filter(Boolean).join(' · ');
+    if (parts) cap.append(el('div', 'lb-comax', `בקומקס: ${parts}`));
+  }
+  wrap.append(cap);
+
+  wrap.onclick = () => wrap.remove();
+  document.body.append(wrap);
+}
+
 /* ---------- פרטי הזמנה ---------- */
 
 function block(title, rows) {
@@ -282,20 +313,52 @@ function renderOrder(order, comax) {
   body.append(block('לקוח', custRows));
 
   // --- פריטים ---
+  // התמונה היא **של הווריאציה**, לא של מוצר האב: WooCommerce מחזיר
+  // `line_items[].image` לפי הווריאציה שנקנתה, ולכן הצבע שרואים הוא הצבע
+  // שהוזמן. זה מה שמאפשר ללקט לפי המסך בלי ללכת למחשב.
   const items = (order.line_items || []).map((li) => {
-    const it = el('div', 'item');
+    const it = el('div', 'item item-row');
+
+    if (li.image?.src) {
+      const thumb = el('img', 'item-img');
+      // ⚠️ ה-API מחזיר את התמונה **המקורית** — נמדד 453KB עבור ריבוע של
+      // 68 פיקסל. בסלולר זה איטי ויקר, ובמנהרה זה גם לא הספיק להיטען.
+      // וורדפרס מייצר `-150x150` בכל העלאה (9–13KB, פי 40 פחות), ואם הוא
+      // במקרה חסר — `onerror` נופל חזרה למקור ולא משאיר ריבוע ריק.
+      thumb.src = li.image.src.replace(/(\.[a-z0-9]+)$/i, '-150x150$1');
+      thumb.onerror = () => { thumb.onerror = null; thumb.src = li.image.src; };
+      thumb.alt = li.name;
+      thumb.loading = 'lazy';
+      thumb.onclick = () => lightbox(li, comax?.matched?.[li.id]);
+      it.append(thumb);
+    }
+
+    const info = el('div', 'item-info');
     const top = el('div', 'item-top');
     top.append(
       el('span', null, li.name + (li.quantity > 1 ? ` × ${li.quantity}` : '')),
       el('span', null, money(li.total, cur)),
     );
-    it.append(top);
+    info.append(top);
+
     const variation = (li.meta_data || [])
       .filter((m) => m.key && !m.key.startsWith('_') && m.display_value)
       .map((m) => `${m.display_key || m.key}: ${m.display_value}`)
       .join(' · ');
-    const sub = [variation, li.sku ? `מק"ט ${li.sku}` : null].filter(Boolean).join(' · ');
-    if (sub) it.append(el('div', 'item-sub', sub));
+    if (variation) info.append(el('div', 'item-sub', variation));
+
+    // הברקוד המלא בשורה משלו ובגופן רחב — הוא נקרא ספרה-ספרה מול המדבקה.
+    if (li.sku) info.append(el('div', 'item-code', li.sku));
+
+    // ומה שקומקס יודע על אותו ברקוד: דגם, צבע ומידה. זו ההצלבה שמוכיחה
+    // שהפריט ביד הוא הפריט שהוזמן.
+    const m = comax?.matched?.[li.id];
+    if (m) {
+      const parts = [m.model, m.color, m.size].filter(Boolean).join(' · ');
+      if (parts) info.append(el('div', 'item-comax', `בקומקס: ${parts}`));
+    }
+
+    it.append(info);
     return it;
   });
   body.append(block('פריטים', items));
