@@ -11,3 +11,6 @@ sportmore/out/
 
 # גשר הוואטסאפ — סשן חי, שווה ערך לסיסמה. לא נשמר בגיט בשום מצב.
 .whatsapp-profile/
+
+# מטמון של whatsapp-web.js — נוצר בזמן ריצה
+.wwebjs_cache/
