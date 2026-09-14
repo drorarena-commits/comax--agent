@@ -262,9 +262,16 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
   //    המונה הראה `30 מתוך 719` והרשתות היו כמעט ריקות, ולכן שער שקרא אותן
   //    מיד דיווח `תקין: 0 · לא תקין: 0` **ועבר**. זה הכשל היחיד כאן שנראה
   //    זהה להצלחה — ולכן ממתינים למונה, ולא לזמן.
+  // ⚠️ **ובקובץ קטן אין "מתוך".** נמדד 14/09/2026 על קובץ בן 3 שורות: הבנייה
+  //    נגמרת לפני שהמונה המתקדם מספיק להיבנות, המסך מציג `סה"כ פריטים: 3`
+  //    בלבד, והשער חיכה 4 דקות ונפל. הצורה הקצרה מתקבלת — אבל **רק** כשהיא
+  //    שווה למספר השורות בקובץ, ואז היא עצמה הוכחת השלמות שחיפשנו.
   const readCounter = () => preview.evaluate(() => {
-    const m = document.body.innerText.replace(/\s+/g, ' ').match(/סה"כ פריטים:\s*(\d+)\s*מתוך\s*(\d+)/);
-    return m ? { done: +m[1], total: +m[2] } : null;
+    const t = document.body.innerText.replace(/\s+/g, ' ');
+    const full = t.match(/סה"כ פריטים:\s*(\d+)\s*מתוך\s*(\d+)/);
+    if (full) return { done: +full[1], total: +full[2] };
+    const short = t.match(/סה"כ פריטים:\s*(\d+)/);
+    return short ? { done: +short[1], total: +short[1] } : null;
   }).catch(() => null);
 
   let counter = null;
@@ -273,7 +280,14 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
     if (counter && counter.done >= counter.total) break;
     await page.waitForTimeout(2000);
   }
-  if (!counter) throw new Error('לא נמצא מונה "סה"כ פריטים" במסך התוצאה — לא קולטים בלי לדעת כמה נקראו.');
+  if (!counter) {
+    // בלי דגימה של הטקסט אי אפשר לדעת *למה* המונה חסר, וההרצה הבאה תיפול זהה.
+    const sample = await preview
+      .evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 400))
+      .catch(() => '(לא ניתן לקרוא)');
+    throw new Error(
+      `לא נמצא מונה "סה"כ פריטים" במסך התוצאה — לא קולטים בלי לדעת כמה נקראו.\nמה שהמסך הציג: ${sample}`);
+  }
   if (counter.done < counter.total) {
     throw new Error(`התצוגה המקדימה לא הסתיימה: ${counter.done} מתוך ${counter.total} אחרי 4 דקות. לא קולטים.`);
   }
