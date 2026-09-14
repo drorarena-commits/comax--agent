@@ -56,9 +56,14 @@ function loadCatalog() {
   const rows = parseCsv(readFileSync(path, 'utf8'));
   const head = rows[0] || [];
   const ix = (n) => head.indexOf(n);
+  // `דגם` הוא **מספר** הדגם (005036) ו-`שם דגם` הוא התיאור המילולי. מה שמזהה
+  // פריט על המדף הוא הצירוף דגם-צבע-מידה, ולכן נשמרים שניהם.
+  // ⚠️ ועמודת `מידה` אינה המידה — היא מחזיקה את קוד הצבע. המידה יושבת
+  // ב-`שם מידה`, וזו מלכודת שקטה שמחליפה 34 ב-751.
   const col = {
     sku: ix('פריט'), bar: ix('ברקוד'), alt: ix('קוד חלופי'),
-    name: ix('שם פריט'), model: ix('שם דגם'), color: ix('שם צבע'), size: ix('שם מידה'),
+    name: ix('שם פריט'), modelName: ix('שם דגם'),
+    model: ix('דגם'), color: ix('שם צבע'), size: ix('שם מידה'),
   };
 
   // מפתח אחד לכל צורת זיהוי — פריט, ברקוד וקוד חלופי — כי לא כל פריט בקומקס
@@ -103,12 +108,16 @@ export function checkOrderItems(order) {
     const row = cat.known.get(sku);
     if (row) {
       const val = (i) => (i >= 0 ? (row[i] || '').trim() : '');
+      const model = val(cat.col.model);
+      const color = val(cat.col.color);
+      const size = val(cat.col.size);
       matched[li.id] = {
         barcode: val(cat.col.bar) || val(cat.col.sku),
         name: val(cat.col.name),
-        model: val(cat.col.model),
-        color: val(cat.col.color),
-        size: val(cat.col.size),
+        modelName: val(cat.col.modelName),
+        model, color, size,
+        // המזהה שמודפס על המדבקה ומזוהה בעין: דגם-צבע-מידה.
+        code: [model, color, size].filter(Boolean).join('-'),
       };
       continue;
     }

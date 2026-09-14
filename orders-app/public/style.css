@@ -261,6 +261,56 @@ body {
 
 .sheet-grip { width: 42px; height: 5px; border-radius: 3px; background: var(--line); margin: .35rem auto .9rem; }
 
+/* כפתור הסגירה — המשיכה למטה לא מספיקה כשהתוכן עצמו נגלל, ואז אין דרך
+   לחזור לרשימה.
+   ⚠️ בשורה משלו ולא צף: `float` גרם לכותרת לזרום סביבו ולהיחתך ל"נה #79049".
+   הסרגל דביק כדי שהכפתור יישאר זמין גם אחרי גלילה בהזמנה ארוכה. */
+.sheet-bar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  justify-content: flex-end;   /* ב-RTL זה הצד השמאלי, הרחק מהכותרת */
+  background: var(--bg);
+  padding-bottom: .3rem;
+  margin-top: -.3rem;
+}
+
+.sheet-close {
+  width: 36px; height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 5;
+}
+.sheet-close:active { background: var(--line); }
+
+/* ---------- מקטע מתקפל ---------- */
+
+.fold {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: .2rem .9rem;
+  margin-bottom: .7rem;
+}
+.fold-head {
+  padding: .7rem 0;
+  font-size: .9rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+}
+.fold-head::-webkit-details-marker { display: none; }
+.fold-head::after { content: ' ⌄'; }
+.fold[open] .fold-head::after { content: ' ⌃'; }
+.fold[open] { padding-bottom: .9rem; }
+
 .sheet h2 { margin: 0 0 .15rem; font-size: 1.25rem; }
 .sheet .when { color: var(--ink-soft); font-size: .88rem; margin-bottom: .9rem; }
 
@@ -307,7 +357,16 @@ body {
   color: var(--ink);
 }
 
-.item-comax { font-size: .82rem; color: #1a7f42; margin-top: .1rem; }
+/* ⚠️ direction: ltr חובה — "004714-102-Os" הוא מחרוזת מעורבת, ובהקשר RTL
+ הדפדפן מזיז את הסיומת הלועזית לתחילת השורה ומציג "Os-004714-102".
+ נמדד על המסך; ה-JS החזיר את הסדר הנכון כל הזמן. */
+.item-comax {
+  font-size: .82rem;
+  color: #1a7f42;
+  margin-top: .1rem;
+  direction: ltr;
+  text-align: start;
+}
 @media (prefers-color-scheme: dark) { .item-comax { color: #6fdc98; } }
 
 /* ---------- תמונה מוגדלת ---------- */
@@ -331,7 +390,7 @@ body {
   letter-spacing: .09em;
   direction: ltr;
 }
-.lb-comax { color: #6fdc98; font-size: .95rem; margin-top: .45rem; }
+.lb-comax { color: #6fdc98; font-size: .95rem; margin-top: .45rem; direction: ltr; }
 
 .block.warn { background: var(--warn-bg); border-color: var(--warn-line); }
 .block.warn h3 { color: var(--warn-ink); }

@@ -254,10 +254,7 @@ function lightbox(line, comaxRow) {
   const cap = el('div', 'lb-cap');
   cap.append(el('div', 'lb-name', line.name));
   if (line.sku) cap.append(el('div', 'lb-code', line.sku));
-  if (comaxRow) {
-    const parts = [comaxRow.model, comaxRow.color, comaxRow.size].filter(Boolean).join(' · ');
-    if (parts) cap.append(el('div', 'lb-comax', `בקומקס: ${parts}`));
-  }
+  if (comaxRow?.code) cap.append(el('div', 'lb-comax', comaxRow.code));
   wrap.append(cap);
 
   wrap.onclick = () => wrap.remove();
@@ -350,13 +347,11 @@ function renderOrder(order, comax) {
     // הברקוד המלא בשורה משלו ובגופן רחב — הוא נקרא ספרה-ספרה מול המדבקה.
     if (li.sku) info.append(el('div', 'item-code', li.sku));
 
-    // ומה שקומקס יודע על אותו ברקוד: דגם, צבע ומידה. זו ההצלבה שמוכיחה
-    // שהפריט ביד הוא הפריט שהוזמן.
+    // דגם-צבע-מידה — המזהה שמודפס על המדבקה. **לא** שם הפריט מקומקס: הוא
+    // חוזר על שם המוצר שכבר מופיע למעלה ורק מאריך את השורה. ההצלבה עצמה
+    // ממשיכה לרוץ מאחורי הקלעים, ופריט שלא נמצא מתריע בבלוק האדום.
     const m = comax?.matched?.[li.id];
-    if (m) {
-      const parts = [m.model, m.color, m.size].filter(Boolean).join(' · ');
-      if (parts) info.append(el('div', 'item-comax', `בקומקס: ${parts}`));
-    }
+    if (m?.code) info.append(el('div', 'item-comax', m.code));
 
     it.append(info);
     return it;
@@ -403,8 +398,14 @@ function renderOrder(order, comax) {
   if (order.customer_note) body.append(block('הערת לקוח', [el('div', null, order.customer_note)]));
 
   // --- שינוי סטטוס ---
+  // מקופל בכוונה. דרור כמעט לא משנה סטטוס מהטלפון — האריזה והמדבקה נעשות
+  // ממילא במחשב — ולכן ארבעה כפתורים פתוחים תפסו את תחתית המסך בלי תמורה.
+  // הוא נשאר זמין בהקשה אחת, ולא יותר מזה.
+  //
   // לאורח לא מוצגים הכפתורים כלל. זו נוחות בלבד — האכיפה עצמה בשרת, כי
   // שינוי סטטוס שולח מייל אוטומטי ללקוח וכפתור מוסתר אינו הגנה.
+  const fold = el('details', 'fold');
+  fold.append(el('summary', 'fold-head', 'שינוי סטטוס'));
   if (state.role === 'full') {
     const actions = el('div', 'actions');
     for (const a of ACTIONS) {
@@ -413,12 +414,11 @@ function renderOrder(order, comax) {
       btn.onclick = () => changeStatus(order, a, actions);
       actions.append(btn);
     }
-    body.append(block('שינוי סטטוס', [actions]));
+    fold.append(actions);
   } else {
-    body.append(block('שינוי סטטוס', [
-      el('div', 'item-sub', 'הרשאת צפייה בלבד — שינוי סטטוס שולח מייל אוטומטי ללקוח'),
-    ]));
+    fold.append(el('div', 'item-sub', 'הרשאת צפייה בלבד — שינוי סטטוס שולח מייל אוטומטי ללקוח'));
   }
+  body.append(fold);
 }
 
 async function changeStatus(order, action, container) {

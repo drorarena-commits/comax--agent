@@ -168,6 +168,7 @@ async function main() {
   check('פרטי הפריט מקומקס הוחזרו לשורה שנמצאה', !!matched[1], Object.keys(matched).join(','));
   check('ולשורה שלא נמצאה אין פרטים', !matched[2]);
   check('הברקוד מקומקס מולא', !!matched[1]?.barcode, matched[1]?.barcode);
+  check('קוד דגם-צבע-מידה נבנה', !!matched[1]?.code, matched[1]?.code);
 
   // 7. שינוי סטטוס — ומוודאים שהוא באמת נכתב, לא רק שהתשובה הייתה 200
   const put = await fetch(`${base}/api/orders/101/status`, {
