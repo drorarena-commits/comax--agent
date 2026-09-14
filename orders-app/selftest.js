@@ -13,6 +13,7 @@
 import { createServer } from 'node:http';
 
 const TOKEN = 'selftest-token-0123456789';
+const GUEST = 'selftest-guest-0123456789';
 
 /** הזמנת דמה. המק"ט הראשון יילקח מהקטלוג האמיתי, השני מזויף בכוונה. */
 function fakeOrder(id, number, status, realSku) {
@@ -107,6 +108,7 @@ async function main() {
   config.site.key = 'ck_test';
   config.site.secret = 'cs_test';
   config.server.token = TOKEN;
+  config.server.guestToken = GUEST;
   config.server.port = 0;
 
   const { startServer } = await import('./server.js');
@@ -188,7 +190,34 @@ async function main() {
   check('ההודעה מתריעה על הפריט החסר', msg.includes('SKU-לא-קיים-999'));
   check('ההודעה כוללת קישור לאפליקציה', msg.includes('example.test'));
 
-  // 9. נרמול מספר הטלפון לוואטסאפ — מספר שגוי פונה לאדם זר בשם העסק
+  // 9. טוקן אורח — רואה הכל, אינו משנה סטטוס.
+  // ⚠️ שינוי סטטוס שולח מייל אוטומטי ללקוח, ולכן זו הגנה על פעולה בלתי הפיכה
+  // כלפי אדם אמיתי — לא על נוחות ממשק.
+  const guest = { headers: { Authorization: `Bearer ${GUEST}` } };
+
+  const meFull = await (await fetch(`${base}/api/me`, withToken)).json();
+  check('בעל ההרשאה המלאה מזוהה כ-full', meFull.role === 'full', meFull.role);
+
+  const meGuest = await (await fetch(`${base}/api/me`, guest)).json();
+  check('האורח מזוהה כ-guest', meGuest.role === 'guest', meGuest.role);
+
+  const guestList = await fetch(`${base}/api/orders?status=any`, guest);
+  check('האורח רואה את רשימת ההזמנות', guestList.ok, `${guestList.status}`);
+
+  const guestDetail = await fetch(`${base}/api/orders/102`, guest);
+  check('האורח רואה פרטי הזמנה', guestDetail.ok, `${guestDetail.status}`);
+
+  const before = orders.find((o) => o.id === 102).status;
+  const guestWrite = await fetch(`${base}/api/orders/102/status`, {
+    ...guest, method: 'POST',
+    headers: { ...guest.headers, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'cancelled' }),
+  });
+  check('האורח נדחה בשינוי סטטוס', guestWrite.status === 403, `${guestWrite.status}`);
+  check('והסטטוס באמת לא השתנה', orders.find((o) => o.id === 102).status === before,
+    orders.find((o) => o.id === 102).status);
+
+  // 10. נרמול מספר הטלפון לוואטסאפ — מספר שגוי פונה לאדם זר בשם העסק
   const { toWhatsappNumber, defaultMessage } = await import('./public/whatsapp.js');
   const cases = [
     ['052-555-1234', '972525551234', 'נייד מקומי עם מקפים'],

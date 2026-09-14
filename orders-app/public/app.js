@@ -41,7 +41,7 @@ const el = (tag, cls, text) => {
   return n;
 };
 
-const state = { status: 'any', q: '', page: 1, totalPages: 1, orders: [], loading: false };
+const state = { status: 'any', q: '', page: 1, totalPages: 1, orders: [], loading: false, role: null };
 
 /**
  * ⚠️ האתר מחזיר `currency` כקוד HTML (`&#8362;`) ולא כ-`ILS` — תוסף עברי
@@ -340,14 +340,22 @@ function renderOrder(order, comax) {
   if (order.customer_note) body.append(block('הערת לקוח', [el('div', null, order.customer_note)]));
 
   // --- שינוי סטטוס ---
-  const actions = el('div', 'actions');
-  for (const a of ACTIONS) {
-    const btn = el('button', 'action', a.label);
-    btn.setAttribute('aria-current', String(order.status === a.key));
-    btn.onclick = () => changeStatus(order, a, actions);
-    actions.append(btn);
+  // לאורח לא מוצגים הכפתורים כלל. זו נוחות בלבד — האכיפה עצמה בשרת, כי
+  // שינוי סטטוס שולח מייל אוטומטי ללקוח וכפתור מוסתר אינו הגנה.
+  if (state.role === 'full') {
+    const actions = el('div', 'actions');
+    for (const a of ACTIONS) {
+      const btn = el('button', 'action', a.label);
+      btn.setAttribute('aria-current', String(order.status === a.key));
+      btn.onclick = () => changeStatus(order, a, actions);
+      actions.append(btn);
+    }
+    body.append(block('שינוי סטטוס', [actions]));
+  } else {
+    body.append(block('שינוי סטטוס', [
+      el('div', 'item-sub', 'הרשאת צפייה בלבד — שינוי סטטוס שולח מייל אוטומטי ללקוח'),
+    ]));
   }
-  body.append(block('שינוי סטטוס', [actions]));
 }
 
 async function changeStatus(order, action, container) {
@@ -406,9 +414,19 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden && $('#sheet').classList.contains('hidden')) load();
 });
 
-renderTabs();
-load();
+// ההרשאה נקראת לפני הרשימה — אחרת פתיחת הזמנה מקישור ישיר תרנדר לפני
+// שידוע אם מותר להציג כפתורי סטטוס.
+(async () => {
+  try {
+    const me = await api('/me');
+    state.role = me.role;
+  } catch {
+    state.role = 'guest';   // ברירת מחדל מחמירה
+  }
+  renderTabs();
+  await load();
 
-// קישור ישיר מהודעת הטלגרם: /?order=123
-const deepLink = new URLSearchParams(location.search).get('order');
-if (deepLink) openOrder(deepLink);
+  // קישור ישיר מהודעת הטלגרם: /?order=123
+  const deepLink = new URLSearchParams(location.search).get('order');
+  if (deepLink) openOrder(deepLink);
+})();

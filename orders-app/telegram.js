@@ -9,15 +9,20 @@ import { config } from './config.js';
 
 const api = (method) => `https://api.telegram.org/bot${config.telegram.token}/${method}`;
 
-export async function sendMessage(text, { chatId, silent = false } = {}) {
-  if (!config.telegram.token || !config.telegram.chatId) {
-    throw new Error('בוט הטלגרם לא מוגדר — חסרים TELEGRAM_TOKEN / TELEGRAM_CHAT_ID ב-.env');
-  }
+/**
+ * הנמענים. `TELEGRAM_CHAT_ID` יכול להחזיק **כמה מזהים מופרדים בפסיק** —
+ * כך מצטרף עובד נוסף בלי לגעת בקוד, וכל אחד מקבל בפרטי במקום בקבוצה
+ * משותפת. מזהה של קבוצה עובד כאן בדיוק כמו מזהה של אדם.
+ */
+const recipients = () =>
+  String(config.telegram.chatId || '').split(',').map((s) => s.trim()).filter(Boolean);
+
+async function sendToOne(chatId, text, silent) {
   const res = await fetch(api('sendMessage'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      chat_id: chatId || config.telegram.chatId,
+      chat_id: chatId,
       text,
       parse_mode: 'HTML',
       disable_web_page_preview: true,
@@ -27,9 +32,31 @@ export async function sendMessage(text, { chatId, silent = false } = {}) {
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok || !body.ok) {
-    throw new Error(`טלגרם דחה את ההודעה: ${body.description || res.status}`);
+    throw new Error(`טלגרם דחה את ההודעה ל-${chatId}: ${body.description || res.status}`);
   }
   return body.result;
+}
+
+export async function sendMessage(text, { chatId, silent = false } = {}) {
+  if (!config.telegram.token || !config.telegram.chatId) {
+    throw new Error('בוט הטלגרם לא מוגדר — חסרים TELEGRAM_TOKEN / TELEGRAM_CHAT_ID ב-.env');
+  }
+  const targets = chatId ? [chatId] : recipients();
+
+  // ⚠️ נמען אחד שנכשל אינו מבטל את השאר — עובד שחסם את הבוט היה מונע את
+  // ההתראה מכולם. הכישלון נרשם, וההודעה ממשיכה הלאה.
+  const results = [];
+  const failures = [];
+  for (const t of targets) {
+    try {
+      results.push(await sendToOne(t, text, silent));
+    } catch (err) {
+      failures.push(err.message);
+    }
+  }
+  if (!results.length) throw new Error(failures.join(' · ') || 'אין נמעני טלגרם מוגדרים');
+  if (failures.length) console.error(`[טלגרם] ${failures.join(' · ')}`);
+  return results[0];
 }
 
 /**

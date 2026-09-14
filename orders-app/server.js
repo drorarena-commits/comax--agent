@@ -29,14 +29,22 @@ const MIME = {
   '.webmanifest': 'application/manifest+json',
 };
 
-function tokenOk(given) {
-  const expected = config.server.token || '';
+function sameToken(given, expected) {
   if (!given || !expected) return false;
   const a = Buffer.from(String(given));
   const b = Buffer.from(expected);
   if (a.length !== b.length) return false;
   return timingSafeEqual(a, b);
 }
+
+/** מחזיר 'full' · 'guest' · null. אורח רואה הכל ואינו משנה סטטוס. */
+function roleOf(given) {
+  if (sameToken(given, config.server.token)) return 'full';
+  if (sameToken(given, config.server.guestToken)) return 'guest';
+  return null;
+}
+
+const tokenOk = (given) => roleOf(given) !== null;
 
 function cookieToken(req) {
   const raw = req.headers.cookie || '';
@@ -77,8 +85,11 @@ async function serveStatic(res, urlPath) {
   }
 }
 
-async function handleApi(req, res, url) {
+async function handleApi(req, res, url, role) {
   const path = url.pathname.replace(/^\/api/, '');
+
+  // הממשק שואל מי הוא, כדי להסתיר כפתורים שממילא יידחו בשרת.
+  if (path === '/me') return json(res, 200, { role });
 
   if (path === '/health') {
     const total = await ping();
@@ -118,6 +129,11 @@ async function handleApi(req, res, url) {
 
   const setStatus = path.match(/^\/orders\/(\d+)\/status$/);
   if (setStatus && req.method === 'POST') {
+    // ⚠️ האכיפה כאן ולא רק ב-UI: שינוי סטטוס שולח מייל אוטומטי ללקוח, וזה
+    // בלתי הפיך. כפתור מוסתר אינו הגנה — בקשה ידנית תעקוף אותו.
+    if (role !== 'full') {
+      return json(res, 403, { error: 'הרשאת צפייה בלבד — שינוי סטטוס שולח מייל ללקוח' });
+    }
     const { status } = await readBody(req);
     const allowed = ['processing', 'on-hold', 'completed', 'cancelled', 'pending', 'refunded'];
     if (!allowed.includes(status)) return json(res, 400, { error: `סטטוס לא מוכר: ${status}` });
@@ -149,14 +165,16 @@ export function startServer() {
       return res.end();
     }
 
-    if (!tokenOk(cookieToken(req)) && !tokenOk((req.headers.authorization || '').replace(/^Bearer /, ''))) {
+    const given = cookieToken(req) || (req.headers.authorization || '').replace(/^Bearer /, '');
+    const role = roleOf(given);
+    if (!role) {
       if (url.pathname.startsWith('/api/')) return json(res, 401, { error: 'נדרשת כניסה' });
       res.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8' });
       return res.end('<meta charset="utf-8"><div dir="rtl" style="font:16px system-ui;padding:2rem">נדרשת כניסה — פתח את הקישור המלא שכולל <code>?k=…</code></div>');
     }
 
     try {
-      if (url.pathname.startsWith('/api/')) return await handleApi(req, res, url);
+      if (url.pathname.startsWith('/api/')) return await handleApi(req, res, url, role);
       return await serveStatic(res, url.pathname);
     } catch (err) {
       console.error(`[שגיאה] ${req.method} ${url.pathname} — ${err.message}`);
