@@ -188,6 +188,28 @@ async function main() {
   check('ההודעה מתריעה על הפריט החסר', msg.includes('SKU-לא-קיים-999'));
   check('ההודעה כוללת קישור לאפליקציה', msg.includes('example.test'));
 
+  // 9. נרמול מספר הטלפון לוואטסאפ — מספר שגוי פונה לאדם זר בשם העסק
+  const { toWhatsappNumber, defaultMessage } = await import('./public/whatsapp.js');
+  const cases = [
+    ['052-555-1234', '972525551234', 'נייד מקומי עם מקפים'],
+    ['0525551234', '972525551234', 'נייד מקומי רצוף'],
+    ['+972 52 555 1234', '972525551234', 'בינלאומי עם פלוס ורווחים'],
+    ['00972525551234', '972525551234', 'בינלאומי עם 00'],
+    ['04-8123456', '9724812345 6'.replace(' ', ''), 'קו נייח'],
+    ['', null, 'מספר ריק'],
+    ['123', null, 'מספר קצר מדי'],
+    ['לא מספר', null, 'טקסט שאינו מספר'],
+  ];
+  for (const [input, want, label] of cases) {
+    const got = toWhatsappNumber(input);
+    check(`טלפון — ${label}`, got === want, `${input || '(ריק)'} → ${got}`);
+  }
+
+  check('פנייה בשם הלקוח בהודעת הוואטסאפ',
+    defaultMessage(detail.order).includes('רונית') && defaultMessage(detail.order).includes('1001'));
+  check('פנייה תקינה גם בלי שם פרטי',
+    !defaultMessage({ number: '7', billing: {} }).includes('undefined'));
+
   app.close();
   woo.close();
 

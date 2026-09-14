@@ -31,6 +31,8 @@ const ACTIONS = [
   { key: 'cancelled', label: 'ביטול' },
 ];
 
+import { openWhatsapp, toWhatsappNumber, defaultMessage } from '/whatsapp.js';
+
 const $ = (sel) => document.querySelector(sel);
 const el = (tag, cls, text) => {
   const n = document.createElement(tag);
@@ -94,9 +96,13 @@ function renderTabs() {
 }
 
 function orderCard(o) {
-  const card = el('button', 'card');
+  // div ולא button: כפתור הוואטסאפ יושב בתוך הכרטיס, ו-button בתוך button
+  // אינו HTML חוקי ומתנהג שונה בין דפדפנים.
+  const card = el('div', 'card');
+  card.tabIndex = 0;
+  card.setAttribute('role', 'button');
   card.append(
-    Object.assign(el('div', 'card-name', o.customer || `הזמנה #${o.number}`), {}),
+    el('div', 'card-name', o.customer || `הזמנה #${o.number}`),
     el('div', 'card-total', money(o.total, o.currency)),
   );
 
@@ -105,9 +111,27 @@ function orderCard(o) {
   meta.append(el('span', null, `#${o.number}`));
   meta.append(el('span', null, when(o.date)));
   meta.append(el('span', null, `${o.itemCount} פריטים`));
-  card.append(meta);
 
+  if (toWhatsappNumber(o.phone)) {
+    const wa = el('button', 'wa-mini', '✆');
+    wa.setAttribute('aria-label', `וואטסאפ ל${o.customer || 'לקוח'}`);
+    wa.onclick = async (e) => {
+      e.stopPropagation();           // אחרת הכרטיס ייפתח מתחת לדיאלוג
+      // הרשימה רזה ואין בה שם פרטי ומספר הזמנה כטקסט — נטען את ההזמנה
+      // המלאה, כדי שההודעה תצא מנוסחת נכון ולא "היי ,".
+      try {
+        const { order } = await api(`/orders/${o.id}`);
+        whatsappDialog(order);
+      } catch (err) {
+        toast(err.message);
+      }
+    };
+    meta.append(wa);
+  }
+
+  card.append(meta);
   card.onclick = () => openOrder(o.id);
+  card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openOrder(o.id); } };
   return card;
 }
 
@@ -140,6 +164,64 @@ function renderList() {
     for (const o of state.orders) list.append(orderCard(o));
   }
   $('#more-wrap').classList.toggle('hidden', state.page >= state.totalPages);
+}
+
+/* ---------- וואטסאפ ---------- */
+
+/**
+ * שואל באיזו אפליקציה לפתוח, ומאפשר לערוך את ההודעה לפני היציאה.
+ * הבחירה האחרונה נזכרת ומוצגת כברירת מחדל — אבל **לא נבחרת אוטומטית**:
+ * שליחה מהאפליקציה הלא נכונה מציגה ללקוח מספר אחר, וזו לא טעות שכדאי
+ * לחסוך עליה קליק.
+ */
+function whatsappDialog(order) {
+  const phone = order.billing?.phone;
+  const number = toWhatsappNumber(phone);
+  if (!number) {
+    toast(phone ? `לא הצלחתי להבין את המספר ${phone}` : 'אין מספר טלפון בהזמנה');
+    return;
+  }
+
+  const wrap = el('div', 'wa-dialog');
+  const bg = el('div', 'sheet-bg');
+  bg.dataset.close = '';
+  const panel = el('div', 'wa-panel');
+
+  panel.append(el('h3', 'wa-title', `הודעת וואטסאפ ל${order.billing?.first_name || 'לקוח'}`));
+  panel.append(el('div', 'wa-num', `+${number}`));
+
+  const box = el('textarea', 'wa-text');
+  box.rows = 4;
+  box.value = defaultMessage(order);
+  panel.append(box);
+
+  const last = localStorage.getItem('wa-app');
+  panel.append(el('div', 'wa-ask', 'באיזו אפליקציה לפתוח?'));
+
+  const row = el('div', 'actions');
+  for (const opt of [
+    { key: 'business', label: 'וואטסאפ ביזנס' },
+    { key: 'regular', label: 'וואטסאפ רגיל' },
+  ]) {
+    const b = el('button', 'action', opt.label + (last === opt.key ? ' ·' : ''));
+    b.onclick = () => {
+      localStorage.setItem('wa-app', opt.key);
+      const ok = openWhatsapp({ phone, text: box.value, app: opt.key });
+      if (!ok) toast('לא הצלחתי להבין את מספר הטלפון');
+      wrap.remove();
+    };
+    row.append(b);
+  }
+  panel.append(row);
+
+  const cancel = el('button', 'wa-cancel', 'ביטול');
+  cancel.onclick = () => wrap.remove();
+  panel.append(cancel);
+
+  wrap.append(bg, panel);
+  wrap.addEventListener('click', (e) => { if (e.target.dataset.close !== undefined) wrap.remove(); });
+  document.body.append(wrap);
+  box.focus();
 }
 
 /* ---------- פרטי הזמנה ---------- */
@@ -180,6 +262,12 @@ function renderOrder(order, comax) {
     link.href = `mailto:${b.email}`;
     row.append(el('span', null, 'אימייל'), link);
     custRows.push(row);
+  }
+  if (toWhatsappNumber(b.phone)) {
+    const wa = el('button', 'wa-btn');
+    wa.append(el('span', 'wa-icon', '✆'), el('span', null, 'שליחת וואטסאפ ללקוח'));
+    wa.onclick = () => whatsappDialog(order);
+    custRows.push(wa);
   }
   body.append(block('לקוח', custRows));
 

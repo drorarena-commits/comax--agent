@@ -111,10 +111,17 @@ async function main() {
   await page.waitForSelector('.block.warn');
   await page.screenshot({ path: resolve(OUT, '2-פרטי-הזמנה.png') });
 
+  // דיאלוג הוואטסאפ — הבחירה בין ביזנס לרגיל
+  await page.click('.wa-btn');
+  await page.waitForSelector('.wa-panel');
+  await page.waitForTimeout(250);
+  await page.screenshot({ path: resolve(OUT, '3-וואטסאפ.png') });
+  await page.click('.wa-cancel');
+
   // גלילה עד כפתורי הסטטוס
   await page.locator('.actions').scrollIntoViewIfNeeded();
   await page.waitForTimeout(300);
-  await page.screenshot({ path: resolve(OUT, '3-שינוי-סטטוס.png') });
+  await page.screenshot({ path: resolve(OUT, '4-שינוי-סטטוס.png') });
 
   await ctx.close();
   await browser.close();

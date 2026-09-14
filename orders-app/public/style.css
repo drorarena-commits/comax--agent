@@ -156,6 +156,79 @@ body {
   font-weight: 600;
 }
 
+/* ---------- וואטסאפ ---------- */
+
+.wa-mini {
+  margin-inline-start: auto;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 1px solid #cfe9d6;
+  background: #e9f8ee;
+  color: #1a7f42;
+  font-size: 1.05rem;
+  line-height: 1;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+@media (prefers-color-scheme: dark) {
+  .wa-mini { background: #123322; border-color: #1e4d31; color: #6fdc98; }
+}
+
+.wa-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45rem;
+  width: 100%;
+  margin-top: .6rem;
+  padding: .75rem;
+  border-radius: 12px;
+  border: 1px solid #1a7f42;
+  background: #1a7f42;
+  color: #fff;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.wa-btn:active { filter: brightness(.92); }
+.wa-icon { font-size: 1.15rem; }
+
+.wa-dialog { position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; }
+.wa-panel {
+  position: relative;
+  width: 100%;
+  background: var(--bg);
+  border-radius: 18px 18px 0 0;
+  padding: 1.1rem 1rem calc(env(safe-area-inset-bottom) + 1.1rem);
+  animation: rise .2s ease-out;
+}
+.wa-title { margin: 0 0 .15rem; font-size: 1.05rem; }
+.wa-num { color: var(--ink-soft); font-size: .9rem; margin-bottom: .8rem; direction: ltr; text-align: start; }
+
+.wa-text {
+  width: 100%;
+  padding: .7rem .8rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  resize: vertical;
+}
+
+.wa-ask { margin: .9rem 0 .5rem; font-size: .88rem; color: var(--ink-soft); }
+
+.wa-cancel {
+  width: 100%;
+  margin-top: .5rem;
+  padding: .7rem;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  cursor: pointer;
+}
+
 .empty { text-align: center; color: var(--ink-soft); padding: 3rem 1rem; }
 
 .more-wrap { padding: 0 .8rem 2rem; }

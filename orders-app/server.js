@@ -103,6 +103,7 @@ async function handleApi(req, res, url) {
         total: o.total,
         currency: o.currency,
         customer: [o.billing?.first_name, o.billing?.last_name].filter(Boolean).join(' ') || o.billing?.company || '',
+        phone: o.billing?.phone || '',
         itemCount: (o.line_items || []).reduce((n, li) => n + (li.quantity || 0), 0),
       })),
     });
