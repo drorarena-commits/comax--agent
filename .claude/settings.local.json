@@ -17,7 +17,9 @@
       "PowerShell($f=\"C:\\\\AGENT-COMAX-CLOAD\\\\data\\\\exports\\\\פריטים-מלא-2026-09-11.csv\"; \\(\\(Get-Content $f | Measure-Object -Line\\).Lines\\))",
       "PowerShell(npm run logoff)",
       "Bash(rm -f runs/orders-preview/*.png)",
-      "Bash(node orders-app/preview.js)"
+      "Bash(node orders-app/preview.js)",
+      "PowerShell($f=\"C:\\\\AGENT-COMAX-CLOAD\\\\data\\\\exports\\\\פריטים-מלא-2026-09-14.csv\"; \\(Get-Content $f | Measure-Object -Line\\).Lines)",
+      "PowerShell(npm run run -- items-export --confirm 2>&1)"
     ]
   }
 }
