@@ -14,3 +14,10 @@ sportmore/out/
 
 # מטמון של whatsapp-web.js — נוצר בזמן ריצה
 .wwebjs_cache/
+
+# תור המשימות — תוכן זמני בזמן ריצה. SPEC.md כן נשמר.
+queue/inbox/
+queue/working/
+queue/hold/
+queue/approve/
+queue/done/

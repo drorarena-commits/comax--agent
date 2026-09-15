@@ -46,7 +46,11 @@
     "wa-daemon": "node tools/wa-daemon.js",
     "wa-start": "node tools/wa-start.js",
     "wa-up": "node tools/wa-start.js --check",
-    "site-var-images": "node tools/site-variation-images.js"
+    "site-var-images": "node tools/site-variation-images.js",
+    "listen": "node tools/listen.js",
+    "listen-start": "node tools/listen-start.js",
+    "listen-up": "node tools/listen-start.js --check",
+    "listen-stop": "node tools/listen-stop.js"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

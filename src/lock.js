@@ -101,6 +101,23 @@ export async function acquire(task, { waitMs = 0 } = {}) {
   }
 }
 
+/**
+ * מי מחזיק בלוק כרגע, בלי לקחת אותו — או `null` אם הוא פנוי.
+ *
+ * זה קיים בשביל מאזין התור. המאזין **אינו** לוקח את הלוק: הוא מריץ את
+ * `run.js` כתהליך בן, ו-`run.js` לוקח אותו בעצמו. מאזין שהיה מחזיק בלוק
+ * היה חוסם את המשימה שהוא עצמו הפעיל. לכן הוא רק מציץ, כדי לדעת מראש
+ * שהמושב תפוס ולהחזיר את המשימה לתור במקום לשרוף עליה הרצה.
+ *
+ * ⚠️ הצצה היא עצה, לא ערובה: הלוק יכול להילקח בין ההצצה להרצה. ההכרעה
+ * האמיתית נשארת ב-`acquire` שבתוך `run.js`.
+ */
+export function peek() {
+  const holder = readHolder();
+  if (!holder) return null;
+  return alive(holder.pid) ? holder : null;
+}
+
 /** משחרר את הלוק, אבל רק אם הוא באמת שלנו. */
 export function release(pid = process.pid) {
   const holder = readHolder();
