@@ -83,6 +83,13 @@ function startTunnel({ onExit }) {
   });
 }
 
+/** קורא ערך בודד מ-.env ישירות, לפני ש-config.js נטען. */
+function readEnvValue(key) {
+  if (!existsSync(ENV_PATH)) return null;
+  const m = readFileSync(ENV_PATH, 'utf8').match(new RegExp(`^${key}=(.*)$`, 'm'));
+  return m ? m[1].trim() : null;
+}
+
 /**
  * מעדכן שורה אחת ב-.env במקום. ⚠️ לא נכתב מחדש כל הקובץ מתבנית — הוא
  * מחזיק את סיסמת קומקס ואת מפתחות WooCommerce, וכתיבה מלאה הייתה
@@ -97,7 +104,37 @@ function writePublicUrl(url) {
   writeFileSync(ENV_PATH, updated, 'utf8');
 }
 
+/**
+ * מסלול Tailscale — כשהכתובת **קבועה**.
+ *
+ * ⚠️ ההבדל המהותי מ-cloudflared: את החשיפה עצמה (`tailscale funnel`) לא
+ * מרימים כאן. Tailscale שומר את ההגדרה בעצמו ומשחזר אותה אחרי אתחול,
+ * ולכן הכתובת חיה עוד לפני שהקוד הזה רץ. כל מה שנשאר הוא להרים את
+ * השרת מאחוריה — ואין מה להודיע בטלגרם, כי שום דבר לא התחלף.
+ *
+ * זו בדיוק הסיבה שהמסלול הזה עדיף: מנהרת trycloudflare מייצרת כתובת
+ * חדשה בכל הפעלה, ולכן חייבה הודעה בכל אתחול ואייקון שנוצר מחדש.
+ */
+async function bootTailscale(publicUrl) {
+  log(`כתובת קבועה: ${publicUrl}`);
+  const { config } = await import('./config.js');
+  const { startServer } = await import('./server.js');
+  const { watch } = await import('./watch.js');
+
+  startServer();
+  log(`השרת עלה על פורט ${config.server.port} — מאחורי Tailscale Funnel`);
+  await watch();
+}
+
 async function main() {
+  // כתובת ts.net היא סימן ההיכר של Tailscale, והיא אינה מתחלפת. ⛔ אין
+  // להרים מנהרת cloudflared לצידה — שתי חשיפות לאותו פורט הן בדיוק הדרך
+  // לקבל לינק שעובד לפעמים.
+  const stable = (process.env.ORDERS_PUBLIC_URL || readEnvValue('ORDERS_PUBLIC_URL') || '').trim();
+  if (/\.ts\.net$/i.test(stable.replace(/\/+$/, ''))) {
+    return bootTailscale(stable.replace(/\/+$/, ''));
+  }
+
   log('מרים מנהרה…');
   const { url } = await startTunnel({
     onExit: (code) => log(`⚠️ המנהרה נסגרה (קוד ${code}). הרץ שוב: npm run orders -- boot`),

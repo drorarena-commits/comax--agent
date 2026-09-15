@@ -413,9 +413,11 @@ content/site-reports/            תוצרי הסריקות — לפני, אחר�
 orders-app/                       אפליקציית ההזמנות — מחליפה את WeManage Edge
 orders-app/README.md              ההתקנה: מפתחות WooCommerce, בוט טלגרם, מנהרה
 orders-app/watch.js               הלולאה שמזהה הזמנה חדשה ושולחת לטלגרם
-orders-app/boot.js                הרמה אחרי אתחול המחשב — מנהרה, כתובת חדשה ל-.env, והלינק לטלגרם
-                                  רץ מהמשימה המתוזמנת COMAX-Orders-App בכניסת המשתמש
+orders-app/boot.js                הרמה אחרי אתחול המחשב, מהמשימה המתוזמנת COMAX-Orders-App
+                                  הכתובת קבועה — Tailscale Funnel, desktop-m2ejsoi.taila272a7.ts.net
+                                  Tailscale מחזיר את החשיפה בעצמו, ולכן נותר רק להרים שרת וניטור
                                   ⚠️ בלעדיו אתחול של Windows Update משאיר את האפליקציה מתה בלי סימן
+                                  ⛔ לא מנהרת Cloudflare — החשבון שמחזיק את הדומיין הוא של MVN
 orders-app/public/whatsapp.js     כפתור הוואטסאפ — נרמול המספר, ובחירה בין ביזנס לרגיל
 orders-app/comax-check.js         ההצלבה מול הקטלוג — פריט חסר מפיל הזמנה שלמה בשקט
 orders-app/selftest.js            33 בדיקות מקצה לקצה מול WooCommerce מדומה
