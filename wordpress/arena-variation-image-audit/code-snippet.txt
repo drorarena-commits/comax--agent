@@ -1,0 +1,94 @@
+// ⚠️ עטיפה מפני הצהרה כפולה — אם הקוד יותקן פעמיים, fatal מפיל את כל האדמין.
+if ( ! function_exists( 'arena_via_rows' ) ) :
+
+/**
+ * שער קריאה-בלבד ל-`_thumbnail_id` של ווריאציות ולגלריית הצבע של האב.
+ *
+ * ⚠️ **למה זה נדרש בכלל:** ה-REST של WooCommerce מחזיר `image` לווריאציה,
+ * אבל השדה הזה **נופל בשקט לתמונת מוצר האב** כשלווריאציה אין תמונה משלה.
+ * לכן אי אפשר להבחין מבחוץ בין "אין תמונה" לבין "יש תמונה, והיא במקרה
+ * אותו קובץ כמו של האב" — וזו בדיוק ההבחנה ששגתה בסריקה של 14/09/2026
+ * וייצרה 913 "חסרים" שחלקם תקינים לגמרי.
+ *
+ * ⚠️ **ושתי מערכות תמונה שונות חיות באתר במקביל:** הפרונט מציג את התמונה
+ * בלחיצה על צבע מתוך `commercekit_image_gallery` של מוצר האב, ואילו מסך
+ * ההזמנה באדמין קורא את `_thumbnail_id` של הווריאציה. תמונה יכולה להיות
+ * קיימת בראשונה וחסרה בשנייה — הלקוח רואה צבע נכון, והמלקט רואה את האב.
+ *
+ * הנתיב הוא POST בלבד עם רשימת מזהי ווריאציה, ואינו כותב דבר.
+ */
+function arena_via_rows( $request ) {
+	$ids = $request->get_param( 'ids' );
+	if ( ! is_array( $ids ) ) {
+		$ids = array_filter( array_map( 'trim', explode( ',', (string) $ids ) ) );
+	}
+	$ids = array_slice( array_map( 'intval', $ids ), 0, 2000 );
+	if ( ! $ids ) {
+		return new WP_Error( 'arena_via_no_ids', 'חסרה רשימת מזהי ווריאציה', array( 'status' => 400 ) );
+	}
+
+	$gallery_cache = array();
+	$rows          = array();
+
+	foreach ( $ids as $vid ) {
+		if ( 'product_variation' !== get_post_type( $vid ) ) {
+			$rows[] = array( 'id' => $vid, 'error' => 'not_a_variation' );
+			continue;
+		}
+
+		$parent_id = (int) wp_get_post_parent_id( $vid );
+
+		// זה הנתון שכל הבדיקה נשענת עליו: המזהה כפי שהוא רשום, בלי נפילה לאב.
+		$own    = (int) get_post_thumbnail_id( $vid );
+		$parent = (int) get_post_thumbnail_id( $parent_id );
+
+		$slug = (string) get_post_meta( $vid, 'attribute_pa_color', true );
+		$term = $slug ? get_term_by( 'slug', $slug, 'pa_color' ) : null;
+		$tid  = ( $term && ! is_wp_error( $term ) ) ? (int) $term->term_id : 0;
+
+		if ( ! isset( $gallery_cache[ $parent_id ] ) ) {
+			$g = get_post_meta( $parent_id, 'commercekit_image_gallery', true );
+			$gallery_cache[ $parent_id ] = is_array( $g ) ? $g : array();
+		}
+		$gallery = $gallery_cache[ $parent_id ];
+
+		// הגלריה ממופתחת במזהה המונח של הצבע, כמחרוזת של מזהי תמונה מופרדים בפסיק.
+		$ck = '';
+		if ( $tid && isset( $gallery[ $tid ] ) ) {
+			$ck = (string) $gallery[ $tid ];
+		} elseif ( $tid && isset( $gallery[ (string) $tid ] ) ) {
+			$ck = (string) $gallery[ (string) $tid ];
+		}
+
+		$rows[] = array(
+			'id'          => $vid,
+			'parent'      => $parent_id,
+			'sku'         => (string) get_post_meta( $vid, '_sku', true ),
+			'color'       => $slug,
+			'color_term'  => $tid,
+			'own_thumb'   => $own,
+			'parent_thumb'=> $parent,
+			'ck_gallery'  => $ck,
+		);
+	}
+
+	return rest_ensure_response( array( 'count' => count( $rows ), 'rows' => $rows ) );
+}
+
+function arena_via_register() {
+	register_rest_route(
+		'arena-via/v1',
+		'/variations',
+		array(
+			'methods'             => 'POST',
+			'callback'            => 'arena_via_rows',
+			// קריאה בלבד, ורק למי שרשאי לנהל את החנות ממילא.
+			'permission_callback' => function () {
+				return current_user_can( 'manage_woocommerce' );
+			},
+		)
+	);
+}
+add_action( 'rest_api_init', 'arena_via_register' );
+
+endif;

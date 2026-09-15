@@ -19,11 +19,12 @@
  *
  * Screen recipe: knowledge/screens/items-export-fields.json
  */
-import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, writeFileSync } from 'node:fs';
-import { resolve, extname } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { ROOT } from '../config.js';
 import { ensureLoggedIn } from '../session.js';
 import { openProgram } from '../navigate.js';
+import { captureDownload } from '../download.js';
 
 export const meta = {
   name: 'items-export',
@@ -106,7 +107,7 @@ async function readPicker(picker) {
   });
 }
 
-export async function run({ page, human, logger, input, cfg }) {
+export async function run({ page, human, logger, input, cfg, browser = null, context = null }) {
   await ensureLoggedIn({ page, human, logger, cfg });
 
   let items = page.frames().find((f) => ITEMS.test(f.url()));
@@ -247,54 +248,22 @@ export async function run({ page, human, logger, input, cfg }) {
   // ---- export ---------------------------------------------------------
   const outDir = resolve(ROOT, 'data/exports');
   if (!existsSync(outDir)) mkdirSync(outDir, { recursive: true });
-  const spoolDir = resolve(ROOT, 'runs', 'downloads');
-  if (!existsSync(spoolDir)) mkdirSync(spoolDir, { recursive: true });
 
   const date = todayInIsrael(cfg.timezone);
   const base = input.out ?? `פריטים-מלא-${date}`;
-  const before = new Set(readdirSync(spoolDir));
-  const downloadPromise = page.context().waitForEvent('download', { timeout: 10 * 60_000 }).catch(() => null);
 
-  await human.click('#OK', { scope: dlg, label: 'הרצת הייצוא' });
-  console.log('  מייצא את כל הפריטים... (יכול לקחת כמה דקות)');
+  // ההורדה עצמה יושבת ב-`src/download.js` — מניעת דיאלוג השמירה של ווינדוס,
+  // ואימוץ קובץ שנחת בתיקיית ההורדות של המשתמש. ראה שם למה.
+  const file = await captureDownload({
+    session: { page, context: context ?? page.context(), browser },
+    logger,
+    target: (ext) => resolve(outDir, `${base}${ext || '.xls'}`),
+    trigger: async () => {
+      await human.click('#OK', { scope: dlg, label: 'הרצת הייצוא' });
+      console.log('  מייצא את כל הפריטים... (יכול לקחת כמה דקות)');
+    },
+  });
 
-  const target = (ext) => resolve(outDir, `${base}${ext || '.xls'}`);
-  let file = null;
-
-  const dl = await downloadPromise;
-  if (dl) {
-    try {
-      file = target(extname(dl.suggestedFilename()));
-      await dl.saveAs(file);
-    } catch (e) {
-      // Comax can close the window that owns the download before we pull the
-      // bytes through it; Chrome has already written the file, so fall back.
-      logger.step('download', `saveAs נכשל (${e.message.split('\n')[0]}) — מחפש בדיסק`);
-      file = null;
-    }
-  }
-
-  if (!file) {
-    const deadline = Date.now() + 5 * 60_000;
-    let last = -1;
-    while (Date.now() < deadline) {
-      await new Promise((r) => setTimeout(r, 3000));
-      const fresh = readdirSync(spoolDir).filter((f) => !before.has(f) && !f.endsWith('.crdownload'));
-      if (fresh.length) {
-        const size = statSync(resolve(spoolDir, fresh[0])).size;
-        // A stalled transfer keeps growing or sits at zero; only a size that
-        // has stopped changing means the file is complete.
-        if (size > 0 && size === last) {
-          file = target(extname(fresh[0]));
-          renameSync(resolve(spoolDir, fresh[0]), file);
-          break;
-        }
-        last = size;
-      }
-    }
-  }
-
-  if (!file) throw new Error('לא ירד קובץ.');
   const size = statSync(file).size;
   logger.step('download', `${file} (${(size / 1024 / 1024).toFixed(2)} MB)`);
 

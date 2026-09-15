@@ -1,7 +1,11 @@
 import { chromium } from 'playwright-core';
 import { resolve } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { ROOT, loadConfig } from './config.js';
 import { Human } from './human.js';
+
+/** Where every download this agent makes must land — inside the project. */
+export const SPOOL_DIR = resolve(ROOT, 'runs', 'downloads');
 
 /**
  * Comax raises native `alert`/`confirm` dialogs — printing is one — and with no
@@ -33,27 +37,112 @@ function handleDialogs(page, logger) {
 }
 
 /**
- * Tell Chrome to accept downloads without asking.
+ * כיבוי "שאל איפה לשמור כל קובץ" בפרופיל של הסוכן.
+ *
+ * 💣 **נמדד 15/09/2026, והוא עצר את הייצוא הלילי ל-27 דקות.** קובץ ההעדפות של
+ * הפרופיל החזיק `"download":{"prompt_for_download":true}` — ההגדרה שמפעילה את
+ * דיאלוג **השמירה של מערכת ההפעלה**, לא של הדף. הייצוא רץ עד הסוף, ואז כרום
+ * פתח חלון "שמירה בשם" שמצביע על `%USERPROFILE%\Downloads`, ופשוט חיכה. דרור
+ * מצא אותו תקוע ולחץ "שמור" ביד; `download.saveAs` חזר `canceled`, והקובץ נחת
+ * מחוץ לפרויקט — ולכן גם החיפוש בדיסק, שסרק רק את `runs/downloads`, הכריז
+ * "לא ירד קובץ".
+ *
+ * ⛔ **דיאלוג של מערכת ההפעלה אינו נראה לסוכן ואינו ניתן ללחיצה על ידו.** כמו
+ * `chrome://print`, הוא מחוץ לדף — אין `page.on('dialog')` שיתפוס אותו, אין מה
+ * לצלם ואין מה לסגור. לכן אסור להסתפק בהתגברות בזמן ריצה: מכבים את ההגדרה
+ * במקור, בקובץ ההעדפות, **לפני ההפעלה**.
+ *
+ * כרום קורא את `Preferences` בעלייה ודורס אותו ביציאה, ולכן העריכה הזאת תופסת
+ * רק כשהיא רצה לפני `launchPersistentContext` — על חלון שכבר פתוח היא תימחק.
+ * `armDownloads` הוא מה שמכסה את החלון החי, ו-`downloadPromptOn` מתריע כשנשארה
+ * דלוקה בחלון שאי אפשר לתקן בלי לסגור אותו.
+ */
+export function silenceDownloadPrompt(profileDir, downloadPath = SPOOL_DIR, logger = null) {
+  const prefsPath = resolve(profileDir, 'Default', 'Preferences');
+  if (!existsSync(prefsPath)) return false;
+
+  let prefs;
+  try {
+    prefs = JSON.parse(readFileSync(prefsPath, 'utf8'));
+  } catch {
+    return false; // a half-written Preferences is Chrome's business, not ours
+  }
+
+  const wasOn = prefs.download?.prompt_for_download === true;
+  const wasDir = prefs.download?.default_directory;
+  if (!wasOn && wasDir === downloadPath) return false;
+
+  prefs.download = { ...prefs.download, prompt_for_download: false, default_directory: downloadPath };
+  prefs.savefile = { ...prefs.savefile, default_directory: downloadPath };
+  try {
+    writeFileSync(prefsPath, JSON.stringify(prefs), 'utf8');
+  } catch (e) {
+    logger?.step('downloads', `⚠ לא הצלחתי לכבות את "שאל איפה לשמור": ${e.message}`);
+    return false;
+  }
+  if (wasOn) logger?.step('downloads', '"שאל איפה לשמור כל קובץ" היה דלוק בפרופיל — כובה');
+  return wasOn;
+}
+
+/** האם ההגדרה שפותחת דיאלוג שמירה של מערכת ההפעלה דלוקה כרגע בפרופיל. */
+export function downloadPromptOn(profileDir) {
+  const prefsPath = resolve(profileDir, 'Default', 'Preferences');
+  if (!existsSync(prefsPath)) return false;
+  try {
+    return JSON.parse(readFileSync(prefsPath, 'utf8')).download?.prompt_for_download === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Tell Chrome to accept downloads without asking, and to put them in the project.
  *
  * Comax's report exports arrive as `.htm` served with an Excel content type,
  * and Chrome stalls them: the matrix report left a 14 KB `.crdownload` stub in
  * Downloads and never finished. `Browser.setDownloadBehavior` at the browser
  * level covers downloads started from any frame or popup, which page-level
  * settings miss.
+ *
+ * ⚠️ **ושלוש הרמות נדרשות, לא אחת.** ההרשמה נמדדה ב-15/09/2026 על שלושתן
+ * והצליחה בכולן — ובכל זאת נפתח דיאלוג שמירה, כי Playwright עצמו מגדיר התנהגות
+ * הורדה לכל הקשר שהוא מאתחל, והסדר בין ההגדרות אינו בשליטתנו. לכן קוראים לזה
+ * **גם רגע לפני הקליק שמוריד**, לא רק פעם אחת בחיבור; ההודעה בלוג היא ההוכחה
+ * שזה קרה, במקום הבליעה השקטה שהייתה כאן קודם.
  */
-async function allowDownloads(context, downloadPath) {
-  try {
-    const page = context.pages()[0] ?? (await context.newPage());
-    const cdp = await context.newCDPSession(page);
-    await cdp.send('Browser.setDownloadBehavior', {
-      behavior: 'allow',
-      downloadPath,
-      eventsEnabled: true,
-    });
-  } catch {
-    // Older Chrome builds only expose the page-level command; the launch flags
-    // below still cover the common case.
+export async function armDownloads({ browser = null, context, page = null } = {}, downloadPath = SPOOL_DIR, logger = null) {
+  if (!existsSync(downloadPath)) mkdirSync(downloadPath, { recursive: true });
+  const params = { behavior: 'allow', downloadPath, eventsEnabled: true };
+  const ok = [];
+  const failed = [];
+
+  if (browser) {
+    try {
+      const s = await browser.newBrowserCDPSession();
+      await s.send('Browser.setDownloadBehavior', params);
+      ok.push('browser');
+    } catch (e) { failed.push(`browser (${e.message.split('\n')[0]})`); }
   }
+
+  const target = page ?? context.pages()[0] ?? (await context.newPage());
+  try {
+    const cdp = await context.newCDPSession(target);
+    await cdp.send('Browser.setDownloadBehavior', params);
+    ok.push('context');
+  } catch (e) { failed.push(`context (${e.message.split('\n')[0]})`); }
+
+  try {
+    const cdp = await context.newCDPSession(target);
+    await cdp.send('Page.setDownloadBehavior', { behavior: 'allow', downloadPath });
+    ok.push('page');
+  } catch (e) { failed.push(`page (${e.message.split('\n')[0]})`); }
+
+  if (!ok.length) logger?.step('downloads', `⚠ אף רמה לא קיבלה את יעד ההורדה: ${failed.join(' · ')}`);
+  return { ok, failed };
+}
+
+async function allowDownloads(context, downloadPath) {
+  await armDownloads({ context }, downloadPath);
 }
 
 const HIDE_AUTOMATION = () => {
@@ -154,6 +243,11 @@ export async function openBrowser({ logger = null } = {}) {
   const cfg = loadConfig();
   const profileDir = resolve(ROOT, cfg.profileDir);
 
+  // Before launch, not after: Chrome reads Preferences on startup and rewrites
+  // it on exit, so this is the only moment the edit survives. See
+  // `silenceDownloadPrompt` for what it cost the night it was left on.
+  silenceDownloadPrompt(profileDir, SPOOL_DIR, logger);
+
   const context = await chromium.launchPersistentContext(profileDir, {
     channel: 'chrome',
     headless: false,
@@ -228,6 +322,17 @@ export async function attachBrowser({ logger = null } = {}) {
   // The window we are attaching to may have been launched detached, with no
   // Playwright process to have installed these. See `harden`.
   await harden(context, page, cfg);
+  // The browser-level session only exists on an attached browser, and it is the
+  // one that covers a download started from a popup Comax opens for itself.
+  await armDownloads({ browser, context, page }, SPOOL_DIR, logger);
+
+  // The window is already up, so the profile edit cannot take effect until it
+  // closes. Say so once, here, instead of letting a run discover it as a
+  // 27-minute stall in front of an invisible dialog.
+  const profileDir = resolve(ROOT, cfg.profileDir);
+  if (downloadPromptOn(profileDir)) {
+    logger?.step('downloads', '⚠ "שאל איפה לשמור כל קובץ" דלוק בפרופיל — הורדה עלולה להיתקע מול דיאלוג של ווינדוס. לסגור את חלון הסוכן ולפתוח מחדש (npm run close -- all ואז npm run open) כדי שהכיבוי ייכנס לתוקף.');
+  }
 
   return { browser, context, page, human: new Human(page, cfg.pace, logger), cfg, owned: false };
 }
