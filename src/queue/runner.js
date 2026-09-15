@@ -113,18 +113,29 @@ export const looksBusy = (output) =>
   /לקומקס יש מושב אחד|שחרור מושב אוטומטי רץ כרגע|הרצה אחרת מחזיקה בנעילה/.test(output);
 
 /**
+ * שורות ה-`RunLogger` — `kind` בן 8 תווים ואז פירוט.
+ *
+ * ⚠️ הן **לא** התשובה, והנפילה לשורות האחרונות בלי לסנן אותן הפכה בקשה אמיתית
+ * לסיכום חסר תועלת: ב-15/09/2026 דרור ביקש את הצעת המחיר האחרונה של שחייני
+ * אונו, המשימה החזירה שתי הצעות עם מספרים, תאריכים וסכומים — ומה שהגיע לטלפון
+ * היה `shot` · `save` · `run end: ok`, כי התשובה ישבה שש שורות מעל החיתוך.
+ */
+const LOGGER_NOISE =
+  /^(run|step|shot|save|input|mode|think|click|type|paste|press|verify|frame|program|dialog|session|login|error|warehouse|download|downloads|settle)\s/;
+
+/**
  * סיכום קריא לטלפון.
  *
- * המשימה עצמה יודעת הכי טוב מה קרה, ולכן `result.summary` מנצח תמיד. אחרי זה
- * באים דפוסים מוכרים, ובסוף — שורות הפלט האחרונות, שהן גרועות אבל אמיתיות.
- * עדיף סיכום חלקי על פני "המשימה הסתיימה", שאינו אומר כלום לבן אדם שמסתכל
- * במסך נעול.
+ * הסדר הוא לפי מי יודע יותר: `result.summary` שהמשימה כתבה בעצמה · דפוסים
+ * מוכרים מתוך `result.json` · ורק בסוף שורות הפלט, **מסוננות מרעש הלוגר**.
+ * דרור קורא את השדה הזה במסך נעול, ולכן "המשימה הסתיימה" אינו סיכום.
  */
 export function summarize({ task, result, output }) {
   if (result && typeof result.summary === 'string' && result.summary.trim()) {
     return result.summary.trim();
   }
 
+  // ייצוא פר-מחסן: מה ירד, וגם מה **לא** — כשלון חלקי אינו נראה בקוד היציאה.
   if (result && Array.isArray(result.done)) {
     const ok = result.done
       .map((d) => `${d.name ?? d.code}${d.sizeBytes ? ` (${(d.sizeBytes / 1024 / 1024).toFixed(1)} MB)` : ''}`)
@@ -135,11 +146,35 @@ export function summarize({ task, result, output }) {
       .join('\n');
   }
 
+  // רשימת מסמכים (`quote-read` ודומיו): מספר · תאריך · לקוח · סכום.
+  if (result && Array.isArray(result.list) && result.list.length) {
+    const rows = result.list
+      .slice(0, 8)
+      .map((r) => `${r.docNo ?? '?'} · ${r.date ?? ''} · ${r.amount ?? ''}`.trim());
+    const who = result.list[0].customer ?? result.customer ?? '';
+    const more = result.list.length > 8 ? `\n… ועוד ${result.list.length - 8}` : '';
+    const hidden = result.hiddenByYear ? `\n(${result.hiddenByYear} הוסתרו בסינון השנה)` : '';
+    // ⛔ בלי "האחרונה היא X": מספר מסמך אינו מזהה ייחודי (כלל 18), ושתי הצעות
+    // באותו תאריך הן בדיוק המצב שבו בחירה אוטומטית קוראת את המסמך הלא נכון.
+    const pick = result.list.length > 1 ? '\n⚠️ יותר מאחת — צריך docNo מדויק.' : '';
+    return `${result.list.length} מסמכים · ${who}\n${rows.join('\n')}${more}${hidden}${pick}`;
+  }
+
+  // שורות המסמך שנקראו בפועל.
+  if (result && Array.isArray(result.matches) && result.matches.length) {
+    const rows = result.matches
+      .slice(0, 10)
+      .map((m) => [m.sku ?? m.alt ?? m.item, m.description, m.qty && `×${m.qty}`, m.price]
+        .filter(Boolean)
+        .join(' · '));
+    return `${result.matches.length} שורות\n${rows.join('\n')}`;
+  }
+
   const tail = output
     .split(/\r?\n/)
     .map((l) => l.trim())
-    .filter((l) => l && !l.startsWith('לוג והרצה:'))
-    .slice(-4)
+    .filter((l) => l && !l.startsWith('לוג והרצה:') && !LOGGER_NOISE.test(l))
+    .slice(-6)
     .join('\n');
   return tail.slice(0, 600) || `${task} הסתיימה.`;
 }
