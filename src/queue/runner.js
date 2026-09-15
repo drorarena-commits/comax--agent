@@ -130,6 +130,11 @@ const LOGGER_NOISE =
  * מוכרים מתוך `result.json` · ורק בסוף שורות הפלט, **מסוננות מרעש הלוגר**.
  * דרור קורא את השדה הזה במסך נעול, ולכן "המשימה הסתיימה" אינו סיכום.
  */
+/** "100.00" ⇒ "100", כי כמות שלמה עם שני אפסים קוראת רע בטלפון. */
+const num = (v) => String(v ?? '').replace(/\.00$/, '');
+/** מספר לתצוגה עם מפרידי אלפים, כמו שקומקס מציג. */
+const fmt = (n) => (typeof n === 'number' ? n.toLocaleString('he-IL') : String(n ?? ''));
+
 export function summarize({ task, result, output }) {
   if (result && typeof result.summary === 'string' && result.summary.trim()) {
     return result.summary.trim();
@@ -144,6 +149,36 @@ export function summarize({ task, result, output }) {
     return [`${task} · ${result.done.length} הצליחו`, ok, bad && `⚠️ נכשלו: ${bad}`]
       .filter(Boolean)
       .join('\n');
+  }
+
+  /**
+   * מסמך שנקרא בפועל — **קודם לרשימה**, כי השורות הן התשובה.
+   *
+   * ⚠️ הסדר ההפוך נמדד על בקשה אמיתית (15/09/2026): דרור ביקש סיכום של הצעה
+   * 6120056, המסמך נקרא במלואו עם ארבע שורות וסיכום מע"מ — ולטלפון הגיעה רק
+   * שורת הכותרת "1 מסמכים · העמותה…", כי ענף הרשימה קדם לענף המסמך.
+   *
+   * ⛔ ובשורות מוצג **שם הפריט** ולא `code`: בקומקס `code` בשורת המסמך הוא
+   * הברקוד (נמדד: `3468336689233`), ודרור דורש מק"ט חלופי או דגם+צבע בתצוגה
+   * ולעולם לא ברקוד (כלל 5). השם — "TEAM JACKET PANEL NAVY" — הוא דגם+צבע.
+   */
+  const doc = result?.docs?.find((d) => Array.isArray(d.lines) && d.lines.length);
+  if (doc) {
+    const head = [doc.docNo, doc.date, doc.customer, doc.priceList].filter(Boolean).join(' · ');
+    const rows = doc.lines
+      .slice(0, 15)
+      .map((l) => `${l.name} · ${num(l.qty)} × ${l.price} = ${l.amount}`);
+    const more = doc.lines.length > 15 ? `\n… ועוד ${doc.lines.length - 15} שורות` : '';
+    const s = doc.summary;
+    const totals = s
+      ? `\nסה"כ ${fmt(s.beforeVat)}${s.discountRate ? ` (אחרי ${s.discountRate}% הנחה)` : ''}` +
+        ` + מע"מ ${s.vatRate}% = ${fmt(s.total)}`
+      : '';
+    // הוכחת השלמות של כלל 16 נכנסת לסיכום: קריאה חלקית נראית זהה להצלחה.
+    const proof = doc.counted
+      ? `\n${doc.lines.length} שורות · ${num(doc.counted.quantity)} יח׳ · ${doc.pages ?? 1} דפים ✓`
+      : '';
+    return `${head}${proof}\n${rows.join('\n')}${more}${totals}`;
   }
 
   // רשימת מסמכים (`quote-read` ודומיו): מספר · תאריך · לקוח · סכום.
