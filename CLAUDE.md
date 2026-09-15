@@ -406,6 +406,8 @@ wordpress/arena-order-item-thumb/  תמונת הווריאציה (הצבע) במ
 tools/site-variation-images.js    סורק את האתר ומשכפל תמונת ווריאציה מאחות באותו צבע
                                  "יש תמונה" ב-REST אינו אומר שהיא של הצבע — היא נופלת לאב בשקט
 tools/site-variation-images-report.js  דוח HTML עם תמונות, שנקרא מחדש מהאתר ולא מקובץ הבקשה
+wordpress/arena-variation-image-audit/  שער קריאה ל-_thumbnail_id של ווריאציה — הנתון שה-REST מסתיר
+                                 ⛔ commercekit_image_gallery אינו מקור אמת — התוסף הוסר, הערכים שאריות
 content/site-reports/            תוצרי הסריקות — לפני, אחרי, ומה תוקן
                                  מתקן את תוצר הלוואי של התוסף arena-parent-display שמציג את מוצר האב
 orders-app/                       אפליקציית ההזמנות — מחליפה את WeManage Edge
