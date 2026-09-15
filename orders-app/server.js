@@ -77,7 +77,15 @@ async function serveStatic(res, urlPath) {
   }
   try {
     const body = await readFile(file);
-    res.writeHead(200, { 'Content-Type': MIME[extname(file)] || 'application/octet-stream' });
+    res.writeHead(200, {
+      'Content-Type': MIME[extname(file)] || 'application/octet-stream',
+      // ⚠️ בלי הכותרת הזאת Safari מחליט לבד כמה זמן לשמור את הקבצים, ואייקון
+      // שנוסף למסך הבית אגרסיבי עוד יותר. נמדד 15/09/2026: אחרי שהוסר בורר
+      // אפליקציות הוואטסאפ, הטלפון המשיך להציג את הדיאלוג הישן — הקוד החדש
+      // היה על השרת ולא הגיע למכשיר. **תקלה שנראית בדיוק כמו "התיקון לא עבד".**
+      // האפליקציה היא כמה עשרות KB ברשת מקומית, ולכן אין מה לחסוך כאן.
+      'Cache-Control': 'no-store, must-revalidate',
+    });
     res.end(body);
   } catch {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
