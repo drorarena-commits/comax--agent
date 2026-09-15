@@ -79,11 +79,10 @@ if ( ! function_exists( 'arena_oit_thumbnail' ) ) :
 		// **ולמוצר יש יותר מצבע אחד**. בחד-צבעי תמונת האב היא הצבע הנכון.
 		$ambiguous = ! $is_actual && arena_oit_color_count( $product_id ) > 1;
 
-		// הכיתוב שמוצג מתחת להגדלה: שם הפריט כולל הצבע והמידה שהוזמנו.
-		$caption = wp_strip_all_tags( $item->get_name() );
-		if ( $ambiguous ) {
-			$caption .= ' — ⚠ תמונת מוצר האב: לצבע הזה אין תמונה משלו, ייתכן שזה לא הצבע שהוזמן';
-		}
+		// הכיתוב שמתחת להגדלה — שלוש שורות, מופרדות בשורה חדשה ומעוצבות ב-JS.
+		// המטרה היא אימות פיזי: מי שמלקט מחזיק את הפריט ביד ומשווה. לכן זה
+		// אינו שם הפריט הארוך אלא שלושת המזהים שמודפסים על המדבקה.
+		$caption = implode( "\n", arena_oit_caption_lines( $item, $product_id, $variation_id, $ambiguous ) );
 
 		// ⚠️ בלי תכונות data-* : הטמפלייט של WooCommerce מעביר את הפלט דרך
 		// `wp_kses_post`, שמסנן data-* ומשאיר href/class/title. לכן הכתובת
@@ -96,6 +95,82 @@ if ( ! function_exists( 'arena_oit_thumbnail' ) ) :
 			$img
 		);
 	}
+	/**
+	 * שלוש שורות הכיתוב, לפי הסדר שבו המלקט קורא אותן.
+	 *
+	 * 1. **דגם-צבע-מידה** — המזהה שמודפס על המדבקה. הדגם מגיע מ-`_parent_sku`
+	 *    (מספר הדגם בקומקס, למשל `004714`) ולא מ-ID של וורדפרס.
+	 * 2. **שם המוצר במילים** — כדי שאפשר יהיה לזהות בלי לפענח קודים.
+	 * 3. **הברקוד** — המזהה החד-משמעי היחיד, ונקרא ספרה-ספרה מול המדבקה.
+	 *
+	 * ⚠️ שמות הצבע והמידה נלקחים **כפי שהם באתר** ואינם מנורמלים לכתיב של
+	 * קומקס. באתר הצבע הוא `102-SMOKE-SMOKE-BLACK` והמידה `One size`, בעוד
+	 * שבקומקס אותו פריט הוא `102` ו-`Os`. נרמול היה ניחוש שעלול להצמיד את
+	 * הכיתוב לפריט אחר — ולכן הברקוד, שזהה בשתי המערכות, הוא עוגן האימות.
+	 */
+	function arena_oit_caption_lines( $item, $product_id, $variation_id, $ambiguous ) {
+		$lines   = array();
+		$product = $variation_id ? wc_get_product( $variation_id ) : null;
+
+		$model = '';
+		if ( $product ) {
+			$model = (string) $product->get_meta( '_parent_sku' );
+		}
+		if ( '' === $model ) {
+			$parent = wc_get_product( $product_id );
+			$model  = $parent ? (string) $parent->get_sku() : '';
+		}
+
+		// הצבע והמידה מהתכונות של הווריאציה, בשם המוצג ולא ב-slug.
+		$parts = array();
+		if ( $product && $product->is_type( 'variation' ) ) {
+			foreach ( $product->get_attributes() as $taxonomy => $value ) {
+				if ( '' === $value ) {
+					continue;
+				}
+				if ( taxonomy_exists( $taxonomy ) ) {
+					$term = get_term_by( 'slug', $value, $taxonomy );
+					if ( $term && ! is_wp_error( $term ) ) {
+						$value = $term->name;
+					}
+				}
+				$parts[] = $value;
+			}
+		}
+
+		$code = implode( '-', array_filter( array_merge( array( $model ), $parts ) ) );
+		if ( '' !== $code ) {
+			$lines[] = $code;
+		}
+
+		// שם המוצר במילים — הכותרת של מוצר האב, בלי הצבע והמידה שכבר בשורה 1.
+		$title = get_the_title( $product_id );
+		if ( $title ) {
+			$lines[] = wp_strip_all_tags( $title );
+		}
+
+		// הברקוד. get_sku() של ווריאציה מחזיר את הברקוד שלה, ולא של האב.
+		$sku = $product ? $product->get_sku() : '';
+		if ( '' === $sku ) {
+			$parent = wc_get_product( $product_id );
+			$sku    = $parent ? $parent->get_sku() : '';
+		}
+		if ( '' !== $sku ) {
+			$lines[] = $sku;
+		}
+
+		// נפילה לאחור: פריט בלי שום מזהה עדיף שיציג שם מאשר כלום.
+		if ( ! $lines ) {
+			$lines[] = wp_strip_all_tags( $item->get_name() );
+		}
+
+		if ( $ambiguous ) {
+			$lines[] = '⚠ תמונת מוצר האב: לצבע הזה אין תמונה משלו, ייתכן שזה לא הצבע שהוזמן';
+		}
+
+		return $lines;
+	}
+
 	add_filter( 'woocommerce_admin_order_item_thumbnail', 'arena_oit_thumbnail', 9999, 3 );
 
 	/** האם אנחנו במסך ההזמנה — גם בעורך הקלאסי וגם ב-HPOS. */
@@ -142,7 +217,20 @@ if ( ! function_exists( 'arena_oit_thumbnail' ) ) :
 .arena-oit-overlay figure { margin: 0; text-align: center; }
 .arena-oit-overlay img { max-width: min(88vw, 900px); max-height: 80vh; background: #fff; border-radius: 4px; }
 .arena-oit-overlay figcaption {
-	color: #fff; font-size: 14px; margin-top: 12px; direction: rtl; max-width: 88vw;
+	color: #fff; margin-top: 14px; direction: rtl; max-width: 88vw;
+}
+/* שלוש שורות בהיררכיה: הקוד גדול, השם רגיל, הברקוד רחב ומרווח לקריאה ספרה-ספרה. */
+.arena-oit-overlay .arena-oit-cap-code {
+	font-size: 22px; font-weight: 700; letter-spacing: .5px; direction: ltr;
+}
+.arena-oit-overlay .arena-oit-cap-name { font-size: 15px; margin-top: 4px; opacity: .92; }
+.arena-oit-overlay .arena-oit-cap-barcode {
+	font-family: Consolas, "Courier New", monospace; font-size: 20px; letter-spacing: 3px;
+	direction: ltr; margin-top: 8px; padding: 4px 10px; display: inline-block;
+	background: rgba(255,255,255,.12); border-radius: 4px;
+}
+.arena-oit-overlay .arena-oit-cap-warn {
+	font-size: 14px; margin-top: 10px; color: #ffd08a;
 }
 .arena-oit-overlay .arena-oit-close {
 	position: absolute; top: 14px; inset-inline-end: 18px; color: #fff;
@@ -173,7 +261,22 @@ if ( ! function_exists( 'arena_oit_thumbnail' ) ) :
 		img.setAttribute('src', src);
 		img.setAttribute('alt', caption || '');
 		var cap = document.createElement('figcaption');
-		cap.textContent = caption || '';
+		// הכיתוב מגיע כשורות מופרדות בשורה חדשה מתוך title, ומקבל מחלקה לפי תפקידו:
+		// קוד, שם, ברקוד, ואזהרה. textContent בכל שורה — לא innerHTML.
+		var lines = String(caption || '').split('\n').filter(function (t) { return t !== ''; });
+		var classes = ['arena-oit-cap-code', 'arena-oit-cap-name', 'arena-oit-cap-barcode'];
+		var slot = 0;
+		lines.forEach(function (text) {
+			var row = document.createElement('div');
+			if (text.charAt(0) === '⚠') {
+				row.className = 'arena-oit-cap-warn';
+			} else {
+				row.className = classes[slot] || 'arena-oit-cap-name';
+				slot++;
+			}
+			row.textContent = text;
+			cap.appendChild(row);
+		});
 
 		fig.appendChild(img);
 		fig.appendChild(cap);

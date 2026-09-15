@@ -19,7 +19,11 @@
       "Bash(rm -f runs/orders-preview/*.png)",
       "Bash(node orders-app/preview.js)",
       "PowerShell($f=\"C:\\\\AGENT-COMAX-CLOAD\\\\data\\\\exports\\\\פריטים-מלא-2026-09-14.csv\"; \\(Get-Content $f | Measure-Object -Line\\).Lines)",
-      "PowerShell(npm run run -- items-export --confirm 2>&1)"
+      "PowerShell(npm run run -- items-export --confirm 2>&1)",
+      "PowerShell(npm run logoff 2>&1)",
+      "PowerShell(Get-ChildItem \"$env:USERPROFILE\\\\Downloads\" -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -gt \\(Get-Date\\).AddHours\\(-2\\) } | Select-Object Name, Length, LastWriteTime)",
+      "PowerShell($p=\"C:\\\\AGENT-COMAX-CLOAD\\\\.chrome-profile\"; Get-ChildItem $p -ErrorAction SilentlyContinue | Select-Object -First 20 Name; \"--- prefs ---\"; $f=\"$p\\\\Default\\\\Preferences\"; if \\(Test-Path $f\\) { $j = Get-Content $f -Raw | ConvertFrom-Json; $j.download | ConvertTo-Json -Depth 5; \"savefile:\"; $j.savefile | ConvertTo-Json -Depth 5 } else { \"no Preferences at $f\" })",
+      "PowerShell($f=\"C:\\\\AGENT-COMAX-CLOAD\\\\.chrome-profile\\\\Default\\\\Preferences\"; $raw = Get-Content $f -Raw; foreach \\($k in @\\('prompt_for_download','default_directory','savefile','download_restrictions','extensions_to_open'\\)\\) { $m = [regex]::Matches\\($raw, \".{0,80}$k.{0,120}\"\\); if \\($m.Count\\) { foreach \\($x in $m\\) { \"[$k] \" + $x.Value } } else { \"[$k] \\(absent\\)\" } })"
     ]
   }
 }
