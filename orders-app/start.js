@@ -5,6 +5,7 @@
  *   npm run orders -- check   — בדיקת חיבור: WooCommerce, טלגרם, קטלוג קומקס
  *   npm run orders -- chat-id — מציאת מזהה השיחה בטלגרם, פעם אחת בהתקנה
  *   npm run orders -- test    — שולח לטלגרם את ההזמנה האחרונה, כדי לראות איך זה נראה
+ *   npm run orders -- boot    — אחרי אתחול: מנהרה + הכל + הכתובת החדשה לטלגרם
  *   npm run orders -- serve   — ממשק בלבד, בלי התראות
  *   npm run orders -- watch   — התראות בלבד, בלי ממשק
  */
@@ -99,6 +100,8 @@ switch (cmd) {
   case 'test': await test(); break;
   case 'poll': requireConfig(); console.log(`נשלחו ${await pollOnce()} התראות.`); break;
   case 'serve': requireConfig({ needTelegram: false }); startServer(); break;
+  // מנהרה + שרת + הודעת טלגרם עם הכתובת החדשה. זה מה שרץ אחרי אתחול המחשב.
+  case 'boot': requireConfig(); await import('./boot.js'); break;
   case 'watch': requireConfig(); await watch(); break;
   case 'all':
     requireConfig();
