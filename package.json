@@ -35,6 +35,7 @@
     "catalog-sync": "node tools/catalog-sync.js",
     "mail-send": "node tools/gmail-send.js",
     "mail-get": "node tools/gmail-attach.js",
+    "sm-stock": "node tools/sm-stock.js",
     "items-import": "node tools/run.js items-import",
     "orders": "node orders-app/start.js",
     "wa": "node tools/wa.js",

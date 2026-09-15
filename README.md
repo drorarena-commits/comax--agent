@@ -34,6 +34,8 @@ npm run payroll -- --to <כתובת>    # דוח נוכחות חודשי לשכ�
 npm run mail-send -- --to <כתובת> --subject "..." --body-file b.txt --attach f.pdf  # מייל עם קבצים (יבש)
 npm run mail-send -- ... --confirm                    # ורק זה שולח בפועל
 npm run mail-get -- <messageId> <חלק-משם-הקובץ>       # מוריד קובץ מצורף ממייל לדיסק
+npm run sm-stock                                      # דוח המלאי הארצי של ספורט אנד מור: מייל ⇐ content/sportmore/
+npm run sm-stock -- --list                            # רק מציג את המועמדים, בלי להוריד
 npm run wa-link -- 05XXXXXXXX      # קישור וואטסאפ — קוד בן 8 תווים להקליד בטלפון
 npm run wa-start                   # ← הגשר, מנותק. חייב לרוץ כדי ש"הי קלוד" יעבוד
 npm run wa-up                      # הגשר רץ?
