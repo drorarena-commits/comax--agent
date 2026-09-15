@@ -1,21 +1,16 @@
 /**
  * כפתור הוואטסאפ — פותח שיחה עם לקוח ההזמנה, עם טקסט מוכן שניתן לערוך.
  *
- * ## למה יש כאן בחירה בין שתי אפליקציות
+ * ## קישור אחד. המערכת שואלת, לא אנחנו
  *
- * כשגם וואטסאפ וגם וואטסאפ ביזנס מותקנים באותו אייפון, **שתיהן רשומות על
- * אותה סכימה** `whatsapp://`, ו-iOS מחליט לבד מי מהן נפתחת. הקישור הרגיל
- * `wa.me` נופל לאותה הכרעה. לכן הדיאלוג הזה שואל תחילה, ומנסה עבור ביזנס
- * סכימה נפרדת.
+ * כאן ישב פעם דיאלוג עם שני כפתורים ("ביזנס" / "רגיל"), סכימה לא מתועדת
+ * `whatsapp-business://`, טיימר נפילה חזרה וזיכרון בחירה ב-`localStorage`.
+ * **כל זה נמחק ב-15/09/2026 אחרי אימות בטלפון של דרור:** כששתי האפליקציות
+ * מותקנות, **iOS עצמו שואל אם לעבור לביזנס** ברגע שנפתח `wa.me`.
  *
- * ⚠️ **הסכימה של ביזנס אינה מתועדת רשמית על ידי Meta.** `whatsapp-business://`
- * היא מה שנצפה בפועל, לא הבטחה. לכן היא נוסה עם **נפילה חזרה** ל-`wa.me`
- * אחרי 1.2 שניות: אם iOS לא הכיר את הסכימה, הדף נשאר גלוי ואנחנו פותחים את
- * הקישור הרגיל. הכשל הגרוע ביותר הוא "נפתחה האפליקציה הלא נכונה" — לא
- * "לא נפתח כלום".
- *
- * מה שעדיין דורש אימות בטלפון אמיתי עם שתי האפליקציות מותקנות: האם ביזנס
- * באמת נפתחת. זה נמדד רק שם, ולא ניתן להסיק אותו מכאן.
+ * כלומר הבעיה שהמנגנון בא לפתור לא הייתה קיימת — הוא רק הוסיף מסך שצריך
+ * לעבור בו בכל פנייה ללקוח. ⛔ **אל תבנה עקיפה סביב התנהגות מערכת שלא
+ * נצפתה**; `whatsapp-business://` ממילא אינה מתועדת על ידי Meta.
  */
 
 /**
@@ -47,34 +42,13 @@ export function defaultMessage(order) {
 }
 
 /**
- * פתיחת וואטסאפ. `app` הוא 'business' או 'regular'.
+ * פתיחת וואטסאפ עם השיחה והטקסט מוכנים.
  * מוחזר `true` אם ניסינו לפתוח, `false` אם המספר לא הובן.
  */
-export function openWhatsapp({ phone, text, app }) {
+export function openWhatsapp({ phone, text }) {
   const number = toWhatsappNumber(phone);
   if (!number) return false;
 
-  const q = `phone=${number}&text=${encodeURIComponent(text || '')}`;
-  const web = `https://wa.me/${number}?text=${encodeURIComponent(text || '')}`;
-
-  if (app === 'business') {
-    // הנפילה חזרה מבוטלת ברגע שהדף מאבד מיקוד — כלומר ברגע ש-iOS מתחיל
-    // לעבור לאפליקציה. בלי הביטול הזה הטיימר יורה גם כשהמעבר כבר בדרך,
-    // והמסך "קופץ" דרך הקישור הרגיל בדרכו לביזנס. נמדד אצל דרור 14/09/2026:
-    // הסכימה עובדת, אבל המעבר לוקח יותר מ-1.2 שניות.
-    let cancelled = false;
-    const cancel = () => { cancelled = true; };
-    document.addEventListener('visibilitychange', cancel, { once: true });
-    window.addEventListener('pagehide', cancel, { once: true });
-    window.addEventListener('blur', cancel, { once: true });
-
-    location.href = `whatsapp-business://send?${q}`;
-    setTimeout(() => {
-      if (!cancelled && !document.hidden) location.href = web;
-    }, 2500);
-    return true;
-  }
-
-  location.href = web;
+  location.href = `https://wa.me/${number}?text=${encodeURIComponent(text || '')}`;
   return true;
 }

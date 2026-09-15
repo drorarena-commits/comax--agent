@@ -204,23 +204,16 @@ function whatsappDialog(order) {
   box.value = defaultMessage(order);
   panel.append(box);
 
-  const last = localStorage.getItem('wa-app');
-  panel.append(el('div', 'wa-ask', 'באיזו אפליקציה לפתוח?'));
-
+  // כפתור אחד. אם מותקנת גם וואטסאפ ביזנס, iOS שואל בעצמו אם לעבור אליה —
+  // ולכן בורר אפליקציות כאן היה מסך מיותר בדרך לכל לקוח.
   const row = el('div', 'actions');
-  for (const opt of [
-    { key: 'business', label: 'וואטסאפ ביזנס' },
-    { key: 'regular', label: 'וואטסאפ רגיל' },
-  ]) {
-    const b = el('button', 'action', opt.label + (last === opt.key ? ' ·' : ''));
-    b.onclick = () => {
-      localStorage.setItem('wa-app', opt.key);
-      const ok = openWhatsapp({ phone, text: box.value, app: opt.key });
-      if (!ok) toast('לא הצלחתי להבין את מספר הטלפון');
-      wrap.remove();
-    };
-    row.append(b);
-  }
+  const send = el('button', 'action', 'פתיחת וואטסאפ');
+  send.onclick = () => {
+    const ok = openWhatsapp({ phone, text: box.value });
+    if (!ok) toast('לא הצלחתי להבין את מספר הטלפון');
+    wrap.remove();
+  };
+  row.append(send);
   panel.append(row);
 
   const cancel = el('button', 'wa-cancel', 'ביטול');
