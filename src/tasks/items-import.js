@@ -471,6 +471,17 @@ export async function run({ page, human, logger, input, cfg, dryRun }) {
       });
       await human.settle('הקמת פריט = ריק');
       logger.step('mode', '⚠ allowUpdate — "הקמת פריט" ריק: היבוא יעדכן גם פריטים קיימים');
+    } else {
+      // ⚠️ קומקס **זוכר** את הערך מהיבוא הקודם של המשתמש. נמדד 16/09/2026: אחרי
+      //    הרצת `--allowUpdate` ב-13/09 הדיאלוג נפתח עם "הקמת פריט" ריק, והשער
+      //    שלמטה עצר הקמה רגילה. לכן "בלבד" נקבע במפורש — השער עדיין מאמת.
+      await dlg.evaluate(() => {
+        const el = document.getElementById('SwHkPrt');
+        el.value = '2';                       // בלבד — הקמה בלי עדכון קיימים
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        window.SwHkPrt_onclick?.();
+      });
+      await human.settle('הקמת פריט = בלבד');
     }
 
     // ---- שאר תיבות ההתנהגות — נקראות, לא נוגעים ---------------------------

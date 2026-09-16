@@ -254,10 +254,11 @@ export async function run({ page, human, logger, input, cfg, browser = null, con
 
   // ההורדה עצמה יושבת ב-`src/download.js` — מניעת דיאלוג השמירה של ווינדוס,
   // ואימוץ קובץ שנחת בתיקיית ההורדות של המשתמש. ראה שם למה.
+  const target = (ext) => resolve(outDir, `${base}${ext || '.xls'}`);
   const file = await captureDownload({
     session: { page, context: context ?? page.context(), browser },
     logger,
-    target: (ext) => resolve(outDir, `${base}${ext || '.xls'}`),
+    target,
     trigger: async () => {
       await human.click('#OK', { scope: dlg, label: 'הרצת הייצוא' });
       console.log('  מייצא את כל הפריטים... (יכול לקחת כמה דקות)');
