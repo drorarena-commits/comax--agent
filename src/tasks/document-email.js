@@ -145,7 +145,7 @@ export const meta = {
   writes: true,
   input: {
     document: 'string — סוג המסמך: quote · invoice · וכו\'. ברירת מחדל: quote',
-    docNo: 'string — מספר המסמך',
+    docNo: 'string — מספר המסמך. חובה',
     customer: 'string, אופציונלי — שם הלקוח, לזיהוי השורה כשיש כפילות מספרים בין שנים',
     to: 'string — כתובת הנמען. חובה. אין ברירת מחדל, בכוונה',
     toName: 'string, אופציונלי — שם הנמען',

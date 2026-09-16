@@ -27,6 +27,11 @@ export const meta = {
     wholesale: 'boolean, אופציונלי — מחיר סיטונאי: נטו חצי מהברוטו. **ברירת המחדל היא true תחת מחירון שמסומן wholesale ב-knowledge/lists.json** (מחירון קבוצות). להעביר false כדי לבטל. דרך ההזנה נקבעת לפי משטר המע\"מ של המסמך',
     remark: 'string, אופציונלי',
   },
+  precheck: (input) => {
+    const has = input.items?.length ? input.items[0]?.code : input.code;
+    if (!has) return 'חסר code או items — איזה פריט להוסיף? אחד מהשניים חובה.';
+    return null;
+  },
 };
 
 const num = (v) => {

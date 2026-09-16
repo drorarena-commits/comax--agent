@@ -24,11 +24,11 @@ export const meta = {
   input: {
     id: 'string, אופציונלי — מזהה הקיצור לחיפוש. ברירת מחדל a157',
     label: 'string, אופציונלי — הטקסט המדויק של הקיצור, לחיפוש מקביל לפי טקסט',
-    catalog: 'true — לקרוא את כל הקיצורים ואת נתיב התוכנית שלהם, ולכתוב את הקטלוג',
-    learn: 'true — לפתוח כל מסך ולקרוא את הנתיב מה-URL. הדרך היחידה לקבל אותו',
+    catalog: 'boolean — true לקרוא את כל הקיצורים ואת נתיב התוכנית שלהם, ולכתוב את הקטלוג',
+    learn: 'boolean — true לפתוח כל מסך ולקרוא את הנתיב מה-URL. הדרך היחידה לקבל אותו',
     only: 'string|array, אופציונלי — ללמוד רק את הקיצורים האלה',
-    inspect: 'true — לפרק אייקון אחד: attributes, HTML, וטבלאות JS',
-    write: 'true — לכתוב בפועל ל-knowledge/desktop-shortcuts.json. בלעדיו רק מדווח',
+    inspect: 'boolean — true לפרק אייקון אחד: attributes, HTML, וטבלאות JS',
+    write: 'boolean — true לכתוב בפועל ל-knowledge/desktop-shortcuts.json. בלעדיו רק מדווח',
   },
 };
 

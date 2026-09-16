@@ -19,6 +19,7 @@ import { ensureComax } from '../src/ensure-comax.js';
 import { acquire, busyMessage } from '../src/lock.js';
 import { touch } from '../src/activity.js';
 import { login } from '../src/session.js';
+import { parseFlags, applyDeclaredTypes, isMissing, isRequiredSpec } from '../src/cli-args.js';
 
 const TASK_DIR = resolve(ROOT, 'src/tasks');
 
@@ -104,45 +105,8 @@ const confirm = argv.includes('--confirm');
  * declares `boolean` in its meta, handled further down; that is the task's own
  * type declaration, not an inference about the value.
  */
-const KNOWN_FLAGS = new Set(['--json', '--json-file', '--confirm']);
-const unknown = [];
-/**
- * `--confirm` is presence, not a value — and that is exactly why a value after
- * it has to be refused out loud.
- *
- * `--confirm false` **confirmed**: `confirm` is `argv.includes('--confirm')`, so
- * the word after it changed nothing, and the `false` was dropped without a
- * sound. Whoever types it means the opposite of what they get, and what they get
- * is an irreversible document filed in Comax.
- *
- * Refused rather than interpreted. Reading `--confirm false` as "do not confirm"
- * would be just as much a guess, and between two guesses the one that files a
- * document nobody asked for is the one worth refusing.
- */
-const confirmedWithValue = [];
-for (let i = 1; i < argv.length; i++) {
-  const a = argv[i];
-  if (!a.startsWith('--')) continue;
-  if (KNOWN_FLAGS.has(a)) {
-    if (a !== '--confirm') { i++; continue; }
-    const after = argv[i + 1];
-    if (after !== undefined && !after.startsWith('--')) confirmedWithValue.push(after);
-    continue;
-  }
-  const key = a.slice(2);
-  if (!/^[A-Za-z][A-Za-z0-9]*$/.test(key)) { unknown.push(a); continue; }
-  const next = argv[i + 1];
-  if (next === undefined || next.startsWith('--')) {
-    input[key] = true;
-  } else {
-    // A repeated flag builds a list, so `--programs a157 --programs a132` works
-    // for the array-shaped inputs without making the caller reach for --json.
-    input[key] = Object.hasOwn(input, key)
-      ? [].concat(input[key], next)
-      : next;
-    i++;
-  }
-}
+const { input: flagInput, unknown, confirmedWithValue } = parseFlags(argv);
+Object.assign(input, flagInput);
 if (confirmedWithValue.length || unknown.length) {
   // שתי התקלות מודפסות יחד. לתקן אחת, לגלות את השנייה ולהריץ שוב הוא סיבוב
   // מיותר — ובמסלול הזה כל סיבוב עולה לוגין ומושב.
@@ -206,25 +170,18 @@ const dryRun = writes && !confirm;
  * and a word that is neither true nor false is refused rather than coerced. The
  * `--json` path already carried real booleans and is untouched.
  */
-const BOOLEAN_WORDS = new Map([['true', true], ['false', false]]);
+const typeProblem = applyDeclaredTypes(input, mod.meta?.input ?? {});
+if (typeProblem) {
+  console.error(
+    `\n"${typeProblem.key}" הוא שדה בוליאני וקיבל "${typeProblem.value}" — צריך true או false.\n\n` +
+      `  ${taskName}: ${typeProblem.spec}\n`,
+  );
+  process.exit(1);
+}
 for (const [key, spec] of Object.entries(mod.meta?.input ?? {})) {
   if (typeof spec !== 'string') continue;
-  if (/^array\b/.test(spec) && Object.hasOwn(input, key) && !Array.isArray(input[key])) {
-    input[key] = [input[key]];
-  }
-  if (/^boolean\b/.test(spec) && typeof input[key] === 'string') {
-    const word = BOOLEAN_WORDS.get(input[key].trim().toLowerCase());
-    if (word === undefined) {
-      console.error(
-        `\n"${key}" הוא שדה בוליאני וקיבל "${input[key]}" — צריך true או false.\n\n` +
-          `  ${taskName}: ${spec}\n`,
-      );
-      process.exit(1);
-    }
-    input[key] = word;
-  }
-  const missing = input[key] === undefined || input[key] === '';
-  if (/חובה/.test(spec) && missing) {
+  const missing = isMissing(input[key]);
+  if (isRequiredSpec(spec) && missing) {
     console.error(
       `\nחסר "${key}" — ${spec}\n\n` +
         `  ${taskName}: ${mod.meta?.description ?? ''}\n\n` +

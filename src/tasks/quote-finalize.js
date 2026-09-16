@@ -26,6 +26,10 @@ export const meta = {
     docNo: 'string, אופציונלי — מספר המסמך, גובר על זיהוי אוטומטי',
     pdfOnly: 'boolean — רק להפיק PDF למסמך שכבר נקלט (דורש docNo)',
   },
+  // `docNo` אופציונלי ברגיל — הוא מזוהה אוטומטית מהמסמך שנקלט — אבל תחת
+  // `pdfOnly` אין מסמך שנקלט בהרצה הזאת, ואין ממה לזהות. תלות מותנית כזאת
+  // אינה "חובה" ואינה "אופציונלי", והמקום שלה הוא כאן.
+  precheck: (input) => (input.pdfOnly && !input.docNo ? 'pdfOnly דורש docNo — אין מסמך שנקלט להסיק ממנו.' : null),
 };
 
 /** Windows and Comax both dislike these in a filename. */

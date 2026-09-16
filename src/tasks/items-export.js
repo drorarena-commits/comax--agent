@@ -32,7 +32,7 @@ export const meta = {
   writes: false, // read-only export
   input: {
     fields: 'omitted = the lean default set | "all" = 97 columns | array of ids | "keep" = last run',
-    probe: 'true — map the dialog and stop without exporting',
+    probe: 'boolean — true maps the dialog and stops without exporting',
     out: 'output filename, optional',
   },
 };

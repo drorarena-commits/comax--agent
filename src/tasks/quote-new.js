@@ -20,7 +20,7 @@ export const meta = {
   description: 'הצעת מחיר חדשה ללקוח',
   writes: true,
   input: {
-    customer: 'string — שם הלקוח, מלא או חלקי',
+    customer: 'string — שם הלקוח, מלא או חלקי. חובה',
     store: 'string, אופציונלי — מחסן. ברירת מחדל: מה שמגיע מכרטיס הלקוח',
     priceList: 'string, אופציונלי — מחירון. ברירת מחדל: מכרטיס הלקוח',
     agent: 'string, אופציונלי — סוכן',

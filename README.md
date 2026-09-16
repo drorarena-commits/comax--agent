@@ -24,6 +24,7 @@ npm run run -- <משימה> --json '{...}'            # הרצה יבשה (עו�
 npm run run -- <משימה> --json '{...}' --confirm  # הרצה אמיתית
 #   --confirm הוא דגל ואינו מקבל ערך. "--confirm false" נדחה רועש — הוא היה מאשר.
 #   שדה שה-meta שלו מוצהר boolean מקבל גם --flag false, ומומר לבוליאני אמיתי.
+npm run tasks-test                 # החוזה של meta.input — להריץ אחרי כל שינוי במשימה
 npm run run -- stock-matrix        # מטריצת מחסנים -> data/exports/
 npm run run -- items-export        # קטלוג הפריטים -> data/exports/ (רזה: רק עמודות עם תוכן)
 npm run run -- customer-history --json '{"customer":"112447","item":"שנורקל"}'

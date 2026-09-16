@@ -26,6 +26,7 @@
     "matrix-csv": "node tools/matrix-html-to-csv.js",
     "sm": "node tools/sportmore.js",
     "sm-test": "node tools/sportmore-selftest.js",
+    "tasks-test": "node tools/tasks-selftest.js",
     "payroll": "node tools/payroll-report.js",
     "catalogs-sync": "node tools/catalogs-sync.js",
     "items-file": "node tools/items-import-file.js",
