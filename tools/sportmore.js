@@ -255,7 +255,7 @@ if (cmd === 'intake') {
     codes,
     out: resolve(OUT_DIR, 'קליטת חשבוניות ' + today() + ' ' + warehouse + '.xls'),
   });
-  console.log('\n✓ קובץ קליטה: ' + base(res.file) + '   (' + res.rows + ' שורות, מחסן ' + res.warehouse + ')');
+  console.log('\n✓ קובץ חשבונית רכש: ' + base(res.file) + '   (' + res.rows + ' שורות, מחסן ' + res.warehouse + ')');
   if (res.flagged.length) {
     console.log('  🔴 ' + res.flagged.length + ' שורות מסומנות באדום — להקים ולאשר לפני הרצת הרכש.');
   }
