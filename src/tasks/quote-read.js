@@ -36,11 +36,25 @@ export const meta = {
   writes: false, // opens documents and backs out without committing
   input: {
     customer: 'string, אופציונלי — קוד או שם לקוח לסינון הרשימה',
-    docNo: 'string/number, אופציונלי — מספר הצעה מדויק. אחד מהשניים חובה',
+    docNo: 'string/number, אופציונלי — מספר הצעה מדויק. צריך אותו או את customer',
     item: 'string, אופציונלי — ברקוד / מק"ט חלופי / חלק משם, לאיתור ההצעה הנכונה מבין כמה',
     year: 'string/number, אופציונלי — להגביל לשנה אחת (2026). המספור הרץ מתאפס בין שנים, וזה מה שמכריע כפילות. "all" = בלי סינון',
     all: 'boolean, אופציונלי — לקרוא את שורות כל ההצעות ברשימה ולא רק לרשום אותן',
     maxDocs: 'number, אופציונלי — תקרת מסמכים שנפתחים. ברירת המחדל 10',
+  },
+  /**
+   * customer *או* docNo — either/or, which the "חובה" convention in run.js
+   * cannot express. It tried: the word sat inside docNo's own description
+   * ("אחד מהשניים חובה"), the regex matched it, and a queued run that *did*
+   * supply `customer` was rejected for a missing optional field
+   * (15/09/2026, 20260915-1926-quote-ono). Either/or belongs in a precheck,
+   * and the word חובה stays out of an optional field's text.
+   */
+  precheck(input) {
+    if (!input.docNo && !input.customer) {
+      return 'חסר customer או docNo — איזו הצעת מחיר לקרוא?';
+    }
+    return null;
   },
 };
 
