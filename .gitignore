@@ -21,3 +21,6 @@ queue/working/
 queue/hold/
 queue/approve/
 queue/done/
+
+# תוצרי עבודה מקומיים שנוצרו בשיחה — לא ידע פרויקט
+content/Claude outputs/
