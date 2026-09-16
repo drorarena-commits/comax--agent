@@ -26,6 +26,7 @@ export function parseFlags(argv) {
   const input = {};
   const unknown = [];
   const confirmedWithValue = [];
+  const withoutValue = [];
 
   for (let i = 1; i < argv.length; i++) {
     const a = argv[i];
@@ -47,6 +48,10 @@ export function parseFlags(argv) {
 
     const next = argv[i + 1];
     if (next === undefined || next.startsWith('--')) {
+      // דגל יחף הוא הכתיב הרגיל של שדה בוליאני — ולשדה שאינו בוליאני זו טעות
+      // הקלדה שנקראה כ-true. נרשם כאן ומוכרע מול ה-meta ב-checkFlagsWithoutValue,
+      // כי רק שם ידוע איזה שדה אמור לקבל ערך.
+      withoutValue.push({ key, next: next ?? null });
       input[key] = true;
     } else {
       // דגל שחוזר בונה רשימה, כך ש-`--programs a157 --programs a132` עובד
@@ -56,7 +61,35 @@ export function parseFlags(argv) {
     }
   }
 
-  return { input, unknown, confirmedWithValue, confirm: argv.includes('--confirm') };
+  return { input, unknown, confirmedWithValue, withoutValue, confirm: argv.includes('--confirm') };
+}
+
+/**
+ * דגל שמצפה לערך וקיבל את הדגל הבא — או כלום.
+ *
+ * `--customer --confirm` נתן `customer: true`, ו-`true` אינו `undefined` ואינו
+ * מחרוזת ריקה, ולכן **שער ה"חובה" אישר אותו**. ההרצה הגיעה לקומקס וחיפשה לקוח
+ * בשם "true". ההודעה היחידה שהייתה יכולה לצאת היא "חסר customer" — תשובה נכונה
+ * על הסיבה הלא נכונה, שמסתירה את מה שבאמת קרה: שני טוקנים שנכתבו בסדר הלא נכון.
+ *
+ * לכן השגיאה נוקבת בשניהם. הצורה המתגוננת קיימת כבר ב-`tools/wa.js`, שם ערך
+ * שנראה כמו דגל נופל לברירת מחדל — כאן הוא מדווח, כי ל-`run.js` אין ברירת מחדל
+ * לנפול אליה והשתקה היא בדיוק מה שעלה את הלוגין.
+ *
+ * שדה שהוצהר `boolean` פטור: שם דגל יחף הוא הכתיב הנכון. שדה שאינו מוצהר
+ * ב-`meta.input` כלל אינו נבדק — הוא עניינה של המשימה, לא של הפרסר.
+ *
+ * @returns {Array<{key:string, next:string|null, spec:string}>}
+ */
+export function checkFlagsWithoutValue(withoutValue, metaInput = {}) {
+  const problems = [];
+  for (const { key, next } of withoutValue) {
+    const spec = metaInput[key];
+    if (typeof spec !== 'string') continue;
+    if (/^boolean\b/.test(spec)) continue;
+    problems.push({ key, next, spec });
+  }
+  return problems;
 }
 
 /**

@@ -19,7 +19,7 @@ import { ensureComax } from '../src/ensure-comax.js';
 import { acquire, busyMessage } from '../src/lock.js';
 import { touch } from '../src/activity.js';
 import { login } from '../src/session.js';
-import { parseFlags, applyDeclaredTypes, isMissing, isRequiredSpec } from '../src/cli-args.js';
+import { parseFlags, applyDeclaredTypes, checkFlagsWithoutValue, isMissing, isRequiredSpec } from '../src/cli-args.js';
 
 const TASK_DIR = resolve(ROOT, 'src/tasks');
 
@@ -105,7 +105,7 @@ const confirm = argv.includes('--confirm');
  * declares `boolean` in its meta, handled further down; that is the task's own
  * type declaration, not an inference about the value.
  */
-const { input: flagInput, unknown, confirmedWithValue } = parseFlags(argv);
+const { input: flagInput, unknown, confirmedWithValue, withoutValue } = parseFlags(argv);
 Object.assign(input, flagInput);
 if (confirmedWithValue.length || unknown.length) {
   // שתי התקלות מודפסות יחד. לתקן אחת, לגלות את השנייה ולהריץ שוב הוא סיבוב
@@ -170,6 +170,23 @@ const dryRun = writes && !confirm;
  * and a word that is neither true nor false is refused rather than coerced. The
  * `--json` path already carried real booleans and is untouched.
  */
+// דגל שמצפה לערך וקיבל את הדגל הבא. נבדק לפני ההמרה, כי ההודעה כאן מדויקת
+// יותר: "חסר customer" נכון בעובדה ושגוי בסיבה, והסיבה היא מה שצריך לתקן.
+const valueless = checkFlagsWithoutValue(withoutValue, mod.meta?.input ?? {});
+if (valueless.length) {
+  for (const v of valueless) {
+    const after = v.next
+      ? `אחריו נמצא "${v.next}" — הדגל הבא, לא ערך`
+      : 'לא נמצא אחריו כלום';
+    console.error(
+      `\n"--${v.key}" מצפה לערך, ו${after}.\n` +
+        `"${v.key}" נקרא כ-true, וזה עובר את שער ה"חובה" — ההרצה הייתה מגיעה לקומקס עם הערך הזה.\n\n` +
+        `  ${taskName}: ${v.spec}\n`,
+    );
+  }
+  process.exit(1);
+}
+
 const typeProblem = applyDeclaredTypes(input, mod.meta?.input ?? {});
 if (typeProblem) {
   console.error(

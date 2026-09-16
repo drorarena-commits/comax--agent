@@ -27,7 +27,7 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { ROOT } from '../src/config.js';
-import { parseFlags, applyDeclaredTypes, isRequiredSpec } from '../src/cli-args.js';
+import { parseFlags, applyDeclaredTypes, checkFlagsWithoutValue, isRequiredSpec } from '../src/cli-args.js';
 
 const TASK_DIR = resolve(ROOT, 'src/tasks');
 
@@ -241,6 +241,21 @@ console.log('\n5. שערי הפרסר עצמו');
   const one = parseFlags(['task', '--programs', 'a157']);
   applyDeclaredTypes(one.input, { programs: 'array — רשימה' });
   t('ערך בודד לשדה array נעטף', Array.isArray(one.input.programs), JSON.stringify(one.input.programs));
+
+  // דגל שמצפה לערך וקיבל את הדגל הבא — לא להשתיק, ולנקוב בשני הטוקנים.
+  const swallowed = parseFlags(['task', '--customer', '--confirm']);
+  t('דגל בלי ערך נרשם', swallowed.withoutValue.length === 1, JSON.stringify(swallowed.withoutValue));
+  const strSpec = { customer: 'string — קוד לקוח. חובה' };
+  const flagged = checkFlagsWithoutValue(swallowed.withoutValue, strSpec);
+  t('שדה מחרוזת שקיבל דגל — מדווח', flagged.length === 1, flagged.map((x) => x.key).join());
+  t('...והדיווח נוקב בטוקן הבא', flagged[0]?.next === '--confirm', String(flagged[0]?.next));
+  t('...ולא הושתק ל-true', swallowed.input.customer === true, String(swallowed.input.customer));
+  const atEnd = parseFlags(['task', '--customer']);
+  t('דגל בסוף השורה מדווח גם הוא', checkFlagsWithoutValue(atEnd.withoutValue, strSpec)[0]?.next === null);
+  t('שדה בוליאני יחף פטור', checkFlagsWithoutValue(swallowed.withoutValue, { customer: 'boolean — כן' }).length === 0);
+  t('שדה שאינו מוצהר אינו נבדק', checkFlagsWithoutValue(swallowed.withoutValue, {}).length === 0);
+  const withValue = parseFlags(['task', '--customer', '112001']);
+  t('דגל עם ערך אינו נרשם כחסר', withValue.withoutValue.length === 0);
 }
 
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');

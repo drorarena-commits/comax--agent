@@ -365,6 +365,10 @@ https://github.com/drorarena-commits/comax--agent.git
     (ב-"חובה" או ב-`precheck`) · שדה מסומן "חובה" חייב באמת להיות נדרש · שדה
     שהוצהר `boolean` חייב לחזור בוליאני **מהפרסר האמיתי** · ותיאור שמדבר על
     true/false ואינו מתחיל ב-`boolean` נכשל.
+    ⛔ **ודגל שמצפה לערך וקיבל את הדגל הבא נוקב בשני הטוקנים.** `--customer
+    --confirm` נתן `customer: true`, ו-`true` עובר את שער ה"חובה" — ההרצה הגיעה
+    לקומקס וחיפשה לקוח בשם "true". ההודעה היחידה שיכלה לצאת הייתה "חסר
+    customer": נכונה בעובדה, שגויה בסיבה, ומסתירה את מה שבאמת קרה.
     ⛔ **תלות מותנית אינה "חובה"** — `--partial` שדורש `--allowUpdate`,
     `--pdfOnly` שדורש `docNo`, `customer` **או** `docNo` — כולן `meta.precheck`.
     הפרסר עצמו יושב ב-[`src/cli-args.js`](src/cli-args.js) ומיובא גם ל-`run.js`
