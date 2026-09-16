@@ -108,6 +108,34 @@ function openQuestionLines(card) {
   return out;
 }
 
+/**
+ * שורות החשבונית שלא נכנסו לאף קובץ, ומה שלא אומת.
+ *
+ * העמודות השלמות (Style · Color · Size) הן המקור, והפיצול של `SKU/Article
+ * number` הוא אימות בלבד — החלטת דרור, 16/09/2026. שורה שבה השניים אינם זהים
+ * מוצגת עם שני הערכים זה לצד זה, בלי לקבוע מי מהם נכון. ⛔ בלי ברקוד גולמי.
+ */
+function invoiceQuestionLines(invoice) {
+  const out = [];
+  const mm = invoice.mismatches ?? [];
+  if (mm.length) {
+    out.push('\n⛔ ' + mm.length + ' שורות בחשבונית לא נכנסו לאף קובץ — העמודה השלמה והמק"ט של ארנה אינם זהים:');
+    for (const m of mm) {
+      out.push('   ❓ שורה ' + m.row + '   ' + m.articleNumber);
+      if (!m.fields.length) out.push('      ' + m.why);
+      for (const f of m.fields) {
+        out.push('      ' + pad(f.name, 11) + ' בעמודה: ' + pad(f.whole === '' ? '(ריקה)' : f.whole, 10)
+          + ' במק"ט: ' + f.split);
+      }
+    }
+    out.push('   קובץ חשבונית רכש שייכתב בלי השורות האלה יהיה חסר אותן — לברר ולתקן בקובץ המקור, ואז להריץ שוב.');
+  }
+  if (invoice.unverified) {
+    out.push('\nℹ  ' + invoice.unverified + ' שורות בלי SKU/Article number — נקראו מהעמודות השלמות ולא אומתו מול מק"ט.');
+  }
+  return out;
+}
+
 function die(msg) {
   console.error('\n' + msg + '\n');
   process.exit(1);
@@ -183,12 +211,8 @@ const codes = loadCodes();
 console.log('\nחשבונית:    ' + base(invoice.file) + '   —   ' + invoice.rows.length + ' שורות');
 console.log('כרטיס פריט: ' + base(card.file) + '   —   ' + card.parents.size + ' אבות, בן ' + card.ageDays + ' ימים');
 for (const line of statusLines(card)) console.log(line);
-if (invoice.problems.length) {
-  console.log('\n⚠  ' + invoice.problems.length + ' שורות בעייתיות בחשבונית:');
-  for (const p of invoice.problems.slice(0, 5)) {
-    console.log('      שורה ' + p.row + ': ' + p.articleNumber + ' — ' + p.why);
-  }
-}
+// מודפס כאן, מיד, ולא רק בסוף — לכל פקודה כמה נקודות יציאה (ראה ההערה למעלה).
+for (const line of invoiceQuestionLines(invoice)) console.log(line);
 
 /* ── plan ──────────────────────────────────────────────────────────────── */
 
@@ -252,6 +276,8 @@ if (cmd === 'plan') {
     for (const line of renderQuestions(buildQuestions(plan), codes)) console.log(line);
   }
   // השאלות שהכרטיס עצמו מעלה — בסוף, יחד עם שאלות הסיווג. לא עוצרות דבר.
+  // ושורות החשבונית שלא נכנסו — שוב בסוף, ליד שאר השאלות, כי שם דרור קורא.
+  for (const line of invoiceQuestionLines(invoice)) console.log(line);
   const cardQuestions = openQuestionLines(card);
   if (cardQuestions.length) {
     console.log('\nשאלות פתוחות מהכרטיס — לא עוצרות את ההרצה:');

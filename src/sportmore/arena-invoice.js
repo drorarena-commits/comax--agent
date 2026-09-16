@@ -10,9 +10,19 @@
  *
  * Two facts about these files decide the shape of the rest of the pipeline:
  *
- *   `SKU/Article number` is `style_color_size` — `2A253_75_75`. Splitting it is
- *   how the parent code is derived, and it is more reliable than the separate
- *   Style/Color/Size columns because it is what Arena's own system keys on.
+ *   **The codes come from the whole columns — `Style code` · `Color code` ·
+ *   `Size` — never from parsing.** `SKU/Article number` (`2A253_75_75`) is split
+ *   only to *verify* them. A row where the split and a whole column disagree, or
+ *   where a whole column is empty while the split has a value, is not guessed
+ *   at: it is left out of `rows` entirely — so it reaches no setup, report or
+ *   intake file — and is returned in `mismatches` with both values side by side.
+ *   A wrong code in a file Sport & More ingest costs far more than a missing row.
+ *   (Dror, 16/09/2026. Measured first: 0 disagreements in 247 rows across both
+ *   SAP exports of 28/05 — sportmore/KNOWLEDGE.md.)
+ *
+ *   A row with no article number at all — a manual sheet, a customised cap — is
+ *   not a mismatch. It has nothing to verify against, and says so:
+ *   `verified: false`, counted in `unverified`.
  *
  *   `Season` is **empty** in every export we have seen. The season on a setup
  *   file (FW26 / SS26) is Dror's, supplied per batch — it is never guessed.
@@ -108,10 +118,11 @@ export async function readArenaInvoice(path) {
   // required at all — a customised order has none, and such a row carries
   // `hasBarcode: false` for the planner to rule on rather than being rejected
   // here as unparseable.
-  const hasArticle = !!map.articleNumber;
-  const hasParts = !!map.style && !!map.colorCode;
+  // The whole columns are the source, so they are required even when the
+  // article number is present — a file that has only the packed string has
+  // nothing but a parse to offer, and that is exactly what was ruled out.
   const missing = ['qty', 'price'].filter((f) => !map[f]);
-  if (!hasArticle && !hasParts) missing.push('SKU/Article number (או Style code + Color code)');
+  if (!map.style || !map.colorCode) missing.push('Style code + Color code');
   if (missing.length) {
     throw new Error(
       `הקובץ לא נראה כמו חשבונית של ארנה — חסרות עמודות: ${missing.join(', ')}\n` +
@@ -121,15 +132,39 @@ export async function readArenaInvoice(path) {
 
   const rows = [];
   const problems = [];
+  const mismatches = [];
+  let unverified = 0;
   ws.eachRow((row, n) => {
     if (n === 1) return;
     const get = (f) => (map[f] ? text(row.getCell(map[f])) : '');
     const articleNumber = get('articleNumber');
-    const split = splitArticle(articleNumber);
-    const style = split?.style || get('style');
-    const colorCode = split?.color || get('colorCode');
-    const size = split?.size || get('size');
+    const style = get('style');
+    const colorCode = get('colorCode');
+    const size = get('size');
     if (!articleNumber && !(style && colorCode)) return;
+
+    if (articleNumber) {
+      const split = splitArticle(articleNumber);
+      if (!split) {
+        mismatches.push({ row: n, ean: get('ean'), articleNumber, fields: [], why: 'המק"ט של ארנה לא מתפצל ל-דגם_צבע_מידה — אין מול מה לאמת' });
+        return;
+      }
+      // Exact string comparison, no padding: `22` against `000022` is shown to
+      // Dror as the two values it is, not normalised into agreement.
+      const fields = [
+        ['Style code', style, split.style],
+        ['Color code', colorCode, split.color],
+        ['Size', size, split.size],
+      ]
+        .filter(([, whole, fromSplit]) => whole !== fromSplit)
+        .map(([name, whole, fromSplit]) => ({ name, whole, split: fromSplit }));
+      if (fields.length) {
+        mismatches.push({ row: n, ean: get('ean'), articleNumber, fields, why: 'העמודה השלמה והפיצול של המק"ט אינם זהים' });
+        return;
+      }
+    } else {
+      unverified++;
+    }
 
     const ean = String(get('ean')).trim();
     const r = {
@@ -152,14 +187,12 @@ export async function readArenaInvoice(path) {
       billingType: get('billingType'),
       backbone: [get('bb1'), get('bb2'), get('bb3'), get('bb4'), get('bb5')].filter(Boolean),
       fiber: get('fiber'),
+      verified: !!articleNumber,
     };
-    if (!split && !(style && colorCode)) {
-      problems.push({ row: n, articleNumber, why: 'מק"ט ארנה לא מתפצל ל-דגם_צבע_מידה, ואין עמודות נפרדות' });
-    }
     rows.push(r);
   });
 
-  return { file, rows, problems, headers: map };
+  return { file, rows, problems, mismatches, unverified, headers: map };
 }
 
 /** `AR` + style + color. The parent code, exactly as Sport & More write it. */

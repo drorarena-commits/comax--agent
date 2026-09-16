@@ -105,8 +105,9 @@ const same = (x, y) => x === y || (x !== '' && y !== '' && Number(x) === Number(
  * codes are six characters and the colour is whatever follows — two digits or
  * three, both occur (`005875`+`50`, `007964`+`100`). Splitting on the last three
  * instead would silently produce a different parent for every two-digit colour.
- * This is an assumption *of the fixture*; the pipeline never guesses, it gets
- * the split free from `SKU/Article number`.
+ * This is an assumption *of the fixture*; the pipeline never guesses — it reads
+ * `Style code` / `Color code` whole, and verifies them against the split of
+ * `SKU/Article number` (group 13).
  *
  * Children whose parent is not on the parent sheet are kept — the real file has
  * eleven, sizes added to models Sport & More already carried. Their style,
@@ -722,6 +723,58 @@ console.log('12. קריאת קומקס — תצוגה בלבד, לא חוסמת,
 
   // מחזירים את המטמון למצב אמיתי, כדי שלא יזלוג לקבוצות שאחרי.
   await display.loadComaxAltCodes({ fresh: true });
+}
+
+/* 13 — העמודות השלמות הן המקור, והפיצול הוא אימות בלבד (החלטת דרור, 16/09/2026).
+ *
+ * שורה שבה Style/Color/Size אינם זהים לפיצול של SKU/Article number — או שעמודה
+ * שלמה ריקה בזמן שבמק"ט יש ערך — אינה נכנסת לאף קובץ. היא יוצאת מ-rows כבר
+ * בקורא, ולכן planBatch, קובץ ההקמה, הדוח וקובץ הקליטה לא רואים אותה בכלל. */
+console.log('\n13. חשבונית — עמודה שלמה מול פיצול המק"ט');
+{
+  const { readArenaInvoice } = await import('../src/sportmore/arena-invoice.js');
+  mkdirSync(TMP, { recursive: true });
+  const file = resolve(TMP, 'mismatch-invoice.xlsx');
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Sheet1');
+  ws.addRow(['EAN/UPC', 'SKU/Article number', 'Style code', 'Color code', 'Size', 'Billed Quantity', 'Net unit price']);
+  ws.addRow(['3468330000011', '004761_500_M', '004761', '500', 'M', 2, 10]);   // תואם
+  ws.addRow(['3468330000028', '004761_500_L', '004761', '550', 'L', 3, 10]);   // צבע לא תואם
+  ws.addRow(['3468330000035', '004761_500_XL', '004761', '500', '', 1, 10]);   // מידה ריקה בעמודה
+  ws.addRow(['3468330000042', '000022_100_S', '22', '100', 'S', 1, 10]);       // אפסים מובילים — לא מנורמל
+  ws.addRow(['', '', '014520', '100', 'OS', 300, 3.5]);                        // בלי מק"ט — לא מאומת
+  await wb.xlsx.writeFile(file);
+
+  const inv = await readArenaInvoice(file);
+  check('רק השורה התואמת והשורה בלי מק"ט נקראו', inv.rows.length === 2,
+    inv.rows.map((r) => r.articleNumber).join(' '));
+  check('שלוש אי-התאמות נרשמו', inv.mismatches.length === 3,
+    inv.mismatches.map((m) => 'שורה ' + m.row).join(' '));
+  const color = inv.mismatches.find((m) => m.row === 3)?.fields[0];
+  check('אי-ההתאמה מחזיקה את שני הערכים', color?.name === 'Color code' && color.whole === '550' && color.split === '500',
+    JSON.stringify(color));
+  check('עמודה שלמה ריקה היא אי-התאמה, לא נפילה לפיצול',
+    inv.mismatches.some((m) => m.row === 4 && m.fields.some((f) => f.name === 'Size' && f.whole === '')));
+  check('22 מול 000022 אינו מנורמל להסכמה', inv.mismatches.some((m) => m.row === 5));
+  check('שורה בלי מק"ט נספרת כלא-מאומתת', inv.unverified === 1 && inv.rows.some((r) => r.style === '014520' && r.verified === false),
+    'unverified=' + inv.unverified);
+
+  const plan = planBatch({ invoice: inv, card, codes, selfBarcodes: true });
+  const bad = new Set(inv.mismatches.map((m) => m.articleNumber));
+  check('אף שורה שלא תואמת אינה מגיעה ל-plan — ולכן לא לקובץ ההקמה, לדוח או לקליטה',
+    plan.rows.every((r) => !bad.has(r.row.articleNumber)) && plan.rows.length === 2,
+    plan.rows.length + ' שורות בתוכנית');
+
+  // קובץ עם מק"ט ארוז בלבד אינו מקור — אין לו עמודות שלמות.
+  const onlyArt = new ExcelJS.Workbook();
+  const ws2 = onlyArt.addWorksheet('Sheet1');
+  ws2.addRow(['SKU/Article number', 'Billed Quantity', 'Net unit price']);
+  ws2.addRow(['004761_500_M', 1, 10]);
+  const file2 = resolve(TMP, 'article-only.xlsx');
+  await onlyArt.xlsx.writeFile(file2);
+  let refused = '';
+  try { await readArenaInvoice(file2); } catch (e) { refused = e.message; }
+  check('קובץ בלי Style code + Color code מסורב', /Style code/.test(refused), refused.split('\n')[0]);
 }
 rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');
