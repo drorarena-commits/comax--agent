@@ -209,19 +209,33 @@ if (cmd === 'intake') {
   }
 
   const plan = planBatch({ invoice, card, codes, selfBarcodes: !!args['self-barcode'] });
-  const notReady = plan.rows.filter((r) => r.status !== 'exists');
+  const pending = plan.rows.filter((r) => r.status === 'newChild' || r.status === 'newBoth');
+  const blocked = plan.rows.filter((r) => r.status === 'blocked');
   console.log('\nאימות מול כרטיס הפריט');
-  console.log('  נמצאו:      ' + plan.counts.exists + ' מתוך ' + plan.counts.total);
-  console.log('  לא נמצאו:   ' + notReady.length);
+  console.log('  בכרטיס:     ' + plan.counts.exists + ' מתוך ' + plan.counts.total);
+  console.log('  בקובץ ההקמה בלבד: ' + pending.length + (pending.length ? '   ← ייכתבו ויסומנו באדום' : ''));
+  console.log('  חסומות:     ' + blocked.length);
 
-  if (notReady.length) {
-    console.log('\n⛔ קובץ הקליטה לא ייכתב — יש שורות שעוד לא הוקמו:');
-    for (const r of notReady.slice(0, 12)) {
+  // ⛔ חסומה עוצרת. היא אינה בכרטיס ואינה בקובץ ההקמה — איש לא יקים אותה.
+  if (blocked.length) {
+    console.log('\n⛔ קובץ הקליטה לא ייכתב — יש שורות חסומות:');
+    for (const r of blocked.slice(0, 12)) {
       console.log('      שורה ' + r.row.row + '  ' + r.row.ean + '  ' + r.row.articleNumber + '  —  ' + r.why);
     }
-    if (notReady.length > 12) console.log('      ...ועוד ' + (notReady.length - 12));
-    console.log('\n   להריץ קודם plan, לשלוח הקמות, ולבקש כרטיס פריט מעודכן.\n');
+    if (blocked.length > 12) console.log('      ...ועוד ' + (blocked.length - 12));
+    console.log('\n   שורה חסומה דורשת אדם: ראה "מתי לעצור ולשאול את דרור".\n');
     process.exit(1);
+  }
+
+  // שורה שטרם בכרטיס אך נמצאת בקובץ ההקמה **אינה** עוצרת: הבקרה אצלם אנושית,
+  // מי שמקים מאשר, ולכן המנה רצה עד הסוף בפעם אחת והשורות מסומנות באדום.
+  if (pending.length) {
+    console.log('\n🔴 ' + pending.length + ' שורות ייכתבו מסומנות באדום — הן בקובץ ההקמה וטרם בכרטיס:');
+    for (const r of pending.slice(0, 12)) {
+      console.log('      שורה ' + r.row.row + '  ' + r.barcode + '  ' + r.row.articleNumber + '  —  ' + r.why);
+    }
+    if (pending.length > 12) console.log('      ...ועוד ' + (pending.length - 12));
+    console.log('\n   לומר להם במפורש: את השורות האדומות צריך להקים ולאשר לפני הרצת הרכש.');
   }
 
   console.log('\n  מחסן: ' + warehouse + '   ·   סניף: ' + codes.constants.branch
@@ -236,12 +250,15 @@ if (cmd === 'intake') {
 
   mkdirSync(OUT_DIR, { recursive: true });
   const res = await buildIntakeFile({
-    rows: invoice.rows,
-    card,
+    planRows: plan.rows,
     warehouse,
     codes,
     out: resolve(OUT_DIR, 'קליטת חשבוניות ' + today() + ' ' + warehouse + '.xls'),
   });
-  console.log('\n✓ קובץ קליטה: ' + base(res.file) + '   (' + res.rows + ' שורות, מחסן ' + res.warehouse + ')\n');
+  console.log('\n✓ קובץ קליטה: ' + base(res.file) + '   (' + res.rows + ' שורות, מחסן ' + res.warehouse + ')');
+  if (res.flagged.length) {
+    console.log('  🔴 ' + res.flagged.length + ' שורות מסומנות באדום — להקים ולאשר לפני הרצת הרכש.');
+  }
+  console.log('');
   process.exit(0);
 }

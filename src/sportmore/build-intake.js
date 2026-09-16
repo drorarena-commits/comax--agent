@@ -51,43 +51,57 @@ function ddmmyy(d) {
 }
 
 /**
- * Verify every invoice row exists as a child in the card.
- * Returns `{ ready, missing }` — `missing` non-empty means do not write.
+ * שלוש קטגוריות, לא שתיים — וההבחנה היא כל ההבדל בין מנה שרצה בפעם אחת לבין
+ * מנה שנתקעת.
+ *
+ * הבקרה אצלם **אנושית**: מי שמקים את הפריטים הוא זה שמאשר, ורק אחרי זה מריצים
+ * את הרכש. לכן שורה שטרם בכרטיס אך **נמצאת בקובץ ההקמה שיצא באותה מנה** אינה
+ * שגיאה — היא פשוט מקדימה את הכרטיס, ומסומנת באדום כדי שהאדם שם יראה אותה.
+ *
+ * ⛔ אבל שורה `blocked` — ברקוד שאין לו אב, שקיים תחת אב אחר, או שאין לו ברקוד
+ * בכלל — **עדיין עוצרת הכל.** היא לא בכרטיס ולא בקובץ ההקמה, כלומר איש לא הקים
+ * אותה ואיש לא עומד להקים. קובץ רכש שיוצא איתה נכשל אצלם בשקט, שורה-שורה,
+ * וזה הכישלון שהשער הזה נבנה בשבילו מלכתחילה.
+ *
+ * מקבל את שורות ה-`plan` (ולא שורות חשבונית גולמיות), כי שם כבר נגזר הברקוד
+ * הנכון — כולל הברקוד המקודד-עצמית של מוצרי קוסטומייז, שאין לו `ean` משלו.
  */
-export function verifyAgainstCard(rows, card) {
+export function verifyAgainstCard(planRows) {
   const ready = [];
-  const missing = [];
-  for (const row of rows) {
-    const child = card.byBarcode.get(String(row.ean).trim());
-    if (!child || child.isParent) {
-      missing.push({ row, why: 'הברקוד לא קיים בכרטיס הפריט כמוצר בן' });
-      continue;
-    }
-    ready.push({ row, child });
+  const pending = [];
+  const blocked = [];
+  for (const p of planRows) {
+    if (p.status === 'exists') ready.push(p);
+    else if (p.status === 'newChild' || p.status === 'newBoth') pending.push(p);
+    else blocked.push(p);
   }
-  return { ready, missing };
+  return { ready, pending, blocked };
 }
 
-export async function buildIntakeFile({ rows, card, warehouse, out, codes }) {
+export async function buildIntakeFile({ planRows, warehouse, out, codes }) {
   if (!WAREHOUSES.includes(warehouse)) {
     throw new Error(`מחסן לא מוכר: ${warehouse} — צריך ${WAREHOUSES.join(' או ')}`);
   }
   assertExcelAvailable();
 
-  const { ready, missing } = verifyAgainstCard(rows, card);
-  if (missing.length) {
-    const sample = missing.slice(0, 8).map((m) => `  שורה ${m.row.row}: ${m.row.ean} — ${m.row.articleNumber}`);
+  const { ready, pending, blocked } = verifyAgainstCard(planRows);
+  if (blocked.length) {
+    const sample = blocked.slice(0, 8).map((b) => `  שורה ${b.row.row}: ${b.row.ean} — ${b.row.articleNumber} — ${b.why}`);
     throw new Error(
-      `${missing.length} מתוך ${rows.length} שורות לא נמצאו בכרטיס הפריט — קובץ הקליטה לא נכתב.\n` +
-        'הקליטה רצה רק אחרי שספורט אנד מור הקימו הכל ושלחו כרטיס פריט מעודכן.\n' +
+      `${blocked.length} מתוך ${planRows.length} שורות חסומות — קובץ הקליטה לא נכתב.\n` +
+        'שורה חסומה אינה בכרטיס ואינה בקובץ ההקמה, כלומר איש לא יקים אותה.\n' +
         sample.join('\n') +
-        (missing.length > 8 ? `\n  ...ועוד ${missing.length - 8}` : '')
+        (blocked.length > 8 ? `\n  ...ועוד ${blocked.length - 8}` : '')
     );
   }
 
+  // הסדר נשמר כסדר החשבונית, כדי שמספרי השורות בדוח יתאימו לקובץ.
+  const all = [...ready, ...pending].sort((a, b) => (a.row.row ?? 0) - (b.row.row ?? 0));
+  const highlightRows = all.map((p, i) => (pending.includes(p) ? i : -1)).filter((i) => i >= 0);
+
   const C = INTAKE_COLUMNS;
   const k = codes.constants;
-  const cells = ready.map(({ row }) => ({
+  const cells = all.map(({ row }) => ({
     [C.invoiceNo]: row.invoiceNo || '',
     [C.supplier]: k.supplier,
     [C.sku]: childSku(row),
@@ -109,8 +123,21 @@ export async function buildIntakeFile({ rows, card, warehouse, out, codes }) {
     // Barcodes are gone by here, but codes, sizes, branch and colour are all
     // digit strings that Excel would happily turn into numbers and shorten.
     textCols: [C.invoiceNo, C.supplier, C.sku, C.branch, C.size, C.color, C.date],
+    highlightRows,
   });
-  return { file, rows: cells.length, warehouse };
+  return {
+    file,
+    rows: cells.length,
+    warehouse,
+    // `flagged` חוזר כדי שמי שמריץ יידע מה נכתב אדום **בלי לפתוח את הקובץ** —
+    // וכדי שההודעה לספורט אנד מור תוכל לומר את זה במפורש.
+    flagged: pending.map((p) => ({
+      row: p.row.row,
+      ean: p.barcode,
+      articleNumber: p.row.articleNumber,
+      why: p.why,
+    })),
+  };
 }
 
 export { TEMPLATE as INTAKE_TEMPLATE };

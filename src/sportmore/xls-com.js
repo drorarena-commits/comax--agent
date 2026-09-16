@@ -116,7 +116,24 @@ try {
  * names its column, which is how a 13-digit barcode or a size like `08` keeps
  * its shape instead of becoming 3.46834E+12 or 8.
  */
-export function writeXlsFromTemplate({ template, out, rows, startRow = 2, sheet = 1, textCols = [] }) {
+export function writeXlsFromTemplate({
+  template,
+  out,
+  rows,
+  startRow = 2,
+  sheet = 1,
+  textCols = [],
+  /**
+   * אינדקסים (0-based, לתוך `rows`) שיסומנו באדום.
+   *
+   * ⚠️ הסימון הוא **לעין אדם אצלם**, לא לטוען שלהם — הטוען מתעלם מעיצוב. זו
+   * בדיוק המטרה: מי שמקים את הפריטים רואה אילו שורות עדיין לא היו בכרטיס
+   * כשהקובץ נוצר, ומאשר אותן ידנית לפני שהוא מריץ. שורה שנכתבה בלי סימון
+   * נראית כאילו היא אומתה מול הכרטיס — ולכן חוסר סימון גרוע מחוסר שורה.
+   */
+  highlightRows = [],
+  highlightCols = 15,
+}) {
   const tpl = resolve(template);
   const dst = resolve(out);
   const text = new Set(textCols);
@@ -134,6 +151,18 @@ export function writeXlsFromTemplate({ template, out, rows, startRow = 2, sheet 
       sets.push(`$ws.Cells.Item(${r}, ${c}).Value2 = ${v}`);
     }
   });
+
+  // צבעי Excel ב-COM הם **BGR ולא RGB**: 13551615 הוא 0xCECEFF, כלומר אדום
+  // בהיר, ו-255 הוא אדום מלא. RGB היה נותן תכלת — טעות שנראית כמו סימון תקין.
+  for (const i of highlightRows) {
+    const r = startRow + i;
+    sets.push(
+      `$hl = $ws.Range($ws.Cells.Item(${r}, 1), $ws.Cells.Item(${r}, ${highlightCols}))`,
+      '$hl.Interior.Color = 13551615',
+      '$hl.Font.Color = 255',
+      '$hl.Font.Bold = $true',
+    );
+  }
 
   powershell(`${PREAMBLE}
 $wb = $null

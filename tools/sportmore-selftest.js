@@ -33,6 +33,7 @@ import { planBatch } from '../src/sportmore/plan.js';
 import { buildSetupFile, SETUP_PARENT_COLUMNS, SETUP_CHILD_COLUMNS } from '../src/sportmore/build-setup.js';
 import { childSku, parentSku, selfBarcode as selfBarcodeOf } from '../src/sportmore/arena-invoice.js';
 import { priceFromCost } from '../src/sportmore/pricing.js';
+import { verifyAgainstCard } from '../src/sportmore/build-intake.js';
 
 const FW26 = resolve(ROOT, 'sportmore/reference/template-parent-child.xlsx');
 const INTAKE_EXPECTED = resolve(ROOT, 'sportmore/reference/expected/intake-fw26.xlsx');
@@ -458,6 +459,31 @@ console.log('8. התנגשות — ברקוד מקודד-עצמית שכבר ק�
   check('הסיבה מזכירה את ההתנגשות', /כבר קיים/.test(r.why), r.why);
   check('היא לא נכנסת לקובץ ההקמה', plan.children.length === 0 && plan.parents.length === 0,
     plan.parents.length + ' אבות, ' + plan.children.length + ' בנים');
+}
+/* קובץ הקליטה — מצב ב׳ רץ עד הסוף בפעם אחת (החלטת דרור, 15/09/2026).
+ *
+ * הבקרה אצלם אנושית: מי שמקים מאשר, ורק אז מריצים רכש. לכן שורה שטרם בכרטיס
+ * אך נמצאת בקובץ ההקמה **נכתבת ומסומנת באדום** במקום לעצור את המנה — אבל שורה
+ * חסומה עדיין עוצרת הכל, כי איש לא יקים אותה. שתי ההתנהגויות נבדקות כאן, כי
+ * שער שהוחלף בשער אחר צריך להוכיח את שניהם. */
+console.log('');
+console.log('9. קובץ הקליטה — אדום מול חסום');
+{
+  const rows = [
+    { status: 'exists', row: { row: 1 }, barcode: '111' },
+    { status: 'newChild', row: { row: 2 }, barcode: '222' },
+    { status: 'newBoth', row: { row: 3 }, barcode: '333' },
+    { status: 'blocked', row: { row: 4 }, barcode: '444', why: 'אב אחר' },
+  ];
+  const v = verifyAgainstCard(rows);
+  check('שורה שבכרטיס — רגילה', v.ready.length === 1, String(v.ready.length));
+  check('newChild ו-newBoth נכנסות כאדומות', v.pending.length === 2, String(v.pending.length));
+  check('חסומה אינה נכנסת לאדומות', !v.pending.some((p) => p.status === 'blocked'), 'לא');
+  check('חסומה מזוהה בנפרד', v.blocked.length === 1, String(v.blocked.length));
+
+  const clean = verifyAgainstCard(rows.filter((r) => r.status !== 'blocked'));
+  check('בלי חסומות אין מה שיעצור', clean.blocked.length === 0, '0');
+  check('ואז כל השורות נכתבות', clean.ready.length + clean.pending.length === 3, '3');
 }
 rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');
