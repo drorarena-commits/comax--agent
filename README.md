@@ -34,6 +34,8 @@ npm run payroll -- --to <כתובת>    # דוח נוכחות חודשי לשכ�
 npm run mail-send -- --to <כתובת> --subject "..." --body-file b.txt --attach f.pdf  # מייל עם קבצים (יבש)
 npm run mail-send -- ... --confirm                    # ורק זה שולח בפועל
 npm run mail-get -- <messageId> <חלק-משם-הקובץ>       # מוריד קובץ מצורף ממייל לדיסק
+npm run sm -- plan --invoice sportmore/in/<קובץ>.xlsx --season FW26   # הקמות לספורט אנד מור (בלי --confirm: תצוגה)
+npm run sm -- answer --invoice <אותו קובץ> 1=00616 2=74 --confirm     # כל תשובות הסיווג בבת אחת ⇐ overrides.json
 npm run sm-stock                                      # דוח המלאי הארצי של ספורט אנד מור: מייל ⇐ content/sportmore/
 npm run sm-stock -- --list                            # רק מציג את המועמדים, בלי להוריד
 npm run listen-start               # ← מאזין התור, מנותק. בלעדיו משימה מהנייד פשוט מחכה

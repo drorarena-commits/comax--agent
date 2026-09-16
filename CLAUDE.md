@@ -435,6 +435,9 @@ orders-app/comax-check.js         ההצלבה מול הקטלוג — פריט 
 orders-app/selftest.js            33 בדיקות מקצה לקצה מול WooCommerce מדומה
 orders-app/preview.js             צילומי מסך של הממשק, בלי לגעת באתר האמיתי
 sportmore/KNOWLEDGE.md           הסיסטם של ספורט אנד מור — נפרד, לא מעורבב
+src/sportmore/questions.js       סבב השאלות כשהסיווג מסרב — כל הסירובים ממוספרים יחד,
+                                 עם המועמדים וספירת הקולות, ותשובה אחת לכל דגם
+                                 npm run sm -- answer כותב את כולן ל-overrides.json בבת אחת
 sportmore/reference/             כרטיס פריט, תבניות, טבלאות קוד — בגיט
 tools/sm-stock.js                "הגיע דוח מספורט אנד מור" — מוצא את המייל, מוריד, שומר בשם הקבוע
                                  מזהה לפי הנושא ("מלאי נוכחי") כי השולח מתחלף בין הפקה להפקה

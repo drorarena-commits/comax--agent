@@ -100,14 +100,22 @@ export function loadOverrides() {
   }
 }
 
-/** Most common value in a list, with how dominant it was. */
+/**
+ * Most common value in a list, with how dominant it was.
+ *
+ * `tally` carries the whole vote and not just the winner, because a refusal is
+ * only useful to Dror if it says what the candidates were. "לא הוכרע" on its own
+ * sends him back to the card to work out by hand what the classifier already
+ * counted — which siblings voted for what.
+ */
 function majority(values, field) {
   const counts = new Map();
   for (const v of values) if (!isPlaceholder(field, v)) counts.set(v, (counts.get(v) || 0) + 1);
-  if (!counts.size) return null;
   const sorted = [...counts].sort((a, b) => b[1] - a[1]);
+  const tally = sorted.map(([value, n]) => ({ value: String(value), n }));
+  if (!counts.size) return null;
   const total = values.filter((v) => !isPlaceholder(field, v)).length;
-  return { value: sorted[0][0], n: sorted[0][1], total, unanimous: sorted.length === 1 };
+  return { value: sorted[0][0], n: sorted[0][1], total, unanimous: sorted.length === 1, tally };
 }
 
 /**
@@ -181,8 +189,10 @@ export function classify(row, card, learned, overrides = loadOverrides(), profil
       out[field] = { value: String(fixed[field]), confidence: 'high', why: fixedWhy(field) };
       continue;
     }
+    let siblingVotes = [];
     if (siblings.length) {
       const m = majority(siblings.map((p) => p[field]), field);
+      siblingVotes = m?.tally || [];
       // משפחה is the field the card itself is inconsistent about, and every
       // classification error measured on the 28.5 batch was one: 00602 against
       // 00603, 00616 against 00617, 00600 against 00601. Siblings that disagree
@@ -206,6 +216,7 @@ export function classify(row, card, learned, overrides = loadOverrides(), profil
     const key = backboneKey(row);
     const pool = key ? learned.get(key) || [] : [];
     const m = majority(pool.map((p) => p[field]), field);
+    const backboneVotes = m?.tally || [];
 
     // Family is the field the backbone cannot settle. Accept it only when every
     // observation agrees; a majority here has been wrong before.
@@ -217,11 +228,24 @@ export function classify(row, card, learned, overrides = loadOverrides(), profil
         why: `לפי ${key} — ${m.n} מתוך ${m.total} פריטים דומים`,
       };
     } else {
+      // Two refusals that read identically and are not the same question: a
+      // split vote has candidates to show, and no signal at all has nothing to
+      // offer but the code table. The caller can only ask a useful question if
+      // it can tell them apart, so the reason is named here rather than parsed
+      // back out of the prose.
+      const from = siblingVotes.length ? 'siblings' : backboneVotes.length ? 'backbone' : null;
       out[field] = {
         value: null,
         confidence: null,
         why: (siblings.length ? `אין ערך אצל האבות של דגם ${style}` : `אין אב קיים לדגם ${style}`)
           + (key ? `, ו-${key} לא הכריע` : ', ואין Backbone בחשבונית להישען עליו'),
+        reason: from ? 'split' : 'no-signal',
+        candidates: from === 'siblings' ? siblingVotes : backboneVotes,
+        candidateSource: from,
+        siblingVotes,
+        backboneVotes,
+        backbone: key,
+        style,
       };
       notes.push(`${field}: לא ידוע — צריך הכרעה ידנית`);
     }

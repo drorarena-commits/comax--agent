@@ -11,12 +11,13 @@
  * No `--confirm`, no file — the same rule every writing task in this project
  * follows.
  */
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { ROOT } from '../src/config.js';
 import { loadItemCard } from '../src/sportmore/item-card.js';
 import { readArenaInvoice, childSku } from '../src/sportmore/arena-invoice.js';
-import { loadCodes, loadProfile } from '../src/sportmore/classify.js';
+import { loadCodes, loadProfile, OVERRIDES_PATH } from '../src/sportmore/classify.js';
+import { buildQuestions, renderQuestions, codeTable } from '../src/sportmore/questions.js';
 import { planBatch } from '../src/sportmore/plan.js';
 import { buildSetupFile } from '../src/sportmore/build-setup.js';
 import { buildIntakeFile, WAREHOUSES } from '../src/sportmore/build-intake.js';
@@ -25,6 +26,14 @@ import { ROUNDING } from '../src/sportmore/pricing.js';
 
 const OUT_DIR = resolve(ROOT, 'sportmore/out');
 
+/**
+ * Flags that never take a value. Without this list a bare flag swallows the
+ * next token: `--self-barcode 1=00610` read the answer as the flag's value and
+ * quietly dropped question 1 from the round — the answer was accepted, written
+ * nowhere, and the question stayed open with nothing saying so.
+ */
+const BOOLEAN_FLAGS = new Set(['confirm', 'self-barcode', 'force', 'help']);
+
 function parseArgs(argv) {
   const out = { _: [] };
   for (let i = 0; i < argv.length; i++) {
@@ -32,7 +41,7 @@ function parseArgs(argv) {
     if (!a.startsWith('--')) { out._.push(a); continue; }
     const key = a.slice(2);
     const next = argv[i + 1];
-    if (next === undefined || next.startsWith('--')) out[key] = true;
+    if (BOOLEAN_FLAGS.has(key) || next === undefined || next.startsWith('--')) out[key] = true;
     else { out[key] = next; i++; }
   }
   return out;
@@ -67,6 +76,11 @@ if (cmd === 'help' || args.help) {
     '      קובץ קליטת חשבוניות. רץ רק אחרי שספורט אנד מור הקימו הכל',
     '      ושלחו כרטיס פריט מעודכן — כל שורה נבדקת מולו.',
     '',
+    '  npm run sm -- answer --invoice <אותו קובץ> 1=<ערך> 2=<ערך> ...',
+    '      כותב בבת אחת את התשובות לשאלות הסיווג ש-plan הציג, ל-overrides.json',
+    '      לפי קוד דגם. המספרים הם של אותה הרצת plan, ולכן צריך אותו --invoice',
+    '      ואותם --profile / --self-barcode.',
+    '',
     '  --profile caps       פרופיל סיווג למנה שלמה. לכובעים קוסטומייז אין',
     '                        אח מאותו דגם, אז הסיווג האוטומטי תמיד יסרב.',
     '  --self-barcode       מתיר שורות בלי ברקוד. הברקוד יהיה המקט הבן בלי AR.',
@@ -87,7 +101,9 @@ if (cmd === 'card') {
   process.exit(0);
 }
 
-if (cmd !== 'plan' && cmd !== 'intake') die('פקודה לא מוכרת: ' + cmd + '   (card / plan / intake)');
+if (!['plan', 'intake', 'answer'].includes(cmd)) {
+  die('פקודה לא מוכרת: ' + cmd + '   (card / plan / intake / answer)');
+}
 if (!args.invoice) die('חסר --invoice <קובץ חשבונית של ארנה>');
 
 const card = await loadItemCard(args['item-card']);
@@ -162,13 +178,10 @@ if (cmd === 'plan') {
     console.log('\n  !! = לא הוכרע   ·   ? = רוב, לא פה אחד   ·   מחירון 3 = מחיר הבסיס');
   }
 
+  // כל הסירובים של המנה, ממוספרים פעם אחת ונשאלים יחד — ראה
+  // src/sportmore/questions.js: מספר אחד הוא שדה אחד, לא אב אחד.
   if (plan.needsDecision.length) {
-    console.log('\n⛔ ' + plan.needsDecision.length + ' אבות בלי סיווג מלא — קובץ ההקמה לא ייכתב:');
-    for (const p of plan.needsDecision) {
-      console.log('\n   ' + p.sku + '  ' + (p.row.styleDesc || ''));
-      for (const f of p.unresolved) console.log('      ' + f + ': ' + p.classification[f].why);
-    }
-    console.log('\n   להשלים ב-sportmore/reference/codes.json, או להגיד לי מה הערך.');
+    for (const line of renderQuestions(buildQuestions(plan), codes)) console.log(line);
   }
 
   if (!args.confirm) {
@@ -197,6 +210,97 @@ if (cmd === 'plan') {
     console.log('  אין אבות או בנים חדשים — לא נוצר קובץ הקמה.');
   }
   console.log('\nהקבצים ב-sportmore/out/. הקליטה רצה רק אחרי שהם הקימו ושלחו כרטיס פריט מעודכן.\n');
+  process.exit(0);
+}
+
+/* ── answer ────────────────────────────────────────────────────────────── */
+
+/**
+ * The other half of the batched question round: `plan` numbers every refusal,
+ * Dror answers them all in one message, and this writes them together.
+ *
+ * The numbers are not stored anywhere — they are rebuilt from the same invoice
+ * and the same card, which is why the flags that change which parents need a
+ * decision (`--profile`, `--self-barcode`) have to match the `plan` that asked.
+ * A number that does not exist is refused rather than guessed at.
+ *
+ * Answers are keyed by Arena style code, not by parent מק"ט: the next colour of
+ * the same model needs the same answer, and keying by style is what stops the
+ * question coming back in a month.
+ */
+if (cmd === 'answer') {
+  if (args.profile === true) die('--profile דורש שם, למשל --profile caps');
+  const profile = loadProfile(codes, args.profile === true ? null : args.profile);
+  const plan = planBatch({ invoice, card, codes, selfBarcodes: !!args['self-barcode'], profile });
+  const questions = buildQuestions(plan);
+
+  if (!questions.length) {
+    die('אין שאלות סיווג פתוחות במנה הזאת — אין מה לכתוב.\n'
+      + 'אם plan כן שאל, ודא שאותם --profile / --self-barcode הועברו גם כאן.');
+  }
+
+  const tokens = args._.join(' ').split(/[\s,;]+/).filter(Boolean);
+  if (!tokens.length) die('לא נמסרו תשובות. הצורה: 1=00616 2=74');
+
+  const answers = [];
+  for (const token of tokens) {
+    const m = /^(\d+)\s*=\s*(.+)$/.exec(token);
+    if (!m) die('תשובה לא מובנת: "' + token + '".  הצורה היא <מספר>=<ערך>, למשל 1=00616');
+    const n = Number(m[1]);
+    const q = questions.find((x) => x.n === n);
+    if (!q) {
+      die('אין שאלה מספר ' + n + ' — יש ' + questions.length + ' שאלות.\n'
+        + 'להריץ את plan שוב עם אותם דגלים כדי לראות את הרשימה הנוכחית.');
+    }
+    if (answers.some((a) => a.q.n === n)) die('שאלה ' + n + ' נענתה פעמיים.');
+
+    const value = m[2].trim();
+    const known = codeTable(codes, q.field).find((c) => c.value.toUpperCase() === value.toUpperCase());
+    // A code that is not in the table is either a typo or a genuinely new code.
+    // Both happen, and they are not the same thing, so the typo is refused and
+    // the new code needs saying out loud.
+    if (!known && !args.force) {
+      die('הערך "' + value + '" לא קיים בטבלת ' + q.label + ' ב-codes.json (שאלה ' + n + ').\n'
+        + 'אם זו טעות הקלדה — לתקן. אם זה קוד חדש שקיים בפריוריטי — להוסיף --force.');
+    }
+    if (known?.placeholder) {
+      die('הערך "' + value + '" הוא ערך דמה (' + known.name + ') ולא סיווג. שאלה ' + n + ' עדיין פתוחה.');
+    }
+    answers.push({ q, value: known ? known.value : value, isNew: !known });
+  }
+
+  const overrides = JSON.parse(readFileSync(OVERRIDES_PATH, 'utf8'));
+  const changed = [];
+  for (const a of answers) {
+    // Style code when Arena gave us one — that is what makes the next colour of
+    // the same model inherit the answer. The parent מק"ט is the fallback for a
+    // row with no style to key on.
+    const key = a.q.style || a.q.skus[0];
+    if (!overrides[key] || typeof overrides[key] !== 'object') overrides[key] = {};
+    const before = overrides[key][a.q.field];
+    overrides[key][a.q.field] = a.value;
+    changed.push({ key, field: a.q.field, label: a.q.label, before, after: a.value, q: a.q, isNew: a.isNew });
+  }
+
+  console.log('\n' + (args.confirm ? 'נכתב' : 'ייכתב') + ' ל-' + base(OVERRIDES_PATH) + ':\n');
+  for (const c of changed) {
+    console.log('  ' + pad(c.key, 14) + pad(c.label, 12) + pad(c.after, 9)
+      + (codes[c.field]?.[c.after]?.name || (c.isNew ? '(קוד חדש — לא בטבלה)' : ''))
+      + (c.before !== undefined && c.before !== c.after ? '   (היה ' + c.before + ')' : ''));
+  }
+
+  if (!args.confirm) {
+    console.log('\nלא נכתב שום קובץ. להוסיף --confirm כדי לשמור את התשובות.\n');
+    process.exit(0);
+  }
+
+  writeFileSync(OVERRIDES_PATH, JSON.stringify(overrides, null, 2) + '\n', 'utf8');
+  const left = questions.filter((q) => !answers.some((a) => a.q.n === q.n));
+  console.log('\n✓ נשמר ב-' + base(OVERRIDES_PATH) + '.');
+  if (left.length) {
+    console.log('\n⚠  ' + left.length + ' שאלות עדיין פתוחות: ' + left.map((q) => q.n).join(', '));
+  }
+  console.log('\nלהריץ שוב את plan כדי לראות את הסיווג המלא לפני --confirm.\n');
   process.exit(0);
 }
 

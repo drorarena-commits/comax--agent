@@ -485,6 +485,72 @@ console.log('9. קובץ הקליטה — אדום מול חסום');
   check('בלי חסומות אין מה שיעצור', clean.blocked.length === 0, '0');
   check('ואז כל השורות נכתבות', clean.ready.length + clean.pending.length === 3, '3');
 }
+/* סבב השאלות — מה שדרור רואה כשהסיווג מסרב (15/09/2026).
+ *
+ * הסירוב עצמו נבדק למעלה; כאן נבדק מה נשאל בעקבותיו. שלוש התנהגויות שאי אפשר
+ * לראות מתוך הקוד לבדו: שמספר אחד הוא שדה אחד ולא אב אחד, ששני צבעים של אותו
+ * דגם נשאלים פעם אחת כי התשובה נכתבת לפי דגם, ושפיצול קולות מגיע עם המועמדים
+ * ולא רק עם "לא הוכרע". */
+console.log('');
+console.log('10. סבב השאלות — מיספור, איחוד, ומועמדים');
+{
+  const { classify, learnFromInvoice } = await import('../src/sportmore/classify.js');
+  const { buildQuestions, renderQuestions } = await import('../src/sportmore/questions.js');
+
+  const caps = ['014520', '014521'].map((style, i) => ({
+    row: 200 + i, ean: '', hasBarcode: false, articleNumber: style + '_100_OS',
+    articleDesc: 'CAP ' + style, style, colorCode: '100', size: 'OS',
+    styleDesc: 'CAP ' + style, qty: 1, price: 3.5, listPrice: 0, season: '',
+    invoiceNo: 'Q-TEST', date: new Date(Date.UTC(2026, 7, 26)), backbone: [], fiber: '',
+  }));
+  const plan = planBatch({
+    invoice: { file: 'questions-test', rows: caps, problems: [], headers: {} },
+    card, codes, selfBarcodes: true,
+  });
+  const qs = buildQuestions(plan);
+
+  check('שני אבות × ארבעה שדות = שמונה שאלות', qs.length === 8, String(qs.length));
+  check('המיספור רץ ברציפות מאחת', qs.every((q, i) => q.n === i + 1), qs.map((q) => q.n).join(','));
+  check('כל שאלה היא שדה אחד', new Set(qs.map((q) => q.field)).size === 4,
+    qs.map((q) => q.field).join(' '));
+  check('בלי אות — אין מועמדים להציע',
+    qs.every((q) => q.info.reason === 'no-signal' && (q.info.candidates || []).length === 0),
+    qs.map((q) => q.info.reason).join(' '));
+
+  // טבלת הקודים מודפסת פעם אחת לשדה ולא מתחת לכל שאלה — שמונה שאלות היו
+  // מייצרות שמונה עותקים, וזו כבר לא רשימה שבוחרים ממנה בטלפון.
+  const printed = renderQuestions(qs, codes).join('\n');
+  const familyRows = printed.split('\n').filter((l) => l.includes('כובעי שחייה ארנה')).length;
+  check('טבלת הקודים מופיעה פעם אחת לשדה', familyRows === 1, String(familyRows));
+
+  // פיצול קולות: חמישה אבות לאותו דגם, שלושה למשפחה אחת ושניים לאחרת.
+  const parents = new Map();
+  const base = { sizeScale: '74', division: '12', gender: '30' };
+  for (let i = 0; i < 5; i++) {
+    const sku = 'AR9900010' + i;
+    parents.set(sku, { sku, ...base, family: i < 3 ? '00616' : '00617' });
+  }
+  const splitRow = { ...caps[0], style: '990001', colorCode: '90', articleNumber: '990001_90_OS' };
+  const c = classify(splitRow, { parents, byBarcode: new Map() }, learnFromInvoice(card, []), {});
+  check('משפחה חלוקה נשארת מסורבת', c.family.value === null, String(c.family.value));
+  check('והסיבה היא פיצול, לא היעדר אות', c.family.reason === 'split', String(c.family.reason));
+  check('המועמדים חוזרים עם ספירת הקולות',
+    c.family.candidates?.[0]?.value === '00616' && c.family.candidates[0].n === 3
+      && c.family.candidates[1]?.value === '00617' && c.family.candidates[1].n === 2,
+    (c.family.candidates || []).map((x) => x.value + '×' + x.n).join(' '));
+  check('שאר השדות הוכרעו פה אחד', c.sizeScale.value === '74' && c.gender.value === '30',
+    c.sizeScale.value + '/' + c.gender.value);
+
+  // שני צבעים של אותו דגם שמסרבים אותו סירוב הם שאלה אחת: התשובה נכתבת
+  // ל-overrides.json לפי קוד דגם, ולכן מענה על אחד עונה על שניהם.
+  const twin = (sku) => ({
+    sku, row: splitRow, unresolved: ['family'],
+    classification: { family: c.family },
+  });
+  const merged = buildQuestions({ needsDecision: [twin('AR990001900'), twin('AR990001550')] });
+  check('שני צבעים של אותו דגם נשאלים פעם אחת', merged.length === 1, String(merged.length));
+  check('ושני האבות מוצגים בשאלה', merged[0]?.skus.length === 2, (merged[0]?.skus || []).join(' '));
+}
 rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');
 process.exit(failures ? 1 : 0);
