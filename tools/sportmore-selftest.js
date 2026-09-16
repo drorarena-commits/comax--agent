@@ -25,7 +25,7 @@
  */
 import ExcelJS from 'exceljs';
 import { basename, resolve } from 'node:path';
-import { mkdirSync, rmSync } from 'node:fs';
+import { mkdirSync, rmSync, existsSync } from 'node:fs';
 import { ROOT } from '../src/config.js';
 import { loadItemCard } from '../src/sportmore/item-card.js';
 import { loadCodes } from '../src/sportmore/classify.js';
@@ -53,6 +53,15 @@ const ARENA_FIXTURE = resolve(ROOT, 'sportmore/reference/expected/arena-invoice-
  * בתיקייה ומצליבה ביניהם. כך הרגרסיה יציבה והפורמט עדיין נבדק.
  */
 const PINNED_CARD = resolve(ROOT, 'sportmore/reference/item-card-2026-08-25.xlsx');
+if (!existsSync(PINNED_CARD)) {
+  // ⛔ ההודעה נוקבת בשם. הכרטיס המוצהר הוא היחיד מבין כרטיסי הפריט שנשמר בגיט
+  // (ראה .gitignore), בדיוק כדי שהרגרסיה תרוץ גם במחשב השני. "לא נמצא קובץ"
+  // בלי שם היה שולח לחפש את הכרטיס הלא נכון.
+  console.error('\nחסר הכרטיס שהרגרסיה נעולה עליו: ' + basename(PINNED_CARD) + '\n'
+    + 'הוא היחיד מבין כרטיסי הפריט שנשמר בגיט, ובלעדיו אי אפשר להריץ את הבדיקה.\n'
+    + 'למשוך אותו: git checkout -- sportmore/reference/\n');
+  process.exit(1);
+}
 const TMP = resolve(ROOT, 'sportmore/out/.selftest');
 
 const P = SETUP_PARENT_COLUMNS;

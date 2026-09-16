@@ -39,6 +39,12 @@ export const REFERENCE_DIR = resolve(ROOT, 'sportmore/reference');
  * ולכן קריאה בעמודות הלא נכונות הייתה מקימה מחדש פריטים שכבר קיימים.
  *
  * זו בדיוק המסקנה ש-`arena-invoice.js` הגיע אליה לפניו, מאותה סיבה.
+ *
+ * **ולמה זה יקרה שוב:** סידור העמודות בדוח בפריוריטי **נשמר לכל משתמש בנפרד**.
+ * הכרטיס של 25/08 הגיע מאלינה ושל 16/09 מרויטל, וההבדל בפורמט הקובץ עצמו מלמד
+ * שהן גם מייצאות דרך מנגנון שונה. כלומר המיפוי לפי כותרת אינו הוראת שעה לקובץ
+ * אחד חריג — **כל נציגה חדשה אצלם תייצר סידור חדש**, ובלי המיפוי הזה כל החלפה
+ * כזאת הייתה קריאה שקטה בעמודות הלא נכונות.
  */
 const HEADERS = {
   sku: 'מק"ט',
@@ -247,8 +253,25 @@ export async function loadItemCard(explicit, { quiet = false } = {}) {
     if (rec.barcode) byBarcode.set(rec.barcode, rec);
   });
 
+  // אב שנגזר מהבנים שלו ואין לו שורה משלו בכרטיס.
+  //
+  // ⛔ **אינו נספר כקיים.** הפיתוי הוא לומר "יש לו שישה בנים, ברור שהוא קיים
+  // והייצוא פספס שורה" — וזו מסקנה, לא נתון. נמדד 16/09/2026: ששת הבנים של
+  // AR010810509 התייתמו כי אצלם **מחקו** את שורת האב, שהייתה כתובה
+  // `*AR010810509` עם כוכבית, במקום לתקן אותה. כלומר בדיוק ההפך: ייתכן שהאב
+  // אצלם אינו תקין ולא הוקם מחדש.
+  //
+  // שתי מסקנות אפשריות מאותו נתון ⇒ הסוכן מציג את הנתון ואינו בוחר מסקנה.
+  // האב נגזר, נרשם כשאלה פתוחה, וההרצה ממשיכה.
+  const orphanParents = new Map();
+  for (const kid of byBarcode.values()) {
+    if (kid.isParent || !kid.parent || parents.has(kid.parent)) continue;
+    if (!orphanParents.has(kid.parent)) orphanParents.set(kid.parent, []);
+    orphanParents.get(kid.parent).push(kid);
+  }
+
   const age = cardAgeDays(file);
-  return { file, rows, parents, byBarcode, childrenOfParent, ageDays: age, columns: IDX };
+  return { file, rows, parents, byBarcode, childrenOfParent, orphanParents, ageDays: age, columns: IDX };
 }
 
 /** Trim, upper-case, and drop the stray leading `*` seen on one parent. */
@@ -263,6 +286,9 @@ export function norm(s) {
  * the file between the two machines resets mtime, which would make a card from
  * May look like it arrived today. mtime is only the fallback for a card whose
  * name carries no date.
+ *
+ * ⚠️ מספר, לא שיפוט. **כלל ה-30 יום ירד** (16/09/2026): הוא היה ניחוש, ומה
+ * שמיישן כרטיס הוא אירוע ולא זמן — ראה `src/sportmore/card-status.js`.
  */
 export function cardAgeDays(file) {
   const name = basename(file);

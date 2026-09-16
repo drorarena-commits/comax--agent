@@ -22,6 +22,7 @@ import { planBatch } from '../src/sportmore/plan.js';
 import { buildSetupFile } from '../src/sportmore/build-setup.js';
 import { buildIntakeFile, WAREHOUSES } from '../src/sportmore/build-intake.js';
 import { buildReport } from '../src/sportmore/report.js';
+import { cardStatus, recordSetup } from '../src/sportmore/card-status.js';
 import { ROUNDING } from '../src/sportmore/pricing.js';
 
 const OUT_DIR = resolve(ROOT, 'sportmore/out');
@@ -51,6 +52,47 @@ const pad = (s, n) => String(s ?? '').padEnd(n);
 const money = (v) => (v === null || v === undefined ? '—' : Number(v).toFixed(2));
 const today = () => new Date().toISOString().slice(0, 10);
 const base = (f) => basename(String(f));
+
+/**
+ * מצב הכרטיס, כשורות מוכנות להדפסה.
+ *
+ * שלושה דברים, וכל אחד מהם נאמר רק כשהוא נכון:
+ *
+ *   **עדכניות** — לפי אירוע ולא לפי זמן. כרטיס שתאריכו אחרי קובץ ההקמה האחרון
+ *   עדכני, נקודה; אין כאן שאלה לדרור ואין "בן 40 יום, אולי תבדוק".
+ *
+ *   **"תזכיר להם"** — הופק קובץ הקמה, אחריו הגיע כרטיס טרי, והפריטים מהקובץ
+ *   עדיין לא בו. זו האזהרה היחידה שכרטיס בלי פריטים חדשים מצדיק, והיא אומרת
+ *   שהם טרם ביצעו — לא שמשהו שבור.
+ *
+ *   **אב יתום** — בנים בכרטיס בלי שורת אב. עובדות בלבד: כמה בנים, ומה חסר.
+ *   ההרצה ממשיכה.
+ */
+function statusLines(card) {
+  const out = [];
+  const st = cardStatus(card);
+
+  if (!st.current) {
+    out.push('            ⚠  ' + st.why);
+  } else if (st.lastSetup) {
+    out.push('            ✓  ' + st.why);
+  }
+
+  if (st.pendingParents.length) {
+    out.push('            ⚠  ' + st.pendingParents.length + ' אבות מקובץ ההקמה של '
+      + st.lastSetup.date + ' עדיין לא בכרטיס — כנראה טרם הקימו. לתזכר אותם:');
+    out.push('               ' + st.pendingParents.slice(0, 8).join(' · ')
+      + (st.pendingParents.length > 8 ? ' ...' : ''));
+  }
+
+  // שאלה פתוחה, לא תקלה: שתי מסקנות אפשריות מאותו נתון, ולכן מוצג הנתון.
+  for (const [sku, kids] of card.orphanParents ?? []) {
+    out.push('            ❓ ' + sku + ' — ' + kids.length
+      + ' בנים בכרטיס, אין שורת אב. ייתכן שהאב נמחק אצלם ולא הוקם מחדש. לברר לפני הקמה');
+  }
+
+  return out;
+}
 
 function die(msg) {
   console.error('\n' + msg + '\n');
@@ -96,8 +138,10 @@ if (cmd === 'help' || args.help) {
 if (cmd === 'card') {
   const card = await loadItemCard(args['item-card']);
   console.log('\nכרטיס פריט: ' + base(card.file));
-  console.log('  גיל: ' + card.ageDays + ' ימים' + (card.ageDays > 30 ? '   ⚠  ישן — לבקש כרטיס מעודכן' : ''));
-  console.log('  שורות: ' + card.rows + '   ·   אבות: ' + card.parents.size + '   ·   ברקודים: ' + card.byBarcode.size + '\n');
+  console.log('  גיל: ' + card.ageDays + ' ימים');
+  console.log('  שורות: ' + card.rows + '   ·   אבות: ' + card.parents.size + '   ·   ברקודים: ' + card.byBarcode.size);
+  for (const line of statusLines(card)) console.log(line);
+  console.log('');
   process.exit(0);
 }
 
@@ -112,9 +156,7 @@ const codes = loadCodes();
 
 console.log('\nחשבונית:    ' + base(invoice.file) + '   —   ' + invoice.rows.length + ' שורות');
 console.log('כרטיס פריט: ' + base(card.file) + '   —   ' + card.parents.size + ' אבות, בן ' + card.ageDays + ' ימים');
-if (card.ageDays > 30) {
-  console.log('            ⚠  הכרטיס ישן מ-30 יום. "לא קיים" ממנו הוא ניחוש.');
-}
+for (const line of statusLines(card)) console.log(line);
 if (invoice.problems.length) {
   console.log('\n⚠  ' + invoice.problems.length + ' שורות בעייתיות בחשבונית:');
   for (const p of invoice.problems.slice(0, 5)) {
@@ -206,6 +248,16 @@ if (cmd === 'plan') {
       out: resolve(OUT_DIR, 'הקמה ארנה ' + args.season + ' ' + today() + ' - מוצרי אב ובנים.xlsx'),
     });
     console.log('✓ קובץ הקמה:  ' + base(setup.file) + '   (' + setup.parents + ' אבות, ' + setup.children + ' בנים)');
+    // ⬅ האירוע שמיישן את הכרטיס. נרשם רק כאן, אחרי שהקובץ באמת נכתב: קובץ
+    // שלא הופק לא נשלח, ולא ביקשנו מהם להקים דבר.
+    const rec = recordSetup({
+      file: setup.file,
+      season: args.season,
+      cardFile: card.file,
+      parents: plan.parents.map((p) => p.sku),
+      barcodes: plan.children.map((c) => c.barcode),
+    });
+    console.log('  נרשם ב-last-setup.json — הכרטיס הבא ייחשב עדכני רק אם תאריכו אחרי ' + rec.date + '.');
   } else {
     console.log('  אין אבות או בנים חדשים — לא נוצר קובץ הקמה.');
   }
