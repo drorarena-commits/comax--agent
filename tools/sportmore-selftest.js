@@ -664,6 +664,65 @@ console.log('11. כל הכרטיסים בתיקייה — קריאה, מיפוי
     console.log('      (כרטיס אחד בלבד — אין מה להצליב. ההצלבה תרוץ כשיגיע הבא.)');
   }
 }
+/* קריאת קומקס בסוכן הזה — חריגה מוצהרת, ותנאיה נאכפים כאן ולא רק בהערה.
+ *
+ * `sportmore-items` הוא מפעל אקסלים לפריוריטי, וקריאת קומקס אינה שלו. הקוד החלופי
+ * של בן אינו בכרטיס ואי אפשר לגזור אותו משדות שלמים (נמדד 16/09/2026), ולכן
+ * נשארה קריאה אחת — לתצוגה בלבד. דרור קבע שלושה תנאים, ושניים מהם ניתנים לאכיפה:
+ * שהיא אינה משפיעה על שום החלטה, ושהיא אינה חוסמת. בלי הבדיקה הזאת, סשן עתידי
+ * שיראה ש"כבר קוראים קומקס כאן" יכול להשתמש בזה לצורך אחר בלי שאיש יבחין. */
+console.log('');
+console.log('12. קריאת קומקס — תצוגה בלבד, לא חוסמת, בלי ערכים נגזרים');
+{
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const display = await import('../src/sportmore/item-display.js');
+
+  // תנאי 1 — תצוגה בלבד: אף מודול שמקבל החלטות אינו מייבא את קובץ התצוגה.
+  const SRC = resolve(ROOT, 'src/sportmore');
+  const importers = readdirSync(SRC)
+    .filter((f) => f.endsWith('.js') && f !== 'item-display.js')
+    .filter((f) => /item-display/.test(readFileSync(resolve(SRC, f), 'utf8')));
+  check('אף מודול ב-src/sportmore אינו מייבא את item-display', importers.length === 0,
+    importers.join(' · ') || 'רק tools/sportmore.js, להדפסה');
+  const readsComax = readdirSync(SRC)
+    .filter((f) => f.endsWith('.js') && f !== 'item-display.js')
+    .filter((f) => /catalog\/local-stock|פריטים-מלא/.test(readFileSync(resolve(SRC, f), 'utf8')));
+  check('ואף מודול אחר ב-src/sportmore אינו קורא את קטלוג קומקס', readsComax.length === 0,
+    readsComax.join(' · ') || 'הקריאה היחידה יושבת בקובץ התצוגה');
+
+  // תנאי 2 — לא חוסמת: קטלוג שלא קיים מחזיר "חסר" והודעה אחת, ואינו זורק.
+  let threw = null;
+  try {
+    await display.loadComaxAltCodes({ dir: resolve(ROOT, 'sportmore/out/.no-such-catalog'), fresh: true });
+  } catch (e) {
+    threw = e.message;
+  }
+  check('קטלוג חסר אינו זורק', threw === null, threw || 'ממשיך');
+  check('...ומפיק הודעה אחת שההעשרה לא זמינה', /לא זמינה/.test(display.enrichmentNotice() || ''),
+    display.enrichmentNotice() || '(אין הודעה)');
+  const row = { styleDesc: 'TEST PANT', colorDesc: '550-BLACK-WHITE' };
+  const kid = display.childFromInvoice(row, { sku: 'AR00000155000M', barcode: '3468335803258' });
+  check('...והחלופי מוצג "חסר"', display.childLine(kid).includes('חלופי חסר'), display.childLine(kid));
+  check('...בזמן שהצבע ממשיך להגיע מהחשבונית', display.childLine(kid).includes('צבע 550-BLACK-WHITE'));
+
+  // בלי ערכים נגזרים: לאב חדש אין שדה חלופי שלם — ולכן "חסר", לא "המק"ט בלי AR".
+  const parent = display.parentFromInvoice({ style: '990077', colorCode: '500', styleDesc: 'NEW' }, 'AR990077500');
+  check('לאב חדש אין חלופי נגזר', parent.altSku === null, display.parentLine(parent));
+
+  // הצבע משדה הצבע של החשבונית ולא משם הפריט של קומקס.
+  const colourSource = readFileSync(resolve(SRC, 'item-display.js'), 'utf8');
+  check('תיאור הצבע אינו נקרא מ"שם פריט באנגלית"',
+    !/indexOf\('שם פריט באנגלית'\)/.test(colourSource), 'colorDesc = row.colorDesc');
+
+  // וחמשת המקומות שמונים פריטים אינם מדפיסים ברקוד גולמי.
+  const cli = readFileSync(resolve(ROOT, 'tools/sportmore.js'), 'utf8');
+  const rawBarcode = cli.split('\n').filter((l) => /\.ean\s*\+\s*'/.test(l) && !l.trim().startsWith('//'));
+  check('אף שורת פריט ב-CLI אינה מדפיסה ברקוד גולמי', rawBarcode.length === 0,
+    rawBarcode.map((l) => l.trim().slice(0, 50)).join(' | ') || 'כולן עוברות דרך showChild / parentLine');
+
+  // מחזירים את המטמון למצב אמיתי, כדי שלא יזלוג לקבוצות שאחרי.
+  await display.loadComaxAltCodes({ fresh: true });
+}
 rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');
 process.exit(failures ? 1 : 0);

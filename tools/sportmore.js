@@ -24,8 +24,12 @@ import { buildIntakeFile, WAREHOUSES } from '../src/sportmore/build-intake.js';
 import { buildReport } from '../src/sportmore/report.js';
 import { cardStatus, recordSetup } from '../src/sportmore/card-status.js';
 import {
-  parentLine, childLine, parentFromInvoice, parentFromOrphan, childFromInvoice, catalogWarning,
+  parentLine, childLine, parentFromInvoice, parentFromOrphan, childFromInvoice,
+  loadComaxAltCodes, enrichmentNotice,
 } from '../src/sportmore/item-display.js';
+
+/** שורת בן לתצוגה. מק"ט = מה שנכתב לקובץ; שאר השדות — ראה item-display.js. */
+const showChild = (row, barcode) => childLine(childFromInvoice(row, { sku: childSku(row), barcode }));
 import { ROUNDING } from '../src/sportmore/pricing.js';
 
 const OUT_DIR = resolve(ROOT, 'sportmore/out');
@@ -156,8 +160,6 @@ if (cmd === 'card') {
     console.log('\nשאלות פתוחות:');
     for (const line of questions) console.log(line);
   }
-  const warn = catalogWarning();
-  if (warn) console.log('\n' + warn);
   console.log('');
   process.exit(0);
 }
@@ -169,6 +171,13 @@ if (!args.invoice) die('חסר --invoice <קובץ חשבונית של ארנה>
 
 const card = await loadItemCard(args['item-card']);
 const invoice = await readArenaInvoice(args.invoice);
+// ⚠️ קריאה מקומקס — **לתצוגה בלבד**, ואינה זורקת לעולם. חריגה מוצהרת לגבול של
+// הסוכן הזה; הנימוק והתנאים ב-src/sportmore/item-display.js.
+await loadComaxAltCodes();
+// פעם אחת, מיד — ולא בסוף: לכל פקודה יש כמה נקודות יציאה, והודעה שיושבת רק
+// באחת מהן פשוט לא מודפסת בשאר.
+const enrichment = enrichmentNotice();
+if (enrichment) console.log(enrichment);
 const codes = loadCodes();
 
 console.log('\nחשבונית:    ' + base(invoice.file) + '   —   ' + invoice.rows.length + ' שורות');
@@ -211,8 +220,8 @@ if (cmd === 'plan') {
 
   if (plan.blocked.length) {
     console.log('\n⛔ שורות חסומות — לא ייכנסו לקובץ ההקמה:');
-    for (const b of plan.blocked.slice(0, 10)) {
-      console.log('      שורה ' + b.row.row + '  ' + b.row.ean + '  ' + b.row.articleNumber);
+    for (const b of plan.blocked) {
+      console.log('      שורה ' + b.row.row + '  ' + showChild(b.row, b.row.ean));
       console.log('         ' + b.why);
     }
   }
@@ -248,8 +257,7 @@ if (cmd === 'plan') {
     console.log('\nשאלות פתוחות מהכרטיס — לא עוצרות את ההרצה:');
     for (const line of cardQuestions) console.log(line);
   }
-  const catalogWarn = catalogWarning();
-  if (catalogWarn) console.log('\n' + catalogWarn);
+
 
   if (!args.confirm) {
     console.log('\nלא נכתב שום קובץ. להוסיף --confirm כדי לכתוב את הדוח ואת קובץ ההקמה.\n');
@@ -400,10 +408,9 @@ if (cmd === 'intake') {
   // ⛔ חסומה עוצרת. היא אינה בכרטיס ואינה בקובץ ההקמה — איש לא יקים אותה.
   if (blocked.length) {
     console.log('\n⛔ קובץ הקליטה לא ייכתב — יש שורות חסומות:');
-    for (const r of blocked.slice(0, 12)) {
-      console.log('      שורה ' + r.row.row + '  ' + r.row.ean + '  ' + r.row.articleNumber + '  —  ' + r.why);
+    for (const r of blocked) {
+      console.log('      שורה ' + r.row.row + '  ' + showChild(r.row, r.row.ean) + '  —  ' + r.why);
     }
-    if (blocked.length > 12) console.log('      ...ועוד ' + (blocked.length - 12));
     console.log('\n   שורה חסומה דורשת אדם: ראה "מתי לעצור ולשאול את דרור".\n');
     process.exit(1);
   }
@@ -416,7 +423,7 @@ if (cmd === 'intake') {
     // **הפלט הזה**, ולא של הקובץ: עמודות קובץ חשבונית הרכש הן תבנית היבוא של
     // פריוריטי, ועמודה נוספת שם הייתה שוברת להם את הקליטה.
     for (const r of pending) {
-      console.log('      שורה ' + r.row.row + '  ' + childLine(childFromInvoice(r.row, { sku: childSku(r.row), barcode: r.barcode }))
+      console.log('      שורה ' + r.row.row + '  ' + showChild(r.row, r.barcode)
         + '  —  ' + r.why);
     }
     console.log('\n   לומר להם במפורש: את השורות האדומות צריך להקים ולאשר לפני הרצת הרכש.');
@@ -425,7 +432,7 @@ if (cmd === 'intake') {
   console.log('\n  מחסן: ' + warehouse + '   ·   סניף: ' + codes.constants.branch
     + '   ·   ספק: ' + codes.constants.supplier);
   const sample = invoice.rows[0];
-  console.log('  דוגמה: ' + sample.ean + '  ' + sample.articleNumber + '  →  ' + childSku(sample));
+  console.log('  דוגמה: ' + showChild(sample, sample.ean));
 
   if (!args.confirm) {
     console.log('\nלא נכתב שום קובץ. להוסיף --confirm כדי לכתוב את קובץ הקליטה.\n');
@@ -443,11 +450,10 @@ if (cmd === 'intake') {
   if (res.flagged.length) {
     console.log('  🔴 ' + res.flagged.length + ' שורות מסומנות באדום — להקים ולאשר לפני הרצת הרכש:');
     for (const p of pending) {
-      console.log('     ' + childLine(childFromInvoice(p.row, { sku: childSku(p.row), barcode: p.barcode })));
+      console.log('     ' + showChild(p.row, p.barcode));
     }
   }
-  const intakeWarn = catalogWarning();
-  if (intakeWarn) console.log('\n' + intakeWarn);
+
   console.log('');
   process.exit(0);
 }
