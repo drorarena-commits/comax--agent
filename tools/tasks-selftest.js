@@ -258,5 +258,99 @@ console.log('\n5. שערי הפרסר עצמו');
   t('דגל עם ערך אינו נרשם כחסר', withValue.withoutValue.length === 0);
 }
 
+
+/* ── 6 ─ הדפוס עצמו לא יכול לחזור ───────────────────────────────────────
+ *
+ * ארבעת הבאגים של הסבב הזה חלקו צורה אחת: טוקן שנקרא מהארגומנטים בלי לבדוק
+ * מה הוא. תיקון נקודתי בכל כלי משאיר את השורש חי — הכלי הבא שייכתב יעתיק את
+ * הדפוס מאחד הקיימים, וזה יתגלה בעוד חודשיים באמצע מנה.
+ *
+ * שתי הצורות שנחסמות:
+ *
+ *   `indexOf('--x') + 1`  — בלי הדגל מחזיר -1, ו--1+1 הוא **אפס**: הארגומנט
+ *   הראשון הופך לערך. וגם עם הדגל, הטוקן הבא עשוי להיות דגל אחר או כלום.
+ *
+ *   `Number(args[...])`   — NaN אינו נבדק ואינו זורק. `slice(0, NaN)` מחזיר
+ *   מערך ריק, והכלי מדווח "0 תוקנו" ויוצא 0.
+ *
+ * מי שצריך לפרסר ארגומנטים משתמש ב-`src/cli-args.js`. החרגה מותרת — אבל
+ * מוצהרת ברשימה שלמטה עם סיבה בשורה אחת, ולא כדילוג שקט.
+ */
+console.log('');
+console.log('6. הדפוס לא חוזר — indexOf(--x)+1 ו-Number(args[...]) ב-tools/');
+{
+  const before = failures;
+
+  /** החרגות מוצהרות. קובץ, ולמה מותר לו. */
+  const EXEMPT = [
+    ['tools/wa.js', 'flagValue() מגן בעצמו — ערך שמתחיל ב-"--" נופל לברירת המחדל; תת-פקודות ופרסור מעורב הופכים המרה למסוכנת מהבאג.'],
+    ['tools/payroll-report.js', '--to עובר ב-requireRecipient עם EMAIL_RE (כלל 14). ⚠️ --month נשאר לא מוגן, והוחרג בהסכמה מפורשת.'],
+    ['tools/sportmore.js', 'פרסר משלו עם תת-פקודות ו-BOOLEAN_FLAGS, ונבדק במלואו ב-npm run sm-test.'],
+  ];
+  const exemptFiles = new Set(EXEMPT.map(([f]) => f));
+
+  const TOOLS = resolve(ROOT, 'tools');
+  // `_smoke/` מוחרג כולו: אלה בדיקות חד-פעמיות שנכתבו מול מסך אחד ואינן חלק
+  // מהממשק. הן גם לא מופיעות ב-package.json.
+  const files = readdirSync(TOOLS)
+    .filter((f) => (f.endsWith('.js') || f.endsWith('.cjs')) && !f.endsWith('-selftest.js'))
+    .map((f) => 'tools/' + f);
+
+  const isComment = (line) => {
+    const t = line.trim();
+    return t.startsWith('//') || t.startsWith('*') || t.startsWith('/*');
+  };
+
+  // הצריכה היא מה שנתפס, לא רק הצורה: `args[i + 1]` על מערך הארגומנטים הוא
+  // הטוקן הבא שנקרא בלי לדעת מה הוא, בין אם ה-indexOf שמעליו כתוב במפורש ובין
+  // אם שם הדגל הגיע במשתנה.
+  const NEXT_TOKEN = /\b(args|argv|process\.argv)\s*\[[^\]]*\+\s*1\s*\]/;
+  const INDEXOF = /indexOf\(('|"|`)--/;
+  const NUMBER_ARG = /Number\(\s*(args|argv|process\.argv)\s*\[/;
+  // `Number(...)` בשורה אחת ובדיקת סופיות בשורה הבאה היא הצורה התקינה, ולכן
+  // נבדקות שלוש השורות שאחריה לפני שהיא נספרת כהפרה.
+  const CHECKED = /Number\.isFinite|Number\.isInteger/;
+
+  let scanned = 0;
+  for (const rel of files) {
+    const lines = readFileSync(resolve(ROOT, rel), 'utf8').split('\n');
+    scanned++;
+    const hits = [];
+    lines.forEach((line, n) => {
+      if (isComment(line)) return;
+      if (INDEXOF.test(line) || NEXT_TOKEN.test(line)) {
+        hits.push([n + 1, 'הטוקן הבא נקרא בלי בדיקה', line.trim()]);
+      }
+      if (NUMBER_ARG.test(line) && !lines.slice(n, n + 4).some((l) => CHECKED.test(l))) {
+        hits.push([n + 1, 'Number(args[...]) — NaN אינו נבדק', line.trim()]);
+      }
+    });
+    if (!hits.length) continue;
+    if (exemptFiles.has(rel)) continue;
+    for (const [n, why, text] of hits) {
+      fail(rel + ':' + n, why + '  ' + text.slice(0, 70),
+        'לעבור ל-parseFlags מ-src/cli-args.js, או להוסיף החרגה מוצהרת עם סיבה ב-tools/tasks-selftest.js.');
+    }
+  }
+
+  // ⛔ החרגה שכבר אינה נחוצה היא החרגה ששוכחים: אם הקובץ נוקה או נמחק, היא
+  // מכסה על הדפוס אם הוא יחזור. לכן היא נבדקת גם היא.
+  for (const [rel, reason] of EXEMPT) {
+    if (!existsSync(resolve(ROOT, rel))) {
+      fail(rel, 'מוחרג אבל אינו קיים.', 'להסיר מרשימת ההחרגות.');
+      continue;
+    }
+    const lines = readFileSync(resolve(ROOT, rel), 'utf8').split('\n');
+    const still = lines.some((l, n) => !isComment(l) && (INDEXOF.test(l) || NEXT_TOKEN.test(l)
+      || (NUMBER_ARG.test(l) && !lines.slice(n, n + 4).some((x) => CHECKED.test(x)))));
+    if (!still) fail(rel, 'מוחרג אבל כבר אינו מכיל את הדפוס.', 'להסיר מרשימת ההחרגות: ' + reason.slice(0, 40));
+  }
+
+  if (failures === before) {
+    console.log('  v  ' + scanned + ' כלים נסרקו · ' + EXEMPT.length + ' מוחרגים מוצהרים');
+    for (const [rel, reason] of EXEMPT) console.log('       ' + rel + ' — ' + reason);
+  }
+}
+
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');
 process.exit(failures ? 1 : 0);

@@ -28,6 +28,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve, isAbsolute } from 'node:path';
 import { ROOT } from '../src/config.js';
+import { parseFlags, flagProblems } from '../src/cli-args.js';
 import { writeXlsxSheets } from './xlsx-write.js';
 import { sheetNames, readSheet, numericCells, toCsv } from './xlsx.js';
 import {
@@ -38,19 +39,32 @@ const SOURCE = 'data/exports/פירוט תעודות_מחיר מחירון_בר�
 const REVIEW = 'data/exports/עלות-719-להכרעה.xlsx';
 const PILOT = 'data/exports/עלות-פיילוט';
 
-const arg = (name) => {
-  const i = process.argv.indexOf(name);
-  return i > 0 ? process.argv[i + 1] : undefined;
-};
 const path = (p) => (isAbsolute(p) ? p : resolve(ROOT, p));
 
-const src = path(arg('--source') ?? SOURCE);
-const decisionsFile = arg('--decisions');
-const pilotN = Number(arg('--pilot') ?? 0);
-const verifyFile = arg('--verify');
-const buildImport = process.argv.includes('--import') || Boolean(decisionsFile);
+// `arg()` היה `process.argv[i + 1]` בלי בדיקה, ו-`--pilot` עבר דרך `Number(...)`
+// בלי בדיקה אחריו: `--pilot abc` נתן NaN, ו-`--source` בסוף השורה נתן undefined
+// שנפל חזרה לברירת המחדל כאילו לא נמסר דבר.
+const flags = parseFlags(process.argv.slice(2), {
+  skipFirst: false,
+  booleans: ['import'],
+  valued: ['source', 'decisions', 'verify', 'only'],
+  numbers: ['pilot'],
+});
+const problems = flagProblems(flags);
+if (flags._.length) problems.push(`ארגומנט חופשי: "${flags._.join('", "')}".`);
+if (problems.length) {
+  console.error('\n' + problems.join('\n')
+    + '\n\nשימוש: npm run cost-file [-- --import] [--source <קובץ>] [--decisions <קובץ>] [--pilot <מספר>] [--verify <קובץ>] [--only last|supplier]\n');
+  process.exit(1);
+}
+
+const src = path(flags.input.source ?? SOURCE);
+const decisionsFile = flags.input.decisions;
+const pilotN = flags.input.pilot ?? 0;
+const verifyFile = flags.input.verify;
+const buildImport = flags.input.import === true || Boolean(decisionsFile);
 /** `--only last` / `--only supplier` — הרצה אחת בכל פעם. ראה `RUNS`. */
-const only = arg('--only');
+const only = flags.input.only;
 
 // ── מספרים נקראים בעברית מימין לשמאל; העמודות בגיליון נכתבות משמאל לימין ────
 const fmt = (n) => (n === null || n === undefined || Number.isNaN(n) ? '' : String(n));

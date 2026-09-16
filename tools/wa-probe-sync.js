@@ -21,7 +21,13 @@
 import { makeClient, connect, shutdown } from '../src/whatsapp/client.js';
 import { safeGetChats } from '../src/whatsapp/chats.js';
 
-const WAIT_SECONDS = Number(process.argv[2] || 45);
+// `Number('abc')` הוא NaN, ו-`setTimeout(NaN)` הוא אפס — ההמתנה פשוט לא קרתה,
+// והבדיקה "הסתיימה" מיד ונראתה כמו תשובה.
+const WAIT_SECONDS = process.argv[2] === undefined ? 45 : Number(process.argv[2]);
+if (!Number.isFinite(WAIT_SECONDS) || WAIT_SECONDS <= 0) {
+  console.error(`\nשניות ההמתנה חייבות להיות מספר חיובי, לא "${process.argv[2]}".\n`);
+  process.exit(1);
+}
 const SAMPLE = 4;
 
 const client = makeClient({});

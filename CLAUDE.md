@@ -475,8 +475,10 @@ src/tasks/invoice-finalize.js      קליטת טיוטה קיימת, אחרי א
 src/tasks/invoice-reset.js         מוחק את כל שורות הטיוטה (#ZeroDoc)
 data/exports/פריטים-מלא-<תאריך>.csv  קטלוג הפריטים — שער ההצלבה לפני יבוא חשבונית
 src/tasks/                       משימה אחת = קובץ אחד
-src/cli-args.js                  פענוח הדגלים של run.js, כמודול — כדי שאפשר יהיה לבדוק אותו
-                                 --confirm אינו מקבל ערך · שדה שהוצהר boolean מומר לבוליאני
+src/cli-args.js                  הפרסר המשותף — run.js וכלי tools/ כאחד
+                                 --confirm אינו מקבל ערך · boolean מומר לבוליאני
+                                 numbers דוחה NaN · valued מול repeated · מחזיר גם _
+                                 לכלי אין meta: ההצהרה מגיעה מאובייקט האפשרויות של הקורא
 tools/tasks-selftest.js          npm run tasks-test — החוזה של meta.input, בארבעה כיוונים:
                                  שדה שהקוד דורש נעצר לפני קומקס · "חובה" הוא באמת חובה ·
                                  boolean חוזר בוליאני · ותיאור שמדבר true/false חייב להצהיר boolean

@@ -17,14 +17,28 @@ import { loadSources, buildRows, IMPORT_HEADERS } from '../src/items/build-impor
 import { masterGate, masterSheet, MASTER_HEADERS } from '../src/items/master-gate.js';
 import { writeXlsxSheets } from './xlsx-write.js';
 import { sheetNames, readSheet } from './xlsx.js';
+import { parseFlags, flagProblems } from '../src/cli-args.js';
 
-const dest = resolve(ROOT, process.argv[2] ?? 'data/exports/הקמה-קומקס-175.xlsx');
+// `--comax <path>` — לבנות מול קטלוג פריטים אחר מזה שב-`content/`. הצורך היחיד
+// עד כה: לשחזר מנה שכבר נקלטה. `buildRows` מדלג על פריט שקיים בקטלוג, ולכן מול
+// הקטלוג העדכני מנה שנקלטה מחזירה 0 שורות.
+//
+// ⛔ יעד הפלט היה `process.argv[2]`, כלומר **הטוקן השני, יהיה אשר יהיה**:
+// `npm run items-file -- --comax <קובץ>` כתב את חוברת ההקמה לקובץ בשם
+// "--comax" בשורש הריפו. הדגל עצמו עבד — הוא נמצא ב-indexOf — ולכן הכלי סיים
+// בהצלחה ורק שם הקובץ היה שגוי. עכשיו היעד נקרא מהפוזישנלים שהפרסר החזיר,
+// אחרי שערכי הדגלים כבר נבלעו.
+const flags = parseFlags(process.argv.slice(2), { skipFirst: false, booleans: [], valued: ['comax'] });
+const problems = flagProblems(flags);
+if (flags._.length > 1) problems.push(`יותר מיעד פלט אחד: "${flags._.join('", "')}".`);
+if (problems.length) {
+  console.error('\n' + problems.join('\n')
+    + '\n\nשימוש: npm run items-file [-- <קובץ יעד>] [--comax <קטלוג פריטים>]\n');
+  process.exit(1);
+}
 
-// `--comax <path>` — לבנות מול קטלוג פריטים אחר מזה שב-`content/`.
-// הצורך היחיד עד כה: לשחזר מנה שכבר נקלטה. `buildRows` מדלג על פריט שקיים
-// בקטלוג, ולכן מול הקטלוג העדכני מנה שנקלטה מחזירה 0 שורות.
-const ci = process.argv.indexOf('--comax');
-const comax = ci > 0 ? resolve(ROOT, process.argv[ci + 1]) : undefined;
+const dest = resolve(ROOT, flags._[0] ?? 'data/exports/הקמה-קומקס-175.xlsx');
+const comax = flags.input.comax ? resolve(ROOT, flags.input.comax) : undefined;
 
 const src = loadSources(comax ? { comax } : {});
 const { ready, pending, skipped, parentLen } = buildRows(src);

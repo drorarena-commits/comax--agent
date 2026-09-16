@@ -16,17 +16,26 @@
 import { makeClient, connect, shutdown } from '../src/whatsapp/client.js';
 import { safeGetChats, completenessNote } from '../src/whatsapp/chats.js';
 import { jidToNumber } from '../src/whatsapp/guard.js';
+import { parseFlags, flagProblems } from '../src/cli-args.js';
 
-const argv = process.argv.slice(2);
-const term = argv.find((a) => !a.startsWith('--'));
-const readJid = (() => {
-  const i = argv.indexOf('--read');
-  return i === -1 ? null : argv[i + 1];
-})();
-const limit = (() => {
-  const i = argv.indexOf('--limit');
-  return i === -1 ? 60 : Number(argv[i + 1]) || 60;
-})();
+// `Number(argv[i + 1]) || 60` בלע כל ערך לא-מספרי אל ברירת המחדל: `--limit abc`
+// ו-`--limit` בסוף השורה חזרו שניהם 60, כלומר בקשה שגויה נראתה כמו הצלחה.
+const flags = parseFlags(process.argv.slice(2), {
+  skipFirst: false,
+  booleans: [],
+  valued: ['read'],
+  numbers: ['limit'],
+});
+const problems = flagProblems(flags);
+if (flags._.length > 1) problems.push(`יותר ממונח חיפוש אחד: "${flags._.join('", "')}".`);
+if (problems.length) {
+  console.error('\n' + problems.join('\n')
+    + '\n\nשימוש: node tools/wa-find.js "שם" [--read <jid>] [--limit <מספר>]\n');
+  process.exit(1);
+}
+const term = flags._[0];
+const readJid = flags.input.read ?? null;
+const limit = flags.input.limit ?? 60;
 
 if (!term && !readJid) {
   console.error('שימוש: node tools/wa-find.js "שם" [--read <jid>]');

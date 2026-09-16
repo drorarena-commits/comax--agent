@@ -22,10 +22,28 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT } from '../src/config.js';
+import { parseFlags, flagProblems } from '../src/cli-args.js';
 
+// הדגלים נבדקים לפני קריאת קובץ הטווחים: טעות הקלדה אינה צריכה להיתלות בכך
+// ש-`data/` קיים, ושגיאת "אין קובץ" על `--from abc` היא תשובה נכונה על הסיבה
+// הלא נכונה.
+// היה `Number(args[args.indexOf('--from') + 1])`. בלי `--from` מחזיר `indexOf`
+// מינוס אחת, ו-`-1 + 1` הוא **אפס** — כלומר הארגומנט הראשון, יהיה אשר יהיה, הפך
+// לנקודת ההתחלה של סריקה של חצי שעה ודילג על מנות בשקט. קובץ מלאי חלקי נראה
+// בדיוק כמו מלא, וכלל 8 אומר שחוסר בו אינו אפס.
+const flags = parseFlags(process.argv.slice(2), { skipFirst: false, booleans: [], numbers: ['from'] });
+const problems = flagProblems(flags);
+if (flags._.length) problems.push(`ארגומנט חופשי: "${flags._.join('", "')}". המנה נמסרת ב---from.`);
+if (problems.length) {
+  console.error('\n' + problems.join('\n') + '\n\nשימוש: npm run full-stock [-- --from <מספר מנה>]\n');
+  process.exit(1);
+}
 const ranges = JSON.parse(readFileSync(resolve(ROOT, 'data/item-ranges.json'), 'utf8'));
-const args = process.argv.slice(2);
-const startAt = Number(args[args.indexOf('--from') + 1]) || 1;
+const startAt = flags.input.from ?? 1;
+if (!Number.isInteger(startAt) || startAt < 1 || startAt > ranges.length) {
+  console.error(`\n--from חייב להיות מנה שלמה בין 1 ל-${ranges.length}, לא ${startAt}.\n`);
+  process.exit(1);
+}
 const chunkDir = resolve(ROOT, 'data/exports/chunks');
 if (!existsSync(chunkDir)) mkdirSync(chunkDir, { recursive: true });
 

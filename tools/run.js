@@ -80,14 +80,15 @@ if (!argv.length || argv[0] === '--list') {
 }
 
 const taskName = argv[0];
-const jsonIdx = argv.indexOf('--json');
+
 // `--json-file` קיים כי PowerShell מפשיט את המרכאות מ-`--json '{"a":1}'` והקלט
 // מגיע כ-`{a:1}` שאינו JSON תקין (נמדד 07/09/2026). קלט ארוך עובר דרך קובץ.
-const fileIdx = argv.indexOf('--json-file');
-const input = fileIdx >= 0
-  ? JSON.parse(readFileSync(resolve(ROOT, argv[fileIdx + 1]), 'utf8'))
-  : jsonIdx >= 0 ? JSON.parse(argv[jsonIdx + 1]) : {};
-const confirm = argv.includes('--confirm');
+// שני הערכים נקראים בתוך `parseFlags` ולא ב-`indexOf` נפרד, כדי ש-`--json`
+// בסוף השורה יאמר "מצפה לערך" במקום להגיע ל-JSON.parse כ-undefined.
+const { input: flagInput, unknown, confirmedWithValue, withoutValue, json, jsonFile, confirm } = parseFlags(argv);
+const input = jsonFile !== undefined
+  ? JSON.parse(readFileSync(resolve(ROOT, jsonFile), 'utf8'))
+  : json !== undefined ? JSON.parse(json) : {};
 
 /**
  * `--key value` pairs, folded into the same input object as `--json`.
@@ -105,8 +106,20 @@ const confirm = argv.includes('--confirm');
  * declares `boolean` in its meta, handled further down; that is the task's own
  * type declaration, not an inference about the value.
  */
-const { input: flagInput, unknown, confirmedWithValue, withoutValue } = parseFlags(argv);
 Object.assign(input, flagInput);
+// `--json` / `--json-file` הם דגלים של המשגר ולא שדות של המשימה, ולכן הם אינם
+// נבדקים מול `meta.input` בהמשך. בלי הבדיקה כאן `--json` בסוף השורה היה נותן
+// קלט ריק, והשגיאה שהייתה יוצאת היא "חסר customer" — נכונה בעובדה ושגויה
+// בסיבה, בדיוק כמו קודם.
+const dispatcherFlags = withoutValue.filter((v) => v.key === 'json' || v.key === 'json-file');
+if (dispatcherFlags.length) {
+  for (const v of dispatcherFlags) {
+    console.error(
+      `\n"--${v.key}" מצפה לערך, ו${v.next ? `אחריו נמצא "${v.next}" — הדגל הבא, לא ערך` : 'לא נמצא אחריו כלום'}.\n`,
+    );
+  }
+  process.exit(1);
+}
 if (confirmedWithValue.length || unknown.length) {
   // שתי התקלות מודפסות יחד. לתקן אחת, לגלות את השנייה ולהריץ שוב הוא סיבוב
   // מיותר — ובמסלול הזה כל סיבוב עולה לוגין ומושב.

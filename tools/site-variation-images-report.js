@@ -28,16 +28,28 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve, basename } from 'node:path';
 import { config } from '../orders-app/config.js';
 import { stock } from '../src/catalog/local-stock.js';
+import { parseFlags, flagProblems } from '../src/cli-args.js';
 
-const args = process.argv.slice(2);
-const jsonPath = args.find(a => !a.startsWith('--'));
-if (!jsonPath) {
-  console.error('שימוש: node tools/site-variation-images-report.js <קובץ-json> [--out <קובץ-html>]');
+// `args.find(a => !a.startsWith('--'))` לקח את הפוזישנל הראשון — וערך של דגל
+// הוא גם הוא פוזישנל לעין הזאת. `--out report.html data.json` בחר ב-
+// `report.html` כקובץ הקלט, קרא את הקובץ הלא נכון או קרס על ריק. עכשיו ערכי
+// הדגלים נבלעים על ידי הפרסר, ומה שנשאר ב-`_` הוא באמת פוזישנל.
+const flags = parseFlags(process.argv.slice(2), {
+  skipFirst: false,
+  booleans: ['all'],
+  valued: ['out'],
+});
+const problems = flagProblems(flags);
+if (flags._.length > 1) problems.push(`יותר מקובץ קלט אחד: "${flags._.join('", "')}".`);
+if (!flags._.length) problems.push('חסר קובץ ה-json של הסריקה.');
+if (problems.length) {
+  console.error('\n' + problems.join('\n')
+    + '\n\nשימוש: node tools/site-variation-images-report.js <קובץ-json> [--out <קובץ-html>] [--all]\n');
   process.exit(1);
 }
-const outArg = args.indexOf('--out');
-const outPath = outArg >= 0 ? args[outArg + 1] : jsonPath.replace(/\.json$/, '.html');
-const SHOW_ALL = args.includes('--all');
+const jsonPath = flags._[0];
+const outPath = flags.input.out ?? jsonPath.replace(/\.json$/, '.html');
+const SHOW_ALL = flags.input.all === true;
 
 /**
  * מלאי מקומי לפי מק"ט האתר.

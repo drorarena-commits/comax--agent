@@ -15,21 +15,31 @@ import { existsSync, mkdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright-core';
 import { ROOT, loadConfig } from '../src/config.js';
+import { parseFlags, flagProblems } from '../src/cli-args.js';
 
-const args = process.argv.slice(2);
-const acctFlag = args.findIndex((a) => a === '--account');
 // Dror has two Gmail accounts — dror.arena@ and drorarena@ (no dot) — and mail
 // arrives at both. /mail/u/0/ is whichever Chrome signed in first, so a message
 // that lives in the other one reports 'no attachments' rather than 'wrong
 // account'. Measured 10/09/2026 on the Wix August report.
-const account = acctFlag >= 0 ? args[acctFlag + 1] : '0';
-if (acctFlag >= 0) args.splice(acctFlag, 2);
-// `list` is read *after* the splice — otherwise `--account 1 --list <id>` puts
-// `--account` at args[0], `list` comes out false, and `--list` is taken as the
-// message id. It then reports "no attachments", which reads like an answer
-// about the mail rather than a parsing bug.
-const list = args[0] === '--list';
-const [messageId, match, outName] = list ? args.slice(1) : args;
+//
+// ⛔ `--account` נקרא ב-`args[acctFlag + 1]` בלי בדיקה, ואז `splice(acctFlag, 2)`
+// חתך שני איברים תמיד. `--account` בסוף השורה נתן `account = undefined` —
+// ו-`/mail/u/undefined/` מדווח "אין קבצים מצורפים", שנקרא כתשובה על המייל ולא
+// כתקלת פענוח. אותה מלכודת בדיוק שהתגלתה כאן עם `--list`, מהצד השני שלה.
+const flags = parseFlags(process.argv.slice(2), {
+  skipFirst: false,
+  booleans: ['list'],
+  valued: ['account'],
+});
+const problems = flagProblems(flags);
+if (problems.length) {
+  console.error('\n' + problems.join('\n')
+    + '\n\nשימוש: node tools/gmail-attach.js [--account 0|1] [--list] <messageId> [חלק-משם-הקובץ] [שם-יעד]\n');
+  process.exit(1);
+}
+const account = flags.input.account ?? '0';
+const list = flags.input.list === true;
+const [messageId, match, outName] = flags._;
 if (!messageId) {
   console.error('שימוש: node tools/gmail-attach.js <messageId> [חלק-משם-הקובץ] [שם-יעד]');
   process.exit(1);

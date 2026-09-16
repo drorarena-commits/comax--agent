@@ -33,6 +33,7 @@ import { copyFileSync, existsSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright-core';
 import { ROOT, loadConfig } from '../src/config.js';
+import { parseFlags, flagProblems } from '../src/cli-args.js';
 
 /** התיקייה והתבנית — מתועדות ב-CLAUDE.md, ואסור לשנות בלי לעדכן שם. */
 export const DEST_DIR = resolve(ROOT, 'content/sportmore');
@@ -71,14 +72,26 @@ const WIDE_QUERY = 'from:@sportm.co.il has:attachment filename:xlsx (מלאי OR
 export const stampOf = (hexId) => new Date(Number(BigInt(`0x${hexId}`) >> 20n));
 export const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-const args = process.argv.slice(2);
-const flag = (name) => args.includes(`--${name}`);
-const opt = (name) => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : undefined; };
+// `opt()` היה `args[i + 1]` בלי שום בדיקה: `--pick` בסוף השורה החזיר undefined,
+// ו-`--pick --force` החזיר "--force" כמספר המועמד. שניהם נכשלו מאוחר ובשקט.
+const flags = parseFlags(process.argv.slice(2), {
+  skipFirst: false,
+  booleans: ['list', 'force'],
+  valued: ['query', 'accounts'],
+  numbers: ['pick'],
+});
+const flagIssues = flagProblems(flags);
+if (flags._.length) flagIssues.push(`ארגומנט חופשי: "${flags._.join('", "')}".`);
+if (flagIssues.length) {
+  console.error('\n' + flagIssues.join('\n')
+    + '\n\nשימוש: npm run sm-stock [-- --list] [--pick <מספר>] [--query "…"] [--force] [--accounts 0,1]\n');
+  process.exit(1);
+}
 
-const listOnly = flag('list');
-const force = flag('force');
-const pickArg = opt('pick');
-const accounts = (opt('accounts') ?? '0').split(',').map((s) => s.trim()).filter(Boolean);
+const listOnly = flags.input.list === true;
+const force = flags.input.force === true;
+const pickArg = flags.input.pick;
+const accounts = (flags.input.accounts ?? '0').split(',').map((s) => s.trim()).filter(Boolean);
 
 const cfg = loadConfig();
 
@@ -235,7 +248,7 @@ const show = (rows) => rows.forEach((r, i) =>
   console.log(`  ${String(i + 1).padStart(2)}. ${ymd(r.when)}  ${r.from.padEnd(24).slice(0, 24)}  ${r.subject.slice(0, 48)}`));
 
 try {
-  const userQuery = opt('query');
+  const userQuery = flags.input.query;
   console.log(`תיבות: ${accounts.map((a) => `u/${a}`).join(' · ')}`);
 
   let all = await gather(userQuery ?? EXACT_QUERY);
@@ -265,7 +278,7 @@ try {
   // ההרחבה תופסת גם דוחות אחרים של ספורט אנד מור ("יתרות מלאי לפי דגם"), ולכן
   // היא לעולם לא בוחרת לבד: קובץ לא נכון שנשמר תחת השם הנכון אינו נראה כתקלה
   // בשום שלב אחר כך.
-  const chosen = pickArg ? all[Number(pickArg) - 1] : (widened ? null : all[0]);
+  const chosen = pickArg ? all[pickArg - 1] : (widened ? null : all[0]);
   if (!chosen) {
     console.error('\n⚠️ לא מצאתי את הדוח הרגיל ("מלאי נוכחי במחסנים"), והמועמדים שלמעלה'
       + '\n   כוללים גם דוחות אחרים. לא בוחר לבד — תריץ שוב עם --pick <מספר>.');

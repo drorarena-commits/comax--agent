@@ -41,23 +41,35 @@
 import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { config } from '../orders-app/config.js';
+import { parseFlags, flagProblems } from '../src/cli-args.js';
 
 const ROOT = resolve(import.meta.dirname, '..');
-const args = process.argv.slice(2);
-const FIX = args.includes('--fix');
-const LIMIT = (() => {
-  const i = args.indexOf('--limit');
-  return i >= 0 ? Number(args[i + 1]) : Infinity;
-})();
-const FROM = (() => {
-  const i = args.indexOf('--from');
-  return i >= 0 ? args[i + 1] : null;
-})();
+
+// ⛔ `--limit` היה `Number(args[i + 1])` בלי בדיקה, ו-`--limit abc` או `--limit`
+// בסוף השורה נתנו `NaN`. `slice(0, NaN)` מחזיר **מערך ריק**, ולכן הכלי סיים
+// בהצלחה, דיווח "0 תוקנו" ויצא 0 — ומכאן המסקנה שאין מה לתקן באתר. הצלחה שאינה
+// מבדילה מעצמה גרועה מקריסה, ולכן `numbers` נאכף בפרסר.
+const flags = parseFlags(process.argv.slice(2), {
+  skipFirst: false,
+  booleans: ['fix'],
+  valued: ['from', 'skip'],
+  numbers: ['limit'],
+});
+const problems = flagProblems(flags);
+if (flags._.length) problems.push(`ארגומנט חופשי: "${flags._.join('", "')}".`);
+if (problems.length) {
+  console.error('\n' + problems.join('\n')
+    + '\n\nשימוש: node tools/site-variation-images.js [--fix] [--limit <מספר>] [--from <מק"ט>] [--skip <דוח קודם.json>]\n');
+  process.exit(1);
+}
+
+const FIX = flags.input.fix === true;
+const LIMIT = flags.input.limit ?? Infinity;
+const FROM = flags.input.from ?? null;
 /** מה שכבר תוקן בריצה קודמת — כדי ש-`--from` חוזר לא יכתוב פעמיים. */
 const SKIP = (() => {
-  const i = args.indexOf('--skip');
-  if (i < 0) return new Set();
-  const prev = JSON.parse(readFileSync(args[i + 1], 'utf8'));
+  if (!flags.input.skip) return new Set();
+  const prev = JSON.parse(readFileSync(flags.input.skip, 'utf8'));
   return new Set((prev.fixed || []).map(x => x.variation));
 })();
 

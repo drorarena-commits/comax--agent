@@ -26,7 +26,9 @@ npm run run -- <משימה> --json '{...}' --confirm  # הרצה אמיתית
 #   שדה שה-meta שלו מוצהר boolean מקבל גם --flag false, ומומר לבוליאני אמיתי.
 #   ודגל שמצפה לערך וקיבל את הדגל הבא ("--customer --confirm") נוקב בשני הטוקנים,
 #   במקום לקרוא את השדה כ-true ולהיכשל אחרי לוגין על "חסר customer".
-npm run tasks-test                 # החוזה של meta.input — להריץ אחרי כל שינוי במשימה
+npm run tasks-test                 # החוזה של meta.input + השער שמונע חזרה של דפוסי פענוח
+#   כלי חדש ב-tools/ מפרסר דרך src/cli-args.js. indexOf('--x')+1 ו-Number(args[...])
+#   נכשלים בבדיקה, אלא אם נוספה החרגה מוצהרת עם סיבה ב-tools/tasks-selftest.js.
 npm run run -- stock-matrix        # מטריצת מחסנים -> data/exports/
 npm run run -- items-export        # קטלוג הפריטים -> data/exports/ (רזה: רק עמודות עם תוכן)
 npm run run -- customer-history --json '{"customer":"112447","item":"שנורקל"}'
