@@ -133,8 +133,12 @@ export function renderQuestions(questions, codes) {
     const groupKey = q.style || q.skus[0];
     if (groupKey !== lastSku) {
       lines.push('');
-      lines.push('  דגם ' + q.style + ' — ' + (q.desc || '(אין תיאור)'));
-      lines.push('    ' + (q.skus.length === 1 ? 'אב ' : q.skus.length + ' אבות: ') + q.skus.join(' · '));
+      lines.push('  דגם ' + q.style + ' — ' + (q.desc || 'תיאור חסר'));
+      // כל אב בשורה משלו, עם מק"ט חלופי — כלל של דרור לכל דיווח על פריטים.
+      // החלופי של אב הוא המק"ט בלי AR, בדיוק כמו `פריט מקביל` בכרטיס.
+      for (const sku of q.skus) {
+        lines.push('    אב ' + sku + ' · חלופי ' + (sku.replace(/^AR/i, '') || 'חסר') + ' · ' + (q.desc || 'חסר'));
+      }
       lastSku = groupKey;
     }
 

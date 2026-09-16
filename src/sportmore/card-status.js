@@ -36,9 +36,17 @@ export function cardDate(file) {
   return m ? m[1] : null;
 }
 
+/**
+ * הקובץ נשמר **בגיט** (החלטת דרור, 16/09/2026): הוא אינו קובץ עבודה אלא רישום
+ * של אירוע עסקי, הוא קטן, וכל מודל העדכניות תלוי בו. בלי גיט מחשב אחר היה
+ * אומר "אין קובץ הקמה — שקט" ונותן את התשובה ההפוכה.
+ *
+ * המבנה הוא `{ latest: {...} }` ולא הרשומה עצמה בשורש — כדי שאם תידרש היסטוריה
+ * תתווסף `history: [...]` לצידה, בלי לשבור אף קורא קיים.
+ */
 export function readLastSetup() {
   try {
-    return JSON.parse(readFileSync(LAST_SETUP_PATH, 'utf8'));
+    return JSON.parse(readFileSync(LAST_SETUP_PATH, 'utf8'))?.latest ?? null;
   } catch {
     return null;
   }
@@ -57,10 +65,12 @@ export function recordSetup({ file, season, cardFile, parents = [], barcodes = [
     file: basename(String(file)),
     season: season ?? null,
     cardAtTheTime: basename(String(cardFile)),
-    parents: [...parents],
+    // כל אב נשמר עם מק"ט חלופי ותיאור, כי כשהוא יופיע באזהרת "טרם הקימו" הוא
+    // **לא** יהיה בכרטיס — ואין שום מקום אחר לקרוא ממנו את הפרטים האלה.
+    parents: parents.map((p) => (typeof p === 'string' ? { sku: p } : { sku: p.sku, altSku: p.altSku, desc: p.desc })),
     barcodes: [...barcodes],
   };
-  writeFileSync(LAST_SETUP_PATH, JSON.stringify(record, null, 2) + '\n', 'utf8');
+  writeFileSync(LAST_SETUP_PATH, JSON.stringify({ latest: record }, null, 2) + '\n', 'utf8');
   return record;
 }
 
@@ -75,7 +85,7 @@ export function recordSetup({ file, season, cardFile, parents = [], barcodes = [
  * חדשים הוא המצב הנורמלי כשלא העברנו מנה, ואזהרה שנדלקת על המצב הנורמלי מלמדת
  * להתעלם ממנה.
  *
- * @returns {{current:boolean, why:string, lastSetup:object|null, pendingParents:string[]}}
+ * @returns {{current:boolean, why:string, lastSetup:object|null, pendingParents:Array<{sku,altSku,desc}>}}
  */
 export function cardStatus(card, lastSetup = readLastSetup()) {
   const date = cardDate(card.file);
@@ -100,7 +110,9 @@ export function cardStatus(card, lastSetup = readLastSetup()) {
 
   const current = date >= lastSetup.date;
   const pendingParents = current
-    ? (lastSetup.parents || []).filter((sku) => !card.parents.has(sku))
+    ? (lastSetup.parents || [])
+      .map((p) => (typeof p === 'string' ? { sku: p } : p))
+      .filter((p) => !card.parents.has(p.sku))
     : [];
 
   return {

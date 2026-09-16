@@ -23,6 +23,9 @@ import { buildSetupFile } from '../src/sportmore/build-setup.js';
 import { buildIntakeFile, WAREHOUSES } from '../src/sportmore/build-intake.js';
 import { buildReport } from '../src/sportmore/report.js';
 import { cardStatus, recordSetup } from '../src/sportmore/card-status.js';
+import {
+  parentLine, childLine, parentFromInvoice, parentFromOrphan, childFromInvoice, catalogWarning,
+} from '../src/sportmore/item-display.js';
 import { ROUNDING } from '../src/sportmore/pricing.js';
 
 const OUT_DIR = resolve(ROOT, 'sportmore/out');
@@ -54,9 +57,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 const base = (f) => basename(String(f));
 
 /**
- * מצב הכרטיס, כשורות מוכנות להדפסה.
- *
- * שלושה דברים, וכל אחד מהם נאמר רק כשהוא נכון:
+ * מצב הכרטיס, כשורות מוכנות להדפסה. מודפס בראש ההרצה.
  *
  *   **עדכניות** — לפי אירוע ולא לפי זמן. כרטיס שתאריכו אחרי קובץ ההקמה האחרון
  *   עדכני, נקודה; אין כאן שאלה לדרור ואין "בן 40 יום, אולי תבדוק".
@@ -65,8 +66,7 @@ const base = (f) => basename(String(f));
  *   עדיין לא בו. זו האזהרה היחידה שכרטיס בלי פריטים חדשים מצדיק, והיא אומרת
  *   שהם טרם ביצעו — לא שמשהו שבור.
  *
- *   **אב יתום** — בנים בכרטיס בלי שורת אב. עובדות בלבד: כמה בנים, ומה חסר.
- *   ההרצה ממשיכה.
+ * כל פריט בשורה משלו: מק"ט · חלופי · תיאור — שדה חסר נכתב "חסר".
  */
 function statusLines(card) {
   const out = [];
@@ -81,16 +81,26 @@ function statusLines(card) {
   if (st.pendingParents.length) {
     out.push('            ⚠  ' + st.pendingParents.length + ' אבות מקובץ ההקמה של '
       + st.lastSetup.date + ' עדיין לא בכרטיס — כנראה טרם הקימו. לתזכר אותם:');
-    out.push('               ' + st.pendingParents.slice(0, 8).join(' · ')
-      + (st.pendingParents.length > 8 ? ' ...' : ''));
+    for (const p of st.pendingParents) out.push('               ' + parentLine(p));
   }
 
-  // שאלה פתוחה, לא תקלה: שתי מסקנות אפשריות מאותו נתון, ולכן מוצג הנתון.
+  return out;
+}
+
+/**
+ * השאלות הפתוחות שהכרטיס עצמו מעלה — מודפסות **בסוף** ההרצה, ליד שאלות הסיווג.
+ *
+ * אב יתום: בנים בכרטיס בלי שורת אב. **נתון, לא מסקנה** — כמה בנים ומה חסר.
+ * הוא נגזר מהבנים אבל אינו נספר כקיים, וההרצה ממשיכה. הניסוח בעובדות ולא
+ * במסקנה, כי שתיהן אפשריות: שהייצוא פספס שורה, או שאצלם מחקו אב פגום ולא
+ * הקימו אותו מחדש (כך קרה ל-`*AR010810509`).
+ */
+function openQuestionLines(card) {
+  const out = [];
   for (const [sku, kids] of card.orphanParents ?? []) {
-    out.push('            ❓ ' + sku + ' — ' + kids.length
-      + ' בנים בכרטיס, אין שורת אב. ייתכן שהאב נמחק אצלם ולא הוקם מחדש. לברר לפני הקמה');
+    out.push('   ❓ ' + parentLine(parentFromOrphan(sku, kids)));
+    out.push('      ' + kids.length + ' בנים בכרטיס, אין שורת אב. ייתכן שהאב נמחק אצלם ולא הוקם מחדש. לברר לפני הקמה');
   }
-
   return out;
 }
 
@@ -141,6 +151,13 @@ if (cmd === 'card') {
   console.log('  גיל: ' + card.ageDays + ' ימים');
   console.log('  שורות: ' + card.rows + '   ·   אבות: ' + card.parents.size + '   ·   ברקודים: ' + card.byBarcode.size);
   for (const line of statusLines(card)) console.log(line);
+  const questions = openQuestionLines(card);
+  if (questions.length) {
+    console.log('\nשאלות פתוחות:');
+    for (const line of questions) console.log(line);
+  }
+  const warn = catalogWarning();
+  if (warn) console.log('\n' + warn);
   console.log('');
   process.exit(0);
 }
@@ -225,6 +242,14 @@ if (cmd === 'plan') {
   if (plan.needsDecision.length) {
     for (const line of renderQuestions(buildQuestions(plan), codes)) console.log(line);
   }
+  // השאלות שהכרטיס עצמו מעלה — בסוף, יחד עם שאלות הסיווג. לא עוצרות דבר.
+  const cardQuestions = openQuestionLines(card);
+  if (cardQuestions.length) {
+    console.log('\nשאלות פתוחות מהכרטיס — לא עוצרות את ההרצה:');
+    for (const line of cardQuestions) console.log(line);
+  }
+  const catalogWarn = catalogWarning();
+  if (catalogWarn) console.log('\n' + catalogWarn);
 
   if (!args.confirm) {
     console.log('\nלא נכתב שום קובץ. להוסיף --confirm כדי לכתוב את הדוח ואת קובץ ההקמה.\n');
@@ -254,7 +279,7 @@ if (cmd === 'plan') {
       file: setup.file,
       season: args.season,
       cardFile: card.file,
-      parents: plan.parents.map((p) => p.sku),
+      parents: plan.parents.map((p) => parentFromInvoice(p.row, p.sku)),
       barcodes: plan.children.map((c) => c.barcode),
     });
     console.log('  נרשם ב-last-setup.json — הכרטיס הבא ייחשב עדכני רק אם תאריכו אחרי ' + rec.date + '.');
@@ -387,10 +412,13 @@ if (cmd === 'intake') {
   // מי שמקים מאשר, ולכן המנה רצה עד הסוף בפעם אחת והשורות מסומנות באדום.
   if (pending.length) {
     console.log('\n🔴 ' + pending.length + ' שורות ייכתבו מסומנות באדום — הן בקובץ ההקמה וטרם בכרטיס:');
-    for (const r of pending.slice(0, 12)) {
-      console.log('      שורה ' + r.row.row + '  ' + r.barcode + '  ' + r.row.articleNumber + '  —  ' + r.why);
+    // כל שורה עם מק"ט, חלופי, תיאור ותיאור צבע — לא ברקוד. ⚠️ ההעשרה היא של
+    // **הפלט הזה**, ולא של הקובץ: עמודות קובץ חשבונית הרכש הן תבנית היבוא של
+    // פריוריטי, ועמודה נוספת שם הייתה שוברת להם את הקליטה.
+    for (const r of pending) {
+      console.log('      שורה ' + r.row.row + '  ' + childLine(childFromInvoice(r.row, { sku: childSku(r.row), barcode: r.barcode }))
+        + '  —  ' + r.why);
     }
-    if (pending.length > 12) console.log('      ...ועוד ' + (pending.length - 12));
     console.log('\n   לומר להם במפורש: את השורות האדומות צריך להקים ולאשר לפני הרצת הרכש.');
   }
 
@@ -413,8 +441,13 @@ if (cmd === 'intake') {
   });
   console.log('\n✓ קובץ חשבונית רכש: ' + base(res.file) + '   (' + res.rows + ' שורות, מחסן ' + res.warehouse + ')');
   if (res.flagged.length) {
-    console.log('  🔴 ' + res.flagged.length + ' שורות מסומנות באדום — להקים ולאשר לפני הרצת הרכש.');
+    console.log('  🔴 ' + res.flagged.length + ' שורות מסומנות באדום — להקים ולאשר לפני הרצת הרכש:');
+    for (const p of pending) {
+      console.log('     ' + childLine(childFromInvoice(p.row, { sku: childSku(p.row), barcode: p.barcode })));
+    }
   }
+  const intakeWarn = catalogWarning();
+  if (intakeWarn) console.log('\n' + intakeWarn);
   console.log('');
   process.exit(0);
 }
