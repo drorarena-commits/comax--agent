@@ -41,7 +41,11 @@ function parseLine(l) {
 
 export function loadCsv(file) {
   const text = readFileSync(file, 'utf8').replace(/^﻿/, '');
-  const rows = text.split('\r\n').filter(Boolean).map(parseLine);
+  // `\r?\n` ולא `\r\n`: הייצוא של קומקס מגיע מווינדוס עם CRLF, אבל אותו קובץ
+  // אחרי checkout במכונת לינוקס מגיע עם LF בלבד — ואז הפיצול החזיר **שורה
+  // אחת** שמכילה את כל הקטלוג, `head` בן 479,881 תאים ו-0 שורות נתונים.
+  // הכשל שקט לחלוטין: אין שגיאה, פשוט שום ברקוד לא נמצא.
+  const rows = text.split(/\r?\n/).filter(Boolean).map(parseLine);
   return { head: rows[0], rows: rows.slice(1) };
 }
 
