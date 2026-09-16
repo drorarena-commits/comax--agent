@@ -386,6 +386,8 @@ AGENTS.md                        מינימום הבטיחות לסוכן שאי
 src/documents/AGENT.md           סוכן-העל בקוד — registry.js
 src/documents/agents/*/AGENT.md  המלכודות של כל מסמך, ומצב המיפוי שלו
 knowledge/MAP.md                 מפת קומקס — ממצאים מהרצות חיות
+knowledge/OPEN.md                ⬅ מה פתוח בפרויקט, עם הנימוק לכל פריט — לקרוא בתחילת סשן חדש
+                                 כולל "הוחלט — לא לפתוח מחדש": דברים שנראים כמו באג ואינם
 knowledge/contacts.md            מי-זה-מי — צוות טכני + ספקים ושותפים עסקיים
 knowledge/marketing-brand.md     ספר המותג לשיווק — קהלים, טון, האשטגים, ואיסורי הבטחה
 content/marketing/               תוצרי סוכן השיווק — פוסטים ותוכניות תוכן לפי תאריך
