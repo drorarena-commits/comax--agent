@@ -40,6 +40,19 @@ const INTAKE_EXPECTED = resolve(ROOT, 'sportmore/reference/expected/intake-fw26.
 // Lives under reference/, not in/, because in/ is gitignored and the suite has
 // to run on both machines.
 const ARENA_FIXTURE = resolve(ROOT, 'sportmore/reference/expected/arena-invoice-2026-05-28.xlsx');
+
+/**
+ * ⚠️ הרגרסיה נעולה על כרטיס מוצהר, ולא על "החדש ביותר".
+ *
+ * נמדד 16/09/2026: כרטיס טרי נחת בתיקייה באמצע עבודה, `loadItemCard()` בחר בו
+ * בשקט, ושלוש בדיקות בקבוצה 8 נפלו — לא בגלל הקוד אלא בגלל שהברקוד
+ * המקודד-עצמית `2060000` ("דוגמאות ארנה") נמחק אצלם. בדיקה שתוצאתה משתנה כי
+ * קובץ נחת בתיקייה אינה בדיקת רגרסיה.
+ *
+ * הכיסוי לפורמט החדש לא אבד — הוא עבר לקבוצה 11, שקוראת **כל** כרטיס שנמצא
+ * בתיקייה ומצליבה ביניהם. כך הרגרסיה יציבה והפורמט עדיין נבדק.
+ */
+const PINNED_CARD = resolve(ROOT, 'sportmore/reference/item-card-2026-08-25.xlsx');
 const TMP = resolve(ROOT, 'sportmore/out/.selftest');
 
 const P = SETUP_PARENT_COLUMNS;
@@ -162,7 +175,7 @@ const index = (ws, keyCol, cols) => {
 
 console.log('\nבדיקת רגרסיה — ספורט אנד מור\n');
 
-const card = await loadItemCard();
+const card = await loadItemCard(PINNED_CARD);
 const codes = loadCodes();
 const invoice = await fw26Invoice(card);
 
@@ -550,6 +563,85 @@ console.log('10. סבב השאלות — מיספור, איחוד, ומועמד�
   const merged = buildQuestions({ needsDecision: [twin('AR990001900'), twin('AR990001550')] });
   check('שני צבעים של אותו דגם נשאלים פעם אחת', merged.length === 1, String(merged.length));
   check('ושני האבות מוצגים בשאלה', merged[0]?.skus.length === 2, (merged[0]?.skus || []).join(' '));
+}
+/* כל כרטיס שנמצא בתיקייה — נקרא, ממופה, ומוצלב מול האחרים.
+ *
+ * זו הקבוצה שמכסה את הפורמט, אחרי שהרגרסיה ננעלה על כרטיס מוצהר. היא נולדה
+ * מכרטיס 16/09, שהגיע ממייצא אחר ושבר את הקריאה בשתי דרכים נפרדות:
+ *
+ *   ה-XML נושא קידומת namespace — `<x:workbook><x:sheets>` במקום `<workbook>` —
+ *   ו-ExcelJS החזיר "Cannot read properties of undefined (reading 'sheets')".
+ *   הקובץ תקין לגמרי; הקורא הוא שלא ידע לפתוח אותו.
+ *
+ *   ו**העמודות זזו**: מתוך 22 השדות עשרים במיקום אחר. זה הכשל המסוכן מהשניים,
+ *   כי הוא לא נראה ככשל — הקריאה מצליחה ומחזירה 3,369 שורות, כשהתיאור מכיל
+ *   מחיר והברקוד מכיל קוד דגם.
+ *
+ * ההצלבה היא ההוכחה: ברקוד הוא המזהה ששני הצדדים מסכימים עליו, ולכן פריט
+ * שמופיע בשני כרטיסים חייב להחזיר את אותו אב ואת אותו סיווג — גם אם הכרטיסים
+ * נכתבו במייצאים שונים ובסדר עמודות שונה. מיפוי שגוי באחד מהם היה מייצר אלפי
+ * הפרשים מיד.
+ */
+console.log('');
+console.log('11. כל הכרטיסים בתיקייה — קריאה, מיפוי, והצלבה');
+{
+  const { readdirSync } = await import('node:fs');
+  const { ITEM_CARD_HEADERS, REFERENCE_DIR } = await import('../src/sportmore/item-card.js');
+
+  const files = readdirSync(REFERENCE_DIR)
+    .filter((f) => /^item-card-.*\.xlsx$/i.test(f))
+    .sort();
+  check('יש לפחות כרטיס אחד', files.length >= 1, files.join(' · '));
+
+  const loaded = [];
+  const total = Object.keys(ITEM_CARD_HEADERS).length;
+  for (const f of files) {
+    let c = null;
+    try {
+      c = await loadItemCard(resolve(REFERENCE_DIR, f), { quiet: true });
+    } catch (e) {
+      check(f + ' נקרא', false, e.message.split('\n')[0]);
+      continue;
+    }
+    loaded.push({ f, c });
+    check(f + ' נקרא', true, c.rows + ' שורות · ' + c.parents.size + ' אבות');
+    check('  כל ' + total + ' העמודות מופו לפי כותרת', Object.keys(c.columns).length === total,
+      Object.keys(c.columns).length + '/' + total);
+    // מיפוי שגוי מייצר ערכים שנראים סבירים בשדה הלא נכון, ולכן נבדקת גם
+    // אינווריאנטה מבנית שהכרטיס עצמו מצהיר עליה: אצל אב, עמודת הברקוד חוזרת על
+    // המק"ט. אם `barcode` או `sku` הצביעו לעמודה שגויה, השוויון הזה נשבר מיד.
+    const barcodeEqSku = [...c.parents.values()].filter((p) => p.barcode === p.sku).length;
+    check('  אצל כל אב הברקוד חוזר על המק"ט', barcodeEqSku === c.parents.size,
+      barcodeEqSku + '/' + c.parents.size);
+    // בן שאביו נמחק אינו באג בקוד ואינו עילה להכשיל — הוא מצב של הקובץ שלהם,
+    // ושווה שייאמר בקול.
+    const orphans = [...c.byBarcode.values()].filter((x) => !x.isParent && x.parent && !c.parents.has(x.parent));
+    if (orphans.length) {
+      console.log('      ⚠  ' + orphans.length + ' בנים בלי אב בכרטיס: '
+        + [...new Set(orphans.map((o) => o.parent))].join(' · '));
+    }
+  }
+
+  // ההצלבה עצמה — רק כשיש שני כרטיסים ומעלה.
+  for (let i = 1; i < loaded.length; i++) {
+    const a = loaded[i - 1], b = loaded[i];
+    const shared = [...a.c.byBarcode.keys()].filter((k) => b.c.byBarcode.has(k));
+    check(a.f + ' ↔ ' + b.f + ': ברקודים משותפים', shared.length > 0, String(shared.length));
+    const FIELDS = ['sku', 'parent', 'isParent', 'family', 'sizeScale', 'division', 'gender', 'size'];
+    const mismatch = [];
+    for (const k of shared) {
+      const x = a.c.byBarcode.get(k), y = b.c.byBarcode.get(k);
+      for (const f of FIELDS) {
+        if (String(x[f]) !== String(y[f])) mismatch.push(k + ' ' + f + ': "' + x[f] + '" מול "' + y[f] + '"');
+      }
+    }
+    check('  אותו ברקוד מחזיר אותו מידע בשני הכרטיסים', mismatch.length === 0,
+      mismatch.length ? mismatch.length + ' הפרשים' : shared.length + ' ברקודים × ' + FIELDS.length + ' שדות');
+    mismatch.slice(0, 6).forEach((d) => console.log('        ' + d));
+  }
+  if (loaded.length < 2) {
+    console.log('      (כרטיס אחד בלבד — אין מה להצליב. ההצלבה תרוץ כשיגיע הבא.)');
+  }
 }
 rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');

@@ -18,47 +18,57 @@
  * one identifier both sides of the exchange agree on.
  */
 import ExcelJS from 'exceljs';
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import JSZip from 'jszip';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { ROOT } from '../config.js';
 
 export const REFERENCE_DIR = resolve(ROOT, 'sportmore/reference');
 
-/** Column letters in the card, by the header text they carry. */
-const COL = {
-  sku: 'A',
-  desc: 'B',
-  barcode: 'C',
-  status: 'E',
-  family: 'R',
-  familyName: 'S',
-  isParent: 'V',
-  parent: 'W',
-  parentDesc: 'X',
-  supplier: 'Y',
-  sizeScale: 'AA',
-  sizeScaleName: 'AC',
-  model: 'BG',
-  color: 'BH',
-  size: 'BI',
-  supplierSku: 'BJ',
-  division: 'BS',
-  divisionName: 'BT',
-  gender: 'BU',
-  genderName: 'BV',
-  season: 'BW',
-  sport: 'CC',
-  department: 'CG',
+/**
+ * השדות שהקורא צריך, לפי **טקסט הכותרת** ולא לפי מיקום.
+ *
+ * ⚠️ המיקומים אינם יציבים. עד 16/09/2026 המיפוי היה אותיות קבועות — `תאור` ב-B,
+ * `ברקוד` ב-C — וזה עבד כל עוד הכרטיס הגיע מאותו מייצא. הכרטיס של 16/09 הגיע
+ * ממייצא אחר, ומתוך 22 השדות **עשרים זזו**: `תאור` ל-D, `ברקוד` ל-E,
+ * `פריט מרכז/דגם` מ-W ל-C, `סרגל מידות` מ-AA ל-O. רק `מק"ט` ו-`פריט מרכז?`
+ * נשארו במקומם.
+ *
+ * וזה לא היה נראה כמו תקלה: הקריאה הייתה מצליחה ומחזירה 3,370 שורות, כשהתיאור
+ * מכיל מחיר והברקוד מכיל קוד דגם. כרטיס הפריט הוא המקור היחיד ל"מה כבר קיים",
+ * ולכן קריאה בעמודות הלא נכונות הייתה מקימה מחדש פריטים שכבר קיימים.
+ *
+ * זו בדיוק המסקנה ש-`arena-invoice.js` הגיע אליה לפניו, מאותה סיבה.
+ */
+const HEADERS = {
+  sku: 'מק"ט',
+  desc: 'תאור',
+  barcode: 'ברקוד',
+  status: 'סטטוס',
+  family: 'משפחת מוצר/קוד מיון',
+  familyName: 'תאור משפחה',
+  isParent: 'פריט מרכז?',
+  parent: 'פריט מרכז/דגם',
+  supplier: 'ספק מועדף',
+  sizeScale: 'סרגל מידות',
+  sizeScaleName: 'שם סרגל מידות',
+  model: 'דגם1',
+  color: 'צבע2',
+  size: 'מידה3',
+  supplierSku: 'פריט מקביל',
+  division: 'דיויזן12',
+  divisionName: 'תאור פרמטר 12 למוצר',
+  gender: 'מגדר13',
+  genderName: 'תאור פרמטר 13 למוצר',
+  season: 'עונה/שנה14',
+  sport: 'ספורט ענף17',
+  department: 'במחסן מחלקה19',
 };
 
-/** `AA` → 27. ExcelJS gives us row.getCell(number), not letters. */
-function colIndex(letters) {
-  let n = 0;
-  for (const ch of letters) n = n * 26 + (ch.charCodeAt(0) - 64);
-  return n;
-}
+/** בלי אלה אי אפשר לענות על "מה כבר קיים", ולכן היעדרם הוא סירוב ולא אזהרה. */
+const REQUIRED = ['sku', 'barcode', 'isParent', 'parent'];
 
-const IDX = Object.fromEntries(Object.entries(COL).map(([k, v]) => [k, colIndex(v)]));
+const SPREADSHEETML_MAIN = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
 
 /** Cell text, flattened. ExcelJS hands back objects for rich text and formulas. */
 function text(cell) {
@@ -74,8 +84,88 @@ function text(cell) {
   return String(v).trim();
 }
 
-/** The newest `item-card-*.xlsx` in sportmore/reference/, or an explicit path. */
-export function resolveItemCard(explicit) {
+/**
+ * פותח את חוברת העבודה, גם כשה-XML שלה נושא קידומת namespace.
+ *
+ * ExcelJS מצפה ל-`<workbook>` ו-`<sheets>` בלי קידומת. המייצא של הכרטיס מ-16/09
+ * (חתימה של ClosedXML/EPPlus ודומיהם) כותב `<x:workbook><x:sheets>` עם
+ * `xmlns:x` — קובץ חוקי לגמרי, ש-ExcelJS מחזיר עליו
+ * `Cannot read properties of undefined (reading 'sheets')`.
+ *
+ * הפתרון הוא **להמיר את ה-XML לפני הקריאה**, ולא לעקוף את ExcelJS: הקידומת
+ * שמוסרת היא רק זו שקשורה ל-namespace של spreadsheetml, ו-`r:` של הקשרים נשאר
+ * במקומו — בלעדיו אבד הקישור בין הגיליון לחוברת.
+ *
+ * ⛔ אין כאן ניסיון-וטעייה: המקרה **מזוהה** לפי ה-namespace ורק אז מומר, כדי
+ * שכישלון אמיתי ייראה ככישלון ולא ייבלע בניסיון שני.
+ *
+ * `sharedStrings.xml` ו-`docProps/` חסרים באותו קובץ. זו אינה אנומליה — מייצא
+ * שאינו Excel כותב מחרוזות inline (`t="inlineStr"`) ולא טבלת מחרוזות משותפת —
+ * ו-ExcelJS מטפל בשניהם לבד ברגע שה-namespace נפתר.
+ */
+async function openSheet(file) {
+  const wb = new ExcelJS.Workbook();
+  try {
+    const zip = await JSZip.loadAsync(readFileSync(file));
+    let rewritten = 0;
+    for (const path of Object.keys(zip.files)) {
+      if (!path.endsWith('.xml')) continue;
+      const xml = await zip.file(path).async('string');
+      const m = new RegExp(`xmlns:([A-Za-z0-9_]+)="${SPREADSHEETML_MAIN}"`).exec(xml);
+      if (!m) continue;
+      const p = m[1];
+      zip.file(path, xml
+        .split(`<${p}:`).join('<')
+        .split(`</${p}:`).join('</')
+        .split(`xmlns:${p}="${SPREADSHEETML_MAIN}"`).join(`xmlns="${SPREADSHEETML_MAIN}"`));
+      rewritten++;
+    }
+    if (rewritten) await wb.xlsx.load(await zip.generateAsync({ type: 'nodebuffer' }));
+    else await wb.xlsx.readFile(file);
+  } catch (e) {
+    // ⛔ ההודעה נוקבת בקובץ. "Cannot read properties of undefined" אינו אומר
+    // איזה קובץ נכשל, וכשהקורא בוחר לבד את החדש ביותר זו בדיוק השאלה.
+    throw new Error(`נכשלה קריאת "${basename(file)}": ${e.message.split('\n')[0]}`);
+  }
+  const ws = wb.worksheets[0];
+  if (!ws) throw new Error(`"${basename(file)}" נפתח אבל אין בו אף גיליון.`);
+  return ws;
+}
+
+/** שורת הכותרת ⇐ מספר עמודה לכל שדה. כותרת חסרה היא סירוב, לא ניחוש. */
+function mapColumns(ws, file) {
+  const byHeader = new Map();
+  ws.getRow(1).eachCell({ includeEmpty: false }, (cell, n) => {
+    const t = text(cell);
+    if (t && !byHeader.has(t)) byHeader.set(t, n);
+  });
+
+  const idx = {};
+  const missing = [];
+  for (const [field, header] of Object.entries(HEADERS)) {
+    const n = byHeader.get(header);
+    if (n) idx[field] = n;
+    else if (REQUIRED.includes(field)) missing.push(`${field} ("${header}")`);
+  }
+  if (missing.length) {
+    throw new Error(
+      `ב-"${basename(file)}" חסרות כותרות חובה: ${missing.join(' · ')}.\n` +
+        'הכותרות נקראות לפי טקסט ולא לפי מיקום, כי המיקומים משתנים בין מייצאים.\n' +
+        'אם ספורט אנד מור שינו את שם הכותרת — לעדכן את HEADERS ב-src/sportmore/item-card.js.'
+    );
+  }
+  return idx;
+}
+
+/**
+ * The newest `item-card-*.xlsx` in sportmore/reference/, or an explicit path.
+ *
+ * ⚠️ הבחירה "החדש ביותר" נעשית בשקט, ולכן **כל קובץ שנוחת בתיקייה הזאת משנה
+ * התנהגות בלי שאף אחד יידע**. נמדד 16/09/2026: הורדה של כרטיס טרי בסשן מקביל
+ * הפילה את `npm run sm-test` מיד, והשגיאה שיצאה לא הזכירה שום שם קובץ. לכן
+ * הבחירה נכתבת ל-stderr — שורה אחת, עם מספר המועמדים.
+ */
+export function resolveItemCard(explicit, { quiet = false } = {}) {
   if (explicit) {
     const p = resolve(ROOT, explicit);
     if (!existsSync(p)) throw new Error(`כרטיס הפריט לא נמצא: ${explicit}`);
@@ -93,6 +183,11 @@ export function resolveItemCard(explicit) {
         'והוא המקור היחיד ל"מה כבר קיים". בלעדיו אין בדיקת קיום ואין הקמה.'
     );
   }
+  // מתריע רק כשהייתה כאן **בחירה**. עם כרטיס אחד אין מה לגלות, ועם שניים
+  // ומעלה זו בדיוק הנקודה שבה קובץ שנחת בתיקייה משנה התנהגות בשקט.
+  if (!quiet && files.length > 1) {
+    console.error(`⚠  ${files.length} כרטיסי פריט בתיקייה — נבחר ${basename(files[0])} (החדש ביותר).`);
+  }
   return files[0];
 }
 
@@ -105,11 +200,12 @@ export function resolveItemCard(explicit) {
  * both the key and the `parent` back-reference, or that parent's six children
  * would look orphaned.
  */
-export async function loadItemCard(explicit) {
-  const file = resolveItemCard(explicit);
-  const wb = new ExcelJS.Workbook();
-  await wb.xlsx.readFile(file);
-  const ws = wb.worksheets[0];
+export async function loadItemCard(explicit, { quiet = false } = {}) {
+  const file = resolveItemCard(explicit, { quiet });
+  const ws = await openSheet(file);
+  const IDX = mapColumns(ws, file);
+  // שדה לא-חובה שהמייצא הבא ישמיט פשוט יחזור ריק, במקום להפיל את הקריאה.
+  const get = (row, n) => (n ? text(row.getCell(n)) : '');
 
   const parents = new Map();
   const byBarcode = new Map();
@@ -118,28 +214,28 @@ export async function loadItemCard(explicit) {
 
   ws.eachRow((row, n) => {
     if (n === 1) return;
-    const sku = norm(text(row.getCell(IDX.sku)));
+    const sku = norm(get(row, IDX.sku));
     if (!sku) return;
     rows++;
     const rec = {
       sku,
-      desc: text(row.getCell(IDX.desc)),
-      barcode: norm(text(row.getCell(IDX.barcode))),
-      status: text(row.getCell(IDX.status)),
-      family: text(row.getCell(IDX.family)),
-      familyName: text(row.getCell(IDX.familyName)),
-      isParent: text(row.getCell(IDX.isParent)).toUpperCase() === 'Y',
-      parent: norm(text(row.getCell(IDX.parent))),
-      sizeScale: text(row.getCell(IDX.sizeScale)),
-      sizeScaleName: text(row.getCell(IDX.sizeScaleName)),
-      color: text(row.getCell(IDX.color)),
-      size: text(row.getCell(IDX.size)),
-      supplierSku: text(row.getCell(IDX.supplierSku)),
-      division: text(row.getCell(IDX.division)),
-      gender: text(row.getCell(IDX.gender)),
-      season: text(row.getCell(IDX.season)),
-      sport: text(row.getCell(IDX.sport)),
-      department: text(row.getCell(IDX.department)),
+      desc: get(row, IDX.desc),
+      barcode: norm(get(row, IDX.barcode)),
+      status: get(row, IDX.status),
+      family: get(row, IDX.family),
+      familyName: get(row, IDX.familyName),
+      isParent: get(row, IDX.isParent).toUpperCase() === 'Y',
+      parent: norm(get(row, IDX.parent)),
+      sizeScale: get(row, IDX.sizeScale),
+      sizeScaleName: get(row, IDX.sizeScaleName),
+      color: get(row, IDX.color),
+      size: get(row, IDX.size),
+      supplierSku: get(row, IDX.supplierSku),
+      division: get(row, IDX.division),
+      gender: get(row, IDX.gender),
+      season: get(row, IDX.season),
+      sport: get(row, IDX.sport),
+      department: get(row, IDX.department),
       row: n,
     };
     if (rec.isParent) {
@@ -152,7 +248,7 @@ export async function loadItemCard(explicit) {
   });
 
   const age = cardAgeDays(file);
-  return { file, rows, parents, byBarcode, childrenOfParent, ageDays: age };
+  return { file, rows, parents, byBarcode, childrenOfParent, ageDays: age, columns: IDX };
 }
 
 /** Trim, upper-case, and drop the stray leading `*` seen on one parent. */
@@ -175,4 +271,4 @@ export function cardAgeDays(file) {
   return Math.max(0, Math.floor((Date.now() - when) / 86_400_000));
 }
 
-export { IDX as ITEM_CARD_COLUMNS };
+export { HEADERS as ITEM_CARD_HEADERS };
