@@ -98,16 +98,37 @@ const confirm = argv.includes('--confirm');
  * spelling has to either work or complain; quietly doing neither is what makes
  * the dispatcher look broken and a fresh task look easier.
  *
- * Values are read verbatim, with no numeric or boolean coercion beyond a bare
- * flag becoming `true` — Dror's rule that a source value is written as it is.
- * A leading `112074` must stay the string Comax matches on.
+ * Values are read verbatim: no numeric coercion and no guessing at a type —
+ * Dror's rule that a source value is written as it is. A leading `112074` must
+ * stay the string Comax matches on. The one exception is a field the task itself
+ * declares `boolean` in its meta, handled further down; that is the task's own
+ * type declaration, not an inference about the value.
  */
 const KNOWN_FLAGS = new Set(['--json', '--json-file', '--confirm']);
 const unknown = [];
+/**
+ * `--confirm` is presence, not a value — and that is exactly why a value after
+ * it has to be refused out loud.
+ *
+ * `--confirm false` **confirmed**: `confirm` is `argv.includes('--confirm')`, so
+ * the word after it changed nothing, and the `false` was dropped without a
+ * sound. Whoever types it means the opposite of what they get, and what they get
+ * is an irreversible document filed in Comax.
+ *
+ * Refused rather than interpreted. Reading `--confirm false` as "do not confirm"
+ * would be just as much a guess, and between two guesses the one that files a
+ * document nobody asked for is the one worth refusing.
+ */
+const confirmedWithValue = [];
 for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
   if (!a.startsWith('--')) continue;
-  if (KNOWN_FLAGS.has(a)) { if (a !== '--confirm') i++; continue; }
+  if (KNOWN_FLAGS.has(a)) {
+    if (a !== '--confirm') { i++; continue; }
+    const after = argv[i + 1];
+    if (after !== undefined && !after.startsWith('--')) confirmedWithValue.push(after);
+    continue;
+  }
   const key = a.slice(2);
   if (!/^[A-Za-z][A-Za-z0-9]*$/.test(key)) { unknown.push(a); continue; }
   const next = argv[i + 1];
@@ -122,8 +143,19 @@ for (let i = 1; i < argv.length; i++) {
     i++;
   }
 }
-if (unknown.length) {
-  console.error(`דגל לא מוכר: ${unknown.join(', ')}\nהרץ "npm run run -- --list" כדי לראות מה כל משימה מקבלת.`);
+if (confirmedWithValue.length || unknown.length) {
+  // שתי התקלות מודפסות יחד. לתקן אחת, לגלות את השנייה ולהריץ שוב הוא סיבוב
+  // מיותר — ובמסלול הזה כל סיבוב עולה לוגין ומושב.
+  if (confirmedWithValue.length) {
+    console.error(
+      `\n"--confirm" הוא דגל ואינו מקבל ערך — אחריו נמצא "${confirmedWithValue.join('", "')}".\n\n` +
+        'עצם נוכחות הדגל היא האישור, ולכן "--confirm false" מאשר בדיוק כמו "--confirm".\n' +
+        'כדי לא לאשר — להשמיט את --confirm לגמרי.\n',
+    );
+  }
+  if (unknown.length) {
+    console.error(`דגל לא מוכר: ${unknown.join(', ')}\nהרץ "npm run run -- --list" כדי לראות מה כל משימה מקבלת.`);
+  }
   process.exit(1);
 }
 
@@ -158,11 +190,38 @@ const dryRun = writes && !confirm;
  * The same pass normalises inputs the meta calls `array`, so `--programs a157`
  * reaches a task expecting a list as `['a157']` instead of a bare string that
  * fails much later, somewhere less obvious.
+ *
+ * And a field the meta calls `boolean` gets its word turned into a boolean.
+ * `--key value` can only deliver a string, and `"false"` is a non-empty string,
+ * so every `false` that arrived this way was **true**: `stock-matrix` documents
+ * "false runs the report as HTML" and tests `input.excel !== false`, which the
+ * string never is — so `--excel false` silently took the Excel path that
+ * `CLAUDE.md` forbids. `quote-add-line` documents "להעביר false כדי לבטל" and
+ * `wholesale.js` tests `=== true` / `!== false`; the string is neither, so the
+ * line kept the pricelist default and a groups-pricelist item stayed at half
+ * price after being told not to.
+ *
+ * This is not the "never normalise a source value" rule being bent. The type
+ * comes from the task's own meta — a declaration, not a reading of the value —
+ * and a word that is neither true nor false is refused rather than coerced. The
+ * `--json` path already carried real booleans and is untouched.
  */
+const BOOLEAN_WORDS = new Map([['true', true], ['false', false]]);
 for (const [key, spec] of Object.entries(mod.meta?.input ?? {})) {
   if (typeof spec !== 'string') continue;
   if (/^array\b/.test(spec) && Object.hasOwn(input, key) && !Array.isArray(input[key])) {
     input[key] = [input[key]];
+  }
+  if (/^boolean\b/.test(spec) && typeof input[key] === 'string') {
+    const word = BOOLEAN_WORDS.get(input[key].trim().toLowerCase());
+    if (word === undefined) {
+      console.error(
+        `\n"${key}" הוא שדה בוליאני וקיבל "${input[key]}" — צריך true או false.\n\n` +
+          `  ${taskName}: ${spec}\n`,
+      );
+      process.exit(1);
+    }
+    input[key] = word;
   }
   const missing = input[key] === undefined || input[key] === '';
   if (/חובה/.test(spec) && missing) {
