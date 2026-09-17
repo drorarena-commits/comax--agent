@@ -13,11 +13,37 @@
  * other price fields, and swapping them is an easy mistake to make from memory.
  */
 import ExcelJS from 'exceljs';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { ROOT } from '../config.js';
 import { parentSku, selfBarcode } from './arena-invoice.js';
 
 const TEMPLATE = resolve(ROOT, 'sportmore/reference/template-parent-child.xlsx');
+const THEME = resolve(ROOT, 'sportmore/reference/theme1.xml');
+
+/**
+ * ⛔ **התבנית חסרת `theme1.xml`, ו-exceljs מצהירה עליו בכל מקרה.**
+ *
+ * נמדד 17/09/2026, כשדרור פתח את הקובץ ואקסל שאל אם לשחזר אותו. הסיבה אינה
+ * בתוכן: הפלט מצהיר על `xl/theme/theme1.xml` **בשני מקומות** —
+ * `workbook.xml.rels` ו-`[Content_Types].xml` — ו**הקובץ עצמו אינו בתוך
+ * ה-ZIP**. הפניה תלויה באוויר היא בדיוק מה שמדליק את דיאלוג התיקון.
+ *
+ * למה דווקא כאן: התבנית נשמרה בלי `theme1.xml` ובלי להצהיר עליו, ולכן היא
+ * עצמה תקינה. exceljs כותבת את ההצהרה תמיד, אבל את החלק עצמו רק אם הוא נטען —
+ * ומתבנית בלי theme לא נטען דבר. ⚠️ **וזה נגע בכל קובץ הקמה שהופק אי פעם**,
+ * כולל מנת FW26; פשוט אף אחד לא אמר שאקסל שאל.
+ *
+ * ⚠️ ולא מוחקים את ההצהרה במקום להשלים את החלק: exceljs מוסיפה גם `theme="1"`
+ * בתוך `styles.xml` (בתבנית אין), ולכן מחיקה הייתה משאירה סגנונות שמפנים
+ * ל-theme שאינו קיים — החלפת תקלה גלויה בתקלה שקטה.
+ */
+function withTheme(wb) {
+  if (!wb._themes || !wb._themes.theme1) {
+    wb._themes = { ...(wb._themes ?? {}), theme1: readFileSync(THEME, 'utf8') };
+  }
+  return wb;
+}
 
 /** Parent sheet, by column letter. */
 const P = {
@@ -60,6 +86,7 @@ function clearBody(ws) {
 export async function buildSetupFile({ parents, children, seasonYear, codes, out }) {
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.readFile(TEMPLATE);
+  withTheme(wb);
   const [wsParents, wsChildren] = wb.worksheets;
   clearBody(wsParents);
   clearBody(wsChildren);

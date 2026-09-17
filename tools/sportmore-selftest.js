@@ -886,6 +886,53 @@ console.log('\n16. מספר חשבונית — DocumentNo, לא Bill. Doc.');
   }
 }
 
+console.log('\n17. הקובץ שנוצר תקין כחבילת OPC — בלי הפניות תלויות באוויר');
+{
+  const JSZip = (await import('jszip')).default;
+  const { readFileSync } = await import('node:fs');
+
+  /**
+   * ⛔ אקסל שאל את דרור אם לשחזר את קובץ ההקמה (17/09/2026). התוכן היה תקין
+   * לגמרי — הפלט הצהיר על `xl/theme/theme1.xml` ב-workbook.xml.rels
+   * וב-[Content_Types].xml, והחלק עצמו לא היה בתוך ה-ZIP. חלק מוצהר שחסר הוא
+   * מה שמדליק את דיאלוג התיקון, וזה נגע בכל קובץ הקמה שהופק אי פעם.
+   */
+  async function danglingParts(file) {
+    const zip = await JSZip.loadAsync(readFileSync(file));
+    const has = (p) => !!zip.file(p.replace(/^\//, ''));
+    const bad = [];
+    const rels = await zip.file('xl/_rels/workbook.xml.rels')?.async('string') ?? '';
+    for (const m of rels.matchAll(/Target="([^"]+)"/g)) {
+      const t = m[1];
+      if (/^https?:/.test(t)) continue;
+      if (!has('xl/' + t.replace(/^\.\//, ''))) bad.push('rels -> ' + t);
+    }
+    const ct = await zip.file('[Content_Types].xml')?.async('string') ?? '';
+    for (const m of ct.matchAll(/PartName="([^"]+)"/g)) {
+      if (!has(m[1])) bad.push('Content_Types -> ' + m[1]);
+    }
+    return bad;
+  }
+
+  const { readArenaInvoice: readInv } = await import('../src/sportmore/arena-invoice.js');
+  const invOpc = await readInv(ARENA_FIXTURE);
+  const planOpc = planBatch({ invoice: invOpc, card, codes, selfBarcodes: true });
+  mkdirSync(TMP, { recursive: true });
+  const setup = resolve(TMP, 'opc-setup.xlsx');
+  await buildSetupFile({
+    parents: planOpc.parents, children: planOpc.children, seasonYear: 'FW26', codes, out: setup,
+  });
+  const bad = await danglingParts(setup);
+  check('קובץ ההקמה בלי הפניות תלויות באוויר', bad.length === 0, bad.join(' · ') || 'נקי');
+
+  const zip = await JSZip.loadAsync(readFileSync(setup));
+  check('...ו-xl/theme/theme1.xml קיים בפועל', !!zip.file('xl/theme/theme1.xml'));
+
+  // ⚠️ התבנית עצמה נשמרה בלי theme ובלי להצהיר עליו — ולכן היא תקינה כמו שהיא.
+  const tbad = await danglingParts(FW26);
+  check('גם התבנית עצמה נקייה', tbad.length === 0, tbad.join(' · ') || 'נקי');
+}
+
 rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');
 process.exit(failures ? 1 : 0);
