@@ -169,19 +169,41 @@ export function intakeCells({ planRows, warehouse, codes }) {
   const highlightRows = all.map((p, i) => (pending.includes(p) ? i : -1)).filter((i) => i >= 0);
 
   const C = INTAKE_COLUMNS;
-  const k = codes.constants;
   const supplier = supplierFor(codes, warehouse);
+  /**
+   * ⚠️ **רק הצד הימני של הגיליון, ועוד התאריך** — הכרעת דרור, 17/09/2026.
+   *
+   * ממולאות: `מספר חשבונית` · `ספק` · `מקט` · `כמות` · `מחיר עלות` · `תאריך`.
+   * כל השאר **מנוקה במפורש**, כולל `מחסן` · `מספר סניף` · `גודל` · `צבע`.
+   *
+   * ⛔ והניקוי חייב להיות מפורש ולא השמטה: התבנית מגיעה עם `מחסן`, `מספר סניף`
+   * ו-`תאריך` **ממולאים מראש עד שורה 765**, ולכן עמודה שלא נכתבת נשארת עם
+   * הערך של התבנית. "לא למלא" כאן פירושו לכתוב ריק.
+   *
+   * ⚠️ **והמחסן לא הולך לאיבוד** — `supplier` נגזר ממנו (`3100310055` לאונייה,
+   * `3100310062` לדרור), כך שהיעד עדיין מקודד בשורה.
+   *
+   * זהו מצב **זמני עד שזיוה תאשר**: היא ביקשה טופס מלא ואנחנו מצמצמים אותו,
+   * ולכן מה שחוזר ממנה גובר על השורות האלה.
+   */
+  const BLANK = '';
   const cells = all.map(({ row }) => ({
     [C.invoiceNo]: invoiceNumberFor(row),
     [C.supplier]: supplier,
     [C.sku]: childSku(row),
     [C.qty]: row.qty,
     [C.cost]: row.price,
-    [C.warehouse]: warehouse,
-    [C.branch]: k.branch,
-    [C.size]: String(row.size).toUpperCase(),
-    [C.color]: k.color,
     [C.date]: ddmmyy(row.date),
+    // מנוקות במפורש — ראה למעלה.
+    [C.customerOrder]: BLANK,
+    [C.warehouse]: BLANK,
+    [C.branch]: BLANK,
+    [C.sku2]: BLANK,
+    [C.size]: BLANK,
+    [C.color]: BLANK,
+    [C.targetBranch]: BLANK,
+    [C.details]: BLANK,
+    [C.purchaseOrder]: BLANK,
   }));
 
   return { cells, highlightRows, pending, supplier, warehouse };
