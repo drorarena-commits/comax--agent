@@ -471,8 +471,12 @@ if (cmd === 'intake') {
     console.log('\n   לומר להם במפורש: את השורות האדומות צריך להקים ולאשר לפני הרצת הרכש.');
   }
 
+  // ⚠️ הספק תלוי במחסן — שני קודים, לא אחד (ראה supplierFor ב-build-intake.js).
+  // מודפס מאותה טבלה שהקובץ נכתב ממנה, כדי שהתצוגה המקדימה לא תוכל להראות
+  // ערך אחד בזמן שהקובץ נושא אחר.
+  const supplierShown = codes.constants.supplierByWarehouse?.[warehouse];
   console.log('\n  מחסן: ' + warehouse + '   ·   סניף: ' + codes.constants.branch
-    + '   ·   ספק: ' + codes.constants.supplier);
+    + '   ·   ספק: ' + (supplierShown ?? '⛔ אין קוד ספק למחסן הזה'));
   const sample = invoice.rows[0];
   console.log('  דוגמה: ' + showChild(sample, sample.ean));
 

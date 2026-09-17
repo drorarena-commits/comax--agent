@@ -2,7 +2,11 @@
   "$comment": "טבלאות הקוד של ספורט אנד מור, נשלפו מ-728 האבות בכרטיס הפריט. ערוך ידנית — הסוכן קורא מכאן.",
   "generatedFrom": "item-card-2026-08-25.xlsx",
   "constants": {
-    "supplier": "3100310055",
+    "supplierPreferred": "3100310055",
+    "supplierByWarehouse": {
+      "SHIP": "3100310055",
+      "DROR": "3100310062"
+    },
     "supplierName": "ARENA ITALIA SPA",
     "brand": "40029",
     "brandName": "ארנה",

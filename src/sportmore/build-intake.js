@@ -43,6 +43,38 @@ export const INTAKE_COLUMNS = {
 
 export const WAREHOUSES = ['SHIP', 'DROR'];
 
+/**
+ * הספק תלוי במחסן — שני מספרים, לא אחד.
+ *
+ * ⛔ נמדד 17/09/2026 בתבנית של זיוה עצמה (`template-intake-TY96.xls`,
+ * Last Saved By: Ziva dilmoni). שתי שורות הדוגמה שהיא השאירה בקובץ:
+ *
+ *     שורה 2   ספק 3100310055   מחסן SHIP
+ *     שורה 5   ספק 3100310062   מחסן DROR
+ *
+ * אלה **שני קודי הספק היחידים בקובץ**, כל אחד פעם אחת, ואומתו ברמת הבייטים:
+ * שתי רשומות NUMBER בעמודה 2, מול תא מחסן באותה שורה (SHIP הוא 762 שורות
+ * בעמודה 7, DROR שתיים — 4 ו-5).
+ *
+ * עד כאן הקוד כתב `3100310055` קבוע, כלומר **קובץ ל-DROR יצא עם הספק של
+ * האונייה**. זה נכתב בשקט: הקובץ תקין לגמרי, הסחורה נזקפת לחשבון הלא נכון.
+ *
+ * ⚠️ מחסן בלי קוד ספק הוא סירוב, לא נפילה לברירת מחדל — ברירת מחדל כאן היא
+ * בדיוק הבאג שהערך הקבוע יצר.
+ */
+function supplierFor(codes, warehouse) {
+  const table = codes.constants?.supplierByWarehouse ?? {};
+  const code = table[warehouse];
+  if (!code) {
+    throw new Error(
+      `אין קוד ספק למחסן ${warehouse}. הידועים: `
+      + (Object.entries(table).map(([w, c]) => `${w}=${c}`).join(' · ') || 'אין')
+      + '\nהקודים נלקחים מ-sportmore/reference/codes.json (supplierByWarehouse).'
+    );
+  }
+  return code;
+}
+
 /** `dd/mm/yy`, the format the template's column 14 is already set to. */
 function ddmmyy(d) {
   if (!(d instanceof Date)) return null;
@@ -101,9 +133,10 @@ export async function buildIntakeFile({ planRows, warehouse, out, codes }) {
 
   const C = INTAKE_COLUMNS;
   const k = codes.constants;
+  const supplier = supplierFor(codes, warehouse);
   const cells = all.map(({ row }) => ({
     [C.invoiceNo]: row.invoiceNo || '',
-    [C.supplier]: k.supplier,
+    [C.supplier]: supplier,
     [C.sku]: childSku(row),
     [C.qty]: row.qty,
     [C.cost]: row.price,

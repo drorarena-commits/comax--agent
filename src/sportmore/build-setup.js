@@ -74,7 +74,11 @@ export async function buildSetupFile({ parents, children, seasonYear, codes, out
       r.getCell(col).value = v;
     };
     set(P.family, classification.family.value);
-    set(P.supplier, Number(k.supplier));
+    // ⚠️ `supplierPreferred` ולא `supplierByWarehouse`: זה **ספק מועדף בכרטיס
+    // הפריט**, תכונה של הפריט עצמו. זוג הקודים SHIP/DROR הוא יעד המשלוח
+    // ושייך לקובץ הרכש בלבד. פריט אחד, ספק מועדף אחד — גם אם הוא יגיע פעם
+    // לאונייה ופעם לדרור. (3100310055, כפי שיצא במנת FW26.)
+    set(P.supplier, Number(k.supplierPreferred));
     set(P.supplierSku, `${row.style}${row.colorCode}`);
     set(P.sku, parentSku(row));
     set(P.desc, row.styleDesc || row.articleDesc);

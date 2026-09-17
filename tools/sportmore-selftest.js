@@ -32,6 +32,7 @@ import { loadCodes } from '../src/sportmore/classify.js';
 import { planBatch } from '../src/sportmore/plan.js';
 import { buildSetupFile, SETUP_PARENT_COLUMNS, SETUP_CHILD_COLUMNS } from '../src/sportmore/build-setup.js';
 import { childSku, parentSku, selfBarcode as selfBarcodeOf, sizeForSportMore, SIZE_ALIASES } from '../src/sportmore/arena-invoice.js';
+import { WAREHOUSES } from '../src/sportmore/build-intake.js';
 import { priceFromCost } from '../src/sportmore/pricing.js';
 import { verifyAgainstCard } from '../src/sportmore/build-intake.js';
 
@@ -821,6 +822,26 @@ console.log('\n14. מידה — שפת ארנה מול שפת ספורט אנד 
 
   const invented = runWith('ZZ9');
   check('מידה מומצאת נעצרת גם היא', invented.sizeProblems.length === 1);
+}
+
+console.log('\n15. ספק — שני קודים לפי מחסן, לא אחד');
+{
+  // נמדד בתבנית של זיוה עצמה: שורה 2 ספק 3100310055 מול מחסן SHIP,
+  // שורה 5 ספק 3100310062 מול מחסן DROR. אלה שני הקודים היחידים בקובץ.
+  const t = codes.constants.supplierByWarehouse ?? {};
+  check('קיימת טבלת ספק לפי מחסן', !!t.SHIP && !!t.DROR, JSON.stringify(t));
+  check('SHIP -> 3100310055', t.SHIP === '3100310055', String(t.SHIP));
+  check('DROR -> 3100310062', t.DROR === '3100310062', String(t.DROR));
+  check('שני המחסנים אינם חולקים קוד', t.SHIP !== t.DROR);
+  check('לכל מחסן מוכר יש קוד', WAREHOUSES.every((w) => !!t[w]), WAREHOUSES.join(','));
+
+  // ⛔ הקבוע הישן היה הבאג: קובץ ל-DROR יצא עם הספק של האונייה.
+  check('הקבוע הישן `supplier` הוסר', codes.constants.supplier === undefined,
+    'supplier=' + codes.constants.supplier);
+
+  // ספק מועדף בכרטיס הפריט הוא תכונה של הפריט — לא יעד המשלוח.
+  check('ספק מועדף נפרד וקיים', codes.constants.supplierPreferred === '3100310055',
+    String(codes.constants.supplierPreferred));
 }
 
 rmSync(TMP, { recursive: true, force: true });
