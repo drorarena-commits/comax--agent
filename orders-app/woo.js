@@ -82,6 +82,27 @@ export async function setOrderStatus(id, status) {
   return data;
 }
 
+/**
+ * הערות ההזמנה — אותה רשימה שבממשק הניהול של WooCommerce.
+ *
+ * ⚠️ `customer_note: false` נכפה כאן ולא מתקבל מבחוץ. הערה עם `true` נשלחת
+ * **במייל ללקוח** — בלתי הפיך, ולכן אין לה מסלול באפליקציה בכלל.
+ * `added_by_user` משייך את ההערה למשתמש של מפתח ה-API, כמו הערה שנכתבה ידנית,
+ * ולא ל"מערכת".
+ */
+export async function listOrderNotes(id) {
+  const { data } = await call(`orders/${id}/notes`);
+  return data || [];
+}
+
+export async function addPrivateNote(id, note) {
+  const { data } = await call(`orders/${id}/notes`, {
+    method: 'POST',
+    body: { note, customer_note: false, added_by_user: true },
+  });
+  return data;
+}
+
 /** בדיקת חיבור — מחזיר את מספר ההזמנות הכולל, או זורק שגיאה מוסברת. */
 export async function ping() {
   const { total } = await listOrders({ perPage: 1 });

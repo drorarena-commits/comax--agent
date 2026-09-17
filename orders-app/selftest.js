@@ -73,6 +73,23 @@ async function main() {
       res.end(JSON.stringify(body));
     };
 
+    const noteMatch = url.pathname.match(/\/orders\/(\d+)\/notes$/);
+    if (noteMatch) {
+      const order = orders.find((o) => o.id === Number(noteMatch[1]));
+      order.notes ||= [];
+      if (req.method === 'POST') {
+        let raw = '';
+        req.on('data', (c) => { raw += c; });
+        return req.on('end', () => {
+          const b = JSON.parse(raw);
+          const n = { id: order.notes.length + 1, note: b.note, customer_note: b.customer_note, author: 'dror', date_created_gmt: '2026-09-17T10:00:00' };
+          order.notes.unshift(n);
+          send(n);
+        });
+      }
+      return send(order.notes);
+    }
+
     const one = url.pathname.match(/\/orders\/(\d+)$/);
     if (one) {
       const order = orders.find((o) => o.id === Number(one[1]));
@@ -223,6 +240,22 @@ async function main() {
   check('האורח נדחה בשינוי סטטוס', guestWrite.status === 403, `${guestWrite.status}`);
   check('והסטטוס באמת לא השתנה', orders.find((o) => o.id === 102).status === before,
     orders.find((o) => o.id === 102).status);
+
+  // 9ב. הערות פרטיות — נכתבות באמת, לעולם לא ללקוח, ואורח אינו כותב
+  const post = (h, body) => ({ ...h, method: 'POST', headers: { ...h.headers, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const addNote = await fetch(`${base}/api/orders/101/notes`, post(withToken, { note: 'לארוז במתנה', customer_note: true }));
+  check('הוספת הערה התקבלה', addNote.ok, `${addNote.status}`);
+  const stored = orders.find((o) => o.id === 101).notes?.[0];
+  check('ההערה באמת נכתבה באתר', stored?.note === 'לארוז במתנה', stored?.note);
+  check('ההערה פרטית גם כשביקשו ללקוח', stored?.customer_note === false, String(stored?.customer_note));
+  const readNotes = await (await fetch(`${base}/api/orders/101/notes`, withToken)).json();
+  check('ההערות נקראות חזרה', readNotes.notes?.[0]?.text === 'לארוז במתנה');
+  const emptyNote = await fetch(`${base}/api/orders/101/notes`, post(withToken, { note: '  ' }));
+  check('הערה ריקה נדחית', emptyNote.status === 400, `${emptyNote.status}`);
+  const guestNote = await fetch(`${base}/api/orders/101/notes`, post(guest, { note: 'x' }));
+  check('האורח נדחה בהוספת הערה', guestNote.status === 403, `${guestNote.status}`);
+  check('והערת האורח לא נכתבה', orders.find((o) => o.id === 101).notes.length === 1);
+  check('האורח רואה הערות', (await fetch(`${base}/api/orders/101/notes`, guest)).ok);
 
   // 10. נרמול מספר הטלפון לוואטסאפ — מספר שגוי פונה לאדם זר בשם העסק
   const { toWhatsappNumber, defaultMessage } = await import('./public/whatsapp.js');

@@ -388,6 +388,9 @@ function renderOrder(order, comax) {
 
   if (order.customer_note) body.append(block('הערת לקוח', [el('div', null, order.customer_note)]));
 
+  // --- הערות הזמנה (כמו בממשק הניהול) ---
+  body.append(notesBlock(order));
+
   // --- שינוי סטטוס ---
   // מקופל בכוונה. דרור כמעט לא משנה סטטוס מהטלפון — האריזה והמדבקה נעשות
   // ממילא במחשב — ולכן ארבעה כפתורים פתוחים תפסו את תחתית המסך בלי תמורה.
@@ -410,6 +413,64 @@ function renderOrder(order, comax) {
     fold.append(el('div', 'item-sub', 'הרשאת צפייה בלבד — שינוי סטטוס שולח מייל אוטומטי ללקוח'));
   }
   body.append(fold);
+}
+
+/**
+ * הערות ההזמנה — נטענות בנפרד, כדי שפרטי ההזמנה לא יחכו להן.
+ * רק הערה **פרטית** נכתבת מכאן; הערה ללקוח נשלחת אליו במייל ואין לה כפתור.
+ */
+function notesBlock(order) {
+  const b = block('הערות', []);
+  const listEl = el('div', 'notes');
+  listEl.append(el('div', 'item-sub', 'טוען הערות…'));
+  b.append(listEl);
+
+  const refresh = async () => {
+    try {
+      const { notes } = await api(`/orders/${order.id}/notes`);
+      listEl.textContent = '';
+      if (!notes.length) listEl.append(el('div', 'item-sub', 'אין הערות'));
+      for (const n of notes) {
+        const row = el('div', `note${n.toCustomer ? ' to-customer' : ''}`);
+        // וורדפרס מחזיר HTML (קישורים, <br>). DOMParser לא מריץ סקריפטים ולא
+        // טוען תמונות, והתוצאה מוצגת כטקסט נקי בלבד.
+        const doc = new DOMParser().parseFromString(n.text.replace(/<br\s*\/?>/gi, '\n'), 'text/html');
+        row.append(el('div', 'note-text', doc.body.textContent));
+        row.append(el('div', 'note-meta',
+          `${when(n.date)} · ${n.author === 'system' ? 'מערכת' : n.author}${n.toCustomer ? ' · נשלחה ללקוח' : ''}`));
+        listEl.append(row);
+      }
+    } catch (err) {
+      listEl.textContent = '';
+      listEl.append(el('div', 'item-sub', err.message));
+    }
+  };
+
+  if (state.role === 'full') {
+    const box = el('textarea', 'wa-text');
+    box.rows = 2;
+    box.placeholder = 'הערה פרטית — לא נשלחת ללקוח';
+    const add = el('button', 'action note-add', 'הוספת הערה');
+    add.onclick = async () => {
+      const text = box.value.trim();
+      if (!text) return;
+      add.disabled = true;
+      try {
+        await api(`/orders/${order.id}/notes`, { method: 'POST', body: JSON.stringify({ note: text }) });
+        box.value = '';
+        toast('ההערה נוספה');
+        await refresh();
+      } catch (err) {
+        toast(err.message);
+      } finally {
+        add.disabled = false;
+      }
+    };
+    b.append(box, add);
+  }
+
+  refresh();
+  return b;
 }
 
 async function changeStatus(order, action, container) {

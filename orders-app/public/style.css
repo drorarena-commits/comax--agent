@@ -395,6 +395,12 @@ body {
 .block.warn h3 { color: var(--warn-ink); }
 .block.warn .item-sub { color: var(--warn-ink); opacity: .85; }
 
+.note { padding: .55rem .7rem; border-radius: 10px; background: var(--bg); margin-bottom: .4rem; }
+.note.to-customer { border-inline-start: 3px solid var(--accent); }
+.note-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.note-meta { color: var(--ink-soft); font-size: .78rem; margin-top: .2rem; }
+.note-add { width: 100%; margin-top: .45rem; }
+
 .tel { color: var(--accent); text-decoration: none; font-weight: 600; }
 
 .actions { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-top: .3rem; }

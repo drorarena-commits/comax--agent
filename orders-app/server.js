@@ -14,7 +14,7 @@ import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { timingSafeEqual } from 'node:crypto';
 import { config, APP_ROOT } from './config.js';
-import { listOrders, getOrder, setOrderStatus, ping } from './woo.js';
+import { listOrders, getOrder, setOrderStatus, listOrderNotes, addPrivateNote, ping } from './woo.js';
 import { checkOrderItems } from './comax-check.js';
 import { currencySymbol } from './format.js';
 import { pollOnce } from './watch.js';
@@ -147,6 +147,32 @@ async function handleApi(req, res, url, role) {
     if (!allowed.includes(status)) return json(res, 400, { error: `סטטוס לא מוכר: ${status}` });
     const order = await setOrderStatus(setStatus[1], status);
     return json(res, 200, { ok: true, status: order.status });
+  }
+
+  const notes = path.match(/^\/orders\/(\d+)\/notes$/);
+  if (notes && req.method === 'GET') {
+    const list = await listOrderNotes(notes[1]);
+    return json(res, 200, {
+      notes: list.map((n) => ({
+        id: n.id,
+        date: n.date_created_gmt,
+        author: n.author,
+        text: n.note,
+        toCustomer: !!n.customer_note,
+      })),
+    });
+  }
+
+  if (notes && req.method === 'POST') {
+    // כתיבה לאתר החי — בהרשאה מלאה בלבד, כמו הסטטוס. הערה פרטית אינה שולחת
+    // מייל, אבל אורח אינו אמור לכתוב לרשומת ההזמנה.
+    if (role !== 'full') return json(res, 403, { error: 'הרשאת צפייה בלבד — אין הוספת הערות' });
+    const { note } = await readBody(req);
+    const text = String(note || '').trim();
+    if (!text) return json(res, 400, { error: 'הערה ריקה' });
+    if (text.length > 2000) return json(res, 400, { error: 'הערה ארוכה מדי' });
+    const created = await addPrivateNote(notes[1], text);
+    return json(res, 200, { ok: true, id: created.id });
   }
 
   if (path === '/poll' && req.method === 'POST') {
