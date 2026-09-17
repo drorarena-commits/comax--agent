@@ -421,13 +421,20 @@ function renderOrder(order, comax) {
  */
 function notesBlock(order) {
   const b = block('הערות', []);
+
+  // ההיסטוריה מקופלת ונגללת בתוך עצמה: בהזמנה עם UPS, מיילים ושינויי סטטוס
+  // יש בקלות 10+ רשומות, ורשימה פתוחה דחפה את תיבת הכתיבה לתחתית המסך
+  // ונראתה כהמשך של בלוק התשלום ולא כהיסטוריה. דרור, 17/09/2026.
+  const fold = el('details', 'fold notes-fold');
+  const head = el('summary', 'fold-head', 'היסטוריית עדכונים');
   const listEl = el('div', 'notes');
   listEl.append(el('div', 'item-sub', 'טוען הערות…'));
-  b.append(listEl);
+  fold.append(head, listEl);
 
   const refresh = async () => {
     try {
       const { notes } = await api(`/orders/${order.id}/notes`);
+      head.textContent = `היסטוריית עדכונים (${notes.length})`;
       listEl.textContent = '';
       if (!notes.length) listEl.append(el('div', 'item-sub', 'אין הערות'));
       for (const n of notes) {
@@ -441,6 +448,8 @@ function notesBlock(order) {
         listEl.append(row);
       }
     } catch (err) {
+      head.textContent = 'היסטוריית עדכונים — שגיאה בטעינה';
+      fold.open = true;   // שגיאה מקופלת נראית בדיוק כמו "אין היסטוריה"
       listEl.textContent = '';
       listEl.append(el('div', 'item-sub', err.message));
     }
@@ -460,6 +469,7 @@ function notesBlock(order) {
         box.value = '';
         toast('ההערה נוספה');
         await refresh();
+        fold.open = true;   // לראות מיד שההערה נחתה בראש ההיסטוריה
       } catch (err) {
         toast(err.message);
       } finally {
@@ -469,6 +479,7 @@ function notesBlock(order) {
     b.append(box, add);
   }
 
+  b.append(fold);
   refresh();
   return b;
 }

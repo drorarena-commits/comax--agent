@@ -400,6 +400,8 @@ body {
 .note-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 .note-meta { color: var(--ink-soft); font-size: .78rem; margin-top: .2rem; }
 .note-add { width: 100%; margin-top: .45rem; }
+.notes-fold { margin-top: .6rem; }
+.notes-fold .notes { max-height: 50vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-top: .3rem; }
 
 .tel { color: var(--accent); text-decoration: none; font-weight: 600; }
 
