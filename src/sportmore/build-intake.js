@@ -110,11 +110,21 @@ export function verifyAgainstCard(planRows) {
   return { ready, pending, blocked };
 }
 
-export async function buildIntakeFile({ planRows, warehouse, out, codes }) {
+/**
+ * השורות שייכתבו לקובץ — **בלי לכתוב אותו**, ובלי לדרוש אקסל.
+ *
+ * הופרד מ-`buildIntakeFile` ב-17/09/2026 כדי שאפשר יהיה להראות לדרור את התוכן
+ * המדויק לפני השליחה לזיוה. ⚠️ **וזו הנקודה כולה: אותה פונקציה בדיוק מזינה את
+ * התצוגה ואת הקובץ.** תצוגה מקדימה שמחשבת את השורות בעצמה יכולה להראות דבר
+ * אחד בזמן שהקובץ נושא אחר — בדיוק הכשל ששורת הסיכום של הספק נפלה בו.
+ *
+ * ובנוסף: `.xls` ישן נכתב רק דרך COM של אקסל, כלומר רק על ווינדוס. ההפרדה
+ * מאפשרת לבדוק את התוכן, ולהריץ עליו רגרסיה, בכל סביבה.
+ */
+export function intakeCells({ planRows, warehouse, codes }) {
   if (!WAREHOUSES.includes(warehouse)) {
     throw new Error(`מחסן לא מוכר: ${warehouse} — צריך ${WAREHOUSES.join(' או ')}`);
   }
-  assertExcelAvailable();
 
   const { ready, pending, blocked } = verifyAgainstCard(planRows);
   if (blocked.length) {
@@ -147,6 +157,13 @@ export async function buildIntakeFile({ planRows, warehouse, out, codes }) {
     [C.date]: ddmmyy(row.date),
   }));
 
+  return { cells, highlightRows, pending, supplier, warehouse };
+}
+
+export async function buildIntakeFile({ planRows, warehouse, out, codes }) {
+  assertExcelAvailable();
+
+  const { cells, highlightRows, pending } = intakeCells({ planRows, warehouse, codes });
   const file = resolve(ROOT, out);
   writeXlsFromTemplate({
     template: TEMPLATE,
