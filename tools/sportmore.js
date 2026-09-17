@@ -285,11 +285,27 @@ if (cmd === 'plan') {
   }
 
 
+  // שער המידה — מידה שאינה קיימת בסרגל שנבחר. מודפס לפני שער ה--confirm כדי
+  // שייראה גם בתצוגה מקדימה, ועוצר את הכתיבה בדיוק כמו סיווג שלא הוכרע.
+  if (plan.sizeProblems?.length) {
+    console.log('\n⛔ ' + plan.sizeProblems.length + ' שורות עם מידה שאינה קיימת בסרגל שנבחר:');
+    for (const s of plan.sizeProblems) {
+      console.log('   שורה ' + s.row + ' · ' + s.parent + ' · סרגל ' + s.scale
+        + ' — מידה "' + s.size + '"'
+        + (s.sizeArena && s.sizeArena !== s.size ? ' (בחשבונית: "' + s.sizeArena + '")' : ''));
+      console.log('      המידות שקיימות בסרגל ' + s.scale + ': ' + s.known.join(' · '));
+    }
+    console.log('\n   מידה שאינה בסרגל נקלטת אצלם שבורה, בלי הודעה. שתי הדרכים:');
+    console.log('   • אם זה שם אחר לאותה מידה — להוסיף אותו ל-SIZE_ALIASES ב-src/sportmore/arena-invoice.js');
+    console.log('   • אם הסרגל שנבחר שגוי — לתקן אותו ב-npm run sm -- answer');
+  }
+
   if (!args.confirm) {
     console.log('\nלא נכתב שום קובץ. להוסיף --confirm כדי לכתוב את הדוח ואת קובץ ההקמה.\n');
     process.exit(0);
   }
   if (plan.needsDecision.length) die('לא נכתב קובץ הקמה — יש אבות בלי סיווג מלא (ראה למעלה).');
+  if (plan.sizeProblems?.length) die('לא נכתב קובץ הקמה — יש מידות שאינן קיימות בסרגל שנבחר (ראה למעלה).');
 
   mkdirSync(OUT_DIR, { recursive: true });
   const report = await buildReport({

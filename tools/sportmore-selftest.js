@@ -31,7 +31,7 @@ import { loadItemCard } from '../src/sportmore/item-card.js';
 import { loadCodes } from '../src/sportmore/classify.js';
 import { planBatch } from '../src/sportmore/plan.js';
 import { buildSetupFile, SETUP_PARENT_COLUMNS, SETUP_CHILD_COLUMNS } from '../src/sportmore/build-setup.js';
-import { childSku, parentSku, selfBarcode as selfBarcodeOf } from '../src/sportmore/arena-invoice.js';
+import { childSku, parentSku, selfBarcode as selfBarcodeOf, sizeForSportMore, SIZE_ALIASES } from '../src/sportmore/arena-invoice.js';
 import { priceFromCost } from '../src/sportmore/pricing.js';
 import { verifyAgainstCard } from '../src/sportmore/build-intake.js';
 
@@ -776,6 +776,53 @@ console.log('\n13. חשבונית — עמודה שלמה מול פיצול המ
   try { await readArenaInvoice(file2); } catch (e) { refused = e.message; }
   check('קובץ בלי Style code + Color code מסורב', /Style code/.test(refused), refused.split('\n')[0]);
 }
+console.log('\n14. מידה — שפת ארנה מול שפת ספורט אנד מור, ושער הסרגל');
+{
+  // ארנה כותבת TU, ספורט אנד מור כותבים OS. נמדד 17/09/2026: TU אינו קיים
+  // באף אחד מ-2,645 הבנים בכרטיס, ו-OS קיים ב-46 — כולם תחת סרגל 74.
+  check('TU מומר ל-OS', sizeForSportMore('TU') === 'OS', 'TU -> ' + sizeForSportMore('TU'));
+  check('...וגם באותיות קטנות', sizeForSportMore('tu') === 'OS');
+  check('מידה מוכרת עוברת כמו שהיא', sizeForSportMore('L') === 'L' && sizeForSportMore('2XL') === '2XL');
+  check('מידה שלא נמדדה אינה מנוחשת', sizeForSportMore('ZZ9') === 'ZZ9', 'ZZ9 -> ' + sizeForSportMore('ZZ9'));
+  check('טבלת ההמרה מחזיקה רק את הזוג שנמדד', Object.keys(SIZE_ALIASES).length === 1,
+    JSON.stringify(SIZE_ALIASES));
+
+  // TU אינו קיים בכרטיס — זו העובדה שכל הקבוצה הזאת עומדת עליה.
+  let tu = 0, os = 0;
+  for (const [, k] of card.byBarcode) {
+    if (k.isParent) continue;
+    const z = String(k.size ?? '').trim().toUpperCase();
+    if (z === 'TU') tu++; else if (z === 'OS') os++;
+  }
+  check('TU אינו מופיע באף בן בכרטיס', tu === 0, 'TU=' + tu + ' OS=' + os);
+
+  // השער: מידה שאינה בסרגל שנבחר עוצרת את הכתיבה.
+  const row = (size) => ({
+    row: 2, ean: '3468337311263', hasBarcode: true, articleNumber: '007449_888_' + size,
+    style: '007449', colorCode: '888', size, sizeArena: size,
+    styleDesc: 'MOULDED ISR FED', colorDesc: '888-BLUE LOGO',
+    qty: 1, price: 3.76, backbone: [], verified: true,
+  });
+  const runWith = (size) => planBatch({
+    invoice: { rows: [row(size)], mismatches: [], unverified: 0 },
+    card, codes,
+  });
+
+  const ok = runWith('OS');
+  check('מידה שקיימת בסרגל עוברת', ok.sizeProblems.length === 0, ok.sizeProblems.length + ' בעיות');
+
+  const badTu = runWith('TU');
+  check('TU שלא הומר נעצר בשער', badTu.sizeProblems.length === 1, badTu.sizeProblems.length + ' בעיות');
+  check('...והשער אומר אילו מידות כן קיימות בסרגל',
+    badTu.sizeProblems[0]?.known?.includes('OS') && !badTu.sizeProblems[0].known.includes('TU'),
+    (badTu.sizeProblems[0]?.known ?? []).join(','));
+  check('...ונוקב בסרגל שנבחר', String(badTu.sizeProblems[0]?.scale) === '74',
+    'סרגל ' + badTu.sizeProblems[0]?.scale);
+
+  const invented = runWith('ZZ9');
+  check('מידה מומצאת נעצרת גם היא', invented.sizeProblems.length === 1);
+}
+
 rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');
 process.exit(failures ? 1 : 0);

@@ -175,7 +175,10 @@ export async function readArenaInvoice(path) {
       articleDesc: get('articleDesc'),
       style,
       colorCode,
-      size,
+      // האימות מול פיצול המק"ט למעלה רץ על הערך הגולמי; מכאן והלאה כל מי
+      // שכותב לספורט אנד מור מקבל את הטוקן שלהם, כדי שאף אתר כתיבה לא יפספס.
+      size: sizeForSportMore(size),
+      sizeArena: size,
       styleDesc: get('styleDesc'),
       colorDesc: get('colorDesc'),
       qty: Number(get('qty')) || 0,
@@ -193,6 +196,29 @@ export async function readArenaInvoice(path) {
   });
 
   return { file, rows, problems, mismatches, unverified, headers: map };
+}
+
+/**
+ * מידה בשפת ארנה מול מידה בשפת ספורט אנד מור.
+ *
+ * ארנה כותבת `TU` (Taille Unique) למידה אחידה; ספורט אנד מור כותבים `OS`.
+ * נמדד 17/09/2026 על כרטיס 16/09: **`TU` אינו קיים באף אחד מ-2,645 הבנים**,
+ * ואילו `OS` מופיע ב-46 — כולם תחת סרגל 74, וביניהם ארבעת הכובעים המותאמים
+ * הקודמים (EMEK · RISHON · MODIIN · HERZLIYA), שהם אותו סוג מוצר ממש.
+ *
+ * ⛔ בלי ההמרה הזאת המידה `TU` נכתבת כמו שהיא לגיליון הבנים ולמק"ט הבן
+ * (`AR00744988800TU` במקום `...00OS`), והיא **אינה קיימת בסרגל שבחרנו**.
+ * זה הכישלון השקט שהמסמך מלא בו: הקובץ נראה תקין, נשלח, ונופל אצלם שורה-שורה.
+ *
+ * ⚠️ טבלה של זוג אחד, ובכוונה. לא ממציאים מיפוי לטוקן שלא נמדד — מידה שאינה
+ * מוכרת בסרגל היעד נעצרת ב-`sizeGate` ב-plan.js ונשאלת, לא מנוחשת.
+ */
+export const SIZE_ALIASES = { TU: 'OS' };
+
+/** המידה כפי שספורט אנד מור כותבים אותה. לא ידוע — עובר כמו שהוא, והשער יתפוס. */
+export function sizeForSportMore(size) {
+  const s = String(size ?? '').trim().toUpperCase();
+  return SIZE_ALIASES[s] ?? String(size ?? '').trim();
 }
 
 /** `AR` + style + color. The parent code, exactly as Sport & More write it. */

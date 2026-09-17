@@ -27,6 +27,64 @@ import { parentSku, selfBarcode } from './arena-invoice.js';
 import { classify, learnFromInvoice, unresolved } from './classify.js';
 import { priceFromCost } from './pricing.js';
 
+/**
+ * המידות שנצפו בכרטיס תחת סרגל נתון — מהבנים בפועל, לא מטבלת סרגלים
+ * (הכרטיס אינו מחזיק אחת).
+ */
+function sizesInScale(card, scale) {
+  const out = new Set();
+  const want = String(scale ?? '').trim();
+  if (!want) return out;
+  for (const [psku, p] of card.parents) {
+    if (String(p.sizeScale ?? '').trim() !== want) continue;
+    for (const k of card.childrenOfParent.get(psku) ?? []) {
+      const s = String(k.size ?? '').trim();
+      if (s) out.add(s.toUpperCase());
+    }
+  }
+  return out;
+}
+
+/**
+ * שער המידה — האם המידה שאנחנו עומדים לכתוב קיימת בסרגל שנבחר.
+ *
+ * ⛔ הכישלון שהשער הזה נועד למנוע נמדד על מנת ISRAEL FEDERATION CAPS
+ * (17/09/2026): ארנה כתבה `TU`, הסיווג בחר סרגל 74 — והמידה `TU` **אינה קיימת
+ * באף בן בכרטיס**. הקובץ נראה תקין לחלוטין: מק"ט אב נכון, ברקוד נכון, מחיר
+ * נכון, ומידה שלא תיקלט. `TU → OS` נוסף כהמרה מדודה ב-arena-invoice.js, אבל
+ * המרה מטפלת רק בטוקן שכבר נמדד — **השער הוא מה שיתפוס את הבא.**
+ *
+ * שער ולא ניחוש: אין "המידה הכי דומה". מידה שאינה בסרגל נעצרת ונשאלת,
+ * בדיוק כמו שדה סיווג שלא הוכרע (כלל 9).
+ *
+ * ⚠️ סרגל בלי אף בן בכרטיס אינו ראיה לכלום — אין מול מה להשוות, ולכן אין
+ * אזהרה. אזהרה שנדלקת על היעדר מידע מלמדת להתעלם ממנה.
+ */
+function sizeGate(card, parents, rows) {
+  const out = [];
+  const scaleOf = new Map(parents.map((p) => [p.sku, p.classification?.sizeScale?.value]));
+  for (const r of rows) {
+    if (r.status !== 'newBoth' && r.status !== 'newChild') continue;
+    const scale = scaleOf.has(r.parent)
+      ? scaleOf.get(r.parent)
+      : card.parents.get(r.parent)?.sizeScale;
+    if (scale === null || scale === undefined || String(scale).trim() === '') continue;
+    const known = sizesInScale(card, scale);
+    if (!known.size) continue;
+    const size = String(r.row.size ?? '').trim().toUpperCase();
+    if (!size || known.has(size)) continue;
+    out.push({
+      row: r.row.row,
+      parent: r.parent,
+      scale: String(scale).trim(),
+      size: String(r.row.size ?? '').trim(),
+      sizeArena: r.row.sizeArena ?? null,
+      known: [...known].sort(),
+    });
+  }
+  return out;
+}
+
 export function planBatch({ invoice, card, codes, rounding = 'x99', selfBarcodes = false, profile = null }) {
   const learned = learnFromInvoice(card, invoice.rows);
   const rows = [];
@@ -95,11 +153,14 @@ export function planBatch({ invoice, card, codes, rounding = 'x99', selfBarcodes
   const children = rows.filter((r) => r.status === 'newChild' || r.status === 'newBoth');
   const blocked = rows.filter((r) => r.status === 'blocked');
 
+  const sizeProblems = sizeGate(card, parents, rows);
+
   return {
     rows,
     parents,
     children,
     blocked,
+    sizeProblems,
     counts: {
       total: rows.length,
       exists: rows.filter((r) => r.status === 'exists').length,
