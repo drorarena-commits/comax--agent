@@ -844,6 +844,48 @@ console.log('\n15. ספק — שני קודים לפי מחסן, לא אחד');
     String(codes.constants.supplierPreferred));
 }
 
+console.log('\n16. מספר חשבונית — DocumentNo, לא Bill. Doc.');
+{
+  const { intakeCells } = await import('../src/sportmore/build-intake.js');
+  const { readArenaInvoice } = await import('../src/sportmore/arena-invoice.js');
+
+  const inv = await readArenaInvoice(ARENA_FIXTURE);
+  const r0 = inv.rows[0];
+  check('שלושת המספרים נקראים כשדות נפרדים',
+    'documentNo' in r0 && 'billDoc' in r0 && 'salesDoc' in r0,
+    `doc=${r0.documentNo || '(ריק)'} bill=${r0.billDoc} sales=${r0.salesDoc}`);
+
+  // ⚠️ הייצוא של 28/05 משאיר DocumentNo ריק ב-114/114 השורות, והמספר בסגנון
+  // 1200… יושב ב-Sales Doc. אותו דוח, הרצות שונות.
+  check('בייצוא של 28/05 DocumentNo ריק בכל השורות',
+    inv.rows.every((r) => !String(r.documentNo ?? '').trim()),
+    inv.rows.filter((r) => String(r.documentNo ?? '').trim()).length + ' שורות עם ערך');
+
+  const plan = planBatch({ invoice: inv, card, codes, selfBarcodes: true });
+  const usable = plan.rows.filter((x) => x.status !== 'blocked');
+
+  // ⛔ ולכן הוא מסרב — ולא נופל חזרה ל-Bill. Doc.
+  let refused = '';
+  try { intakeCells({ planRows: usable, warehouse: 'DROR', codes }); }
+  catch (e) { refused = e.message; }
+  check('DocumentNo ריק — סירוב ולא נפילה ל-Bill. Doc.', /DocumentNo/.test(refused),
+    refused.split('\n')[0] || '⛔ לא סירב');
+  check('...והסירוב נוקב בשלושת המועמדים',
+    /Bill\. Doc\./.test(refused) && /Sales Doc\./.test(refused));
+
+  // והמקרה החיובי: שורה עם DocumentNo
+  const withDoc = usable.slice(0, 3).map((x) => ({
+    ...x, row: { ...x.row, documentNo: '1200003911', billDoc: '91439982', salesDoc: '1201022577' },
+  }));
+  if (withDoc.length) {
+    const { cells } = intakeCells({ planRows: withDoc, warehouse: 'DROR', codes });
+    check('עמודה 1 נושאת את DocumentNo', cells.every((c) => String(c[1]) === '1200003911'),
+      String(cells[0]?.[1]));
+    check('...ולא את Bill. Doc.', cells.every((c) => String(c[1]) !== '91439982'));
+    check('...ולא את Sales Doc.', cells.every((c) => String(c[1]) !== '1201022577'));
+  }
+}
+
 rmSync(TMP, { recursive: true, force: true });
 console.log('\n' + (failures ? failures + ' בדיקות נכשלו' : 'הכל עבר') + '\n');
 process.exit(failures ? 1 : 0);

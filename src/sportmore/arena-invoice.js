@@ -47,7 +47,11 @@ const HEADERS = {
   'zp00 - unit price list': 'listPrice',
   season: 'season',
   collection: 'collection',
-  'bill. doc.': 'invoiceNo',
+  'bill. doc.': 'billDoc',
+  // ⚠️ שני מספרים על אותה חשבונית, והמספר שספורט אנד מור עובדים לפיו הוא זה.
+  // ראה `documentNo` בשורת הפריט למטה.
+  documentno: 'documentNo',
+  'sales doc.': 'salesDoc',
   'billing date': 'date',
   'billing type': 'billingType',
   'backbone level 1': 'bb1',
@@ -185,7 +189,26 @@ export async function readArenaInvoice(path) {
       price: Number(get('price')) || 0,
       listPrice: Number(get('listPrice')) || 0,
       season: get('season'),
-      invoiceNo: get('invoiceNo'),
+      /**
+       * ⚠️ **`DocumentNo`, לא `Bill. Doc.`** — שני מספרים על אותה חשבונית,
+       * והבחנה שעלתה מדרור ב-17/09/2026:
+       *
+       *   `Bill. Doc.`  = `91439982`    — המספר הפנימי של SAP אצל ארנה
+       *   `DocumentNo`  = `1200003911`  — **המספר שספורט אנד מור עובדים לפיו**
+       *
+       * זיוה מפרטת חשבוניות במיילים שלה לפי `1200…` (`1200001715`,
+       * `1200003019`), וגם ה-PDF שארנה שולחת נקרא `1200003911_2026.pdf`.
+       * עד כאן הקוד לקח את `Bill. Doc.`, כלומר קובץ הרכש נשא מספר חשבונית
+       * שאצלה אינו מזוהה — והוא נראה תקין לגמרי.
+       *
+       * ⛔ **ולהזמנת רכש זה יהיה מספר שלישי.** כשמקימים הזמנה, עדיין אין
+       * חשבונית מאיטליה, ולכן `DocumentNo` אינו קיים; המספר שם הוא של ההזמנה
+       * (`Sales Doc.` — `1201022577` במנה הזאת). הפורמט ההוא עוד לא נבנה, וזו
+       * ההערה שתחסוך את הגילוי מחדש. (דרור, 17/09/2026.)
+       */
+      documentNo: get('documentNo'),
+      billDoc: get('billDoc'),
+      salesDoc: get('salesDoc'),
       date: excelDate(map.date ? row.getCell(map.date).value : null),
       billingType: get('billingType'),
       backbone: [get('bb1'), get('bb2'), get('bb3'), get('bb4'), get('bb5')].filter(Boolean),

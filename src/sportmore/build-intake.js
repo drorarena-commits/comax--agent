@@ -111,6 +111,33 @@ export function verifyAgainstCard(planRows) {
 }
 
 /**
+ * מספר החשבונית שנכנס לעמודה 1 — `DocumentNo`, ולא `Bill. Doc.`.
+ *
+ * דרור אישר ב-17/09/2026: זה המספר שלפיו מקימים **חשבונית רכש**. `Bill. Doc.`
+ * (`91439982`) הוא מספר פנימי של SAP אצל ארנה ואינו מזוהה אצל ספורט אנד מור.
+ *
+ * ⛔ **חסר → סירוב, לא נפילה ל-`Bill. Doc.`.** נפילה חזרה הייתה משחזרת בדיוק
+ * את הבאג: קובץ תקין למראה, עם מספר חשבונית שזיוה לא מוצאת.
+ */
+function invoiceNumberFor(row) {
+  const n = String(row.documentNo ?? '').trim();
+  if (n) return n;
+  // ⚠️ ולא כל ייצוא של ארנה ממלא את העמודה הזאת. נמדד על הייצוא של 28/05:
+  // `DocumentNo` ריק ב-114/114 השורות, והמספר בסגנון `1200…` יושב דווקא
+  // ב-`Sales Doc.` (`1200807413`). אותו דוח, הרצות שונות — בדיוק כמו סדר
+  // העמודות. לכן הסירוב **נוקב בשלושת המועמדים**, כדי שהתשובה תהיה מיידית
+  // ולא תדרוש לפתוח את הקובץ.
+  throw new Error(
+    `שורה ${row.row}: חסר DocumentNo — זה מספר החשבונית שקובץ הרכש נבנה לפיו.\n`
+    + 'המספרים שכן יש בשורה:\n'
+    + `  DocumentNo  = ${row.documentNo || '(ריק)'}   ← זה מה שצריך\n`
+    + `  Bill. Doc.  = ${row.billDoc || '(ריק)'}   ← מספר פנימי של ארנה, לא מזוהה אצל ספורט אנד מור\n`
+    + `  Sales Doc.  = ${row.salesDoc || '(ריק)'}   ← בייצוא של 28/05 המספר הנכון ישב דווקא כאן\n`
+    + 'לשאול את דרור איזה מהם, ולא לנחש — המספר מזהה חשבונית אמיתית אצל זיוה.'
+  );
+}
+
+/**
  * השורות שייכתבו לקובץ — **בלי לכתוב אותו**, ובלי לדרוש אקסל.
  *
  * הופרד מ-`buildIntakeFile` ב-17/09/2026 כדי שאפשר יהיה להראות לדרור את התוכן
@@ -145,7 +172,7 @@ export function intakeCells({ planRows, warehouse, codes }) {
   const k = codes.constants;
   const supplier = supplierFor(codes, warehouse);
   const cells = all.map(({ row }) => ({
-    [C.invoiceNo]: row.invoiceNo || '',
+    [C.invoiceNo]: invoiceNumberFor(row),
     [C.supplier]: supplier,
     [C.sku]: childSku(row),
     [C.qty]: row.qty,
