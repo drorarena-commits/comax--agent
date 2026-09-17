@@ -8,5 +8,17 @@
       "family": "00610",
       "sizeScale": "74"
     }
+  },
+  "007449": {
+    "family": "00610",
+    "sizeScale": "74",
+    "division": "14",
+    "gender": "30"
+  },
+  "013586": {
+    "family": "00610",
+    "sizeScale": "74",
+    "division": "14",
+    "gender": "30"
   }
 }

@@ -1,0 +1,36 @@
+{
+  "latest": {
+    "date": "2026-09-17",
+    "file": "הקמה ארנה FW26 2026-09-17 - מוצרי אב ובנים.xlsx",
+    "season": "FW26",
+    "cardAtTheTime": "item-card-2026-09-16.xlsx",
+    "parents": [
+      {
+        "sku": "AR007449888",
+        "altSku": null,
+        "desc": "MOULDED ISR FED"
+      },
+      {
+        "sku": "AR007449800",
+        "altSku": null,
+        "desc": "MOULDED ISR FED"
+      },
+      {
+        "sku": "AR007449100",
+        "altSku": null,
+        "desc": "MOULDED ISR FED"
+      },
+      {
+        "sku": "AR013586500",
+        "altSku": null,
+        "desc": "MOULDED HOD HASHARON"
+      }
+    ],
+    "barcodes": [
+      "3468337311263",
+      "3468337311256",
+      "3468337311249",
+      "3468339348212"
+    ]
+  }
+}
