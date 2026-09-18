@@ -133,9 +133,17 @@ const shot = resolve(runs, `gmail-send-${stamp}.png`);
 const RE_SEND = '^(שליחה|Send)';
 // יותר מנמען אחד → "השב לכולם". תגובה רגילה שולחת רק לשולח האחרון ומאבדת את
 // כל ה-cc של השרשור — מלכודת שכבר תפסה אותנו פעם ב-`reply` של ה-MCP.
-const RE_REPLY = ([...opts.to, ...opts.cc].length > 1)
-  ? '^(השב לכולם|Reply all|Reply to all)'
-  : '^(השב|תשובה|Reply)';
+// ⛔ נמדד 17/09/2026 (שרשור ISRAEL FEDERATION CAPS): בממשק העברי הכפתורים
+// הגלויים בשרשור הם רק "תשובה" ו"העברה" — "השב לכולם" לא נמצא, וכל תגובה עם
+// יותר מנמען אחד נכשלה ב"לא מצאתי את כפתור השב". ובנוסף: במצב תגובה הכלי
+// **אינו מוסיף נמענים** — `--to`/`--cc` נבדקים מול מה שג'ימייל מילא בעצמו
+// מהשרשור, ולכן נמען שלא היה בשרשור יעצור את השליחה גם אחרי תיקון הכפתור.
+// מצילומי דרור, 17/09/2026: "תשובה לכולם" אינו כפתור גלוי אלא פריט בתפריט
+// שלוש הנקודות שליד כל הודעה (role=menuitem), לצד "תשובה" ו"העברה".
+const WANT_ALL = [...opts.to, ...opts.cc].length > 1;
+const RE_REPLY = WANT_ALL
+  ? '^(תשובה לכולם|השב לכולם|Reply all|Reply to all)'
+  : '^(תשובה|השב|Reply)$';
 
 
 // ---------- איתור מיכל הכתיבה ----------
@@ -216,16 +224,24 @@ try {
   }
 
   if (opts.reply) {
-    const clicked = await page.evaluate((src) => {
+    const clickByLabel = (src, roles) => page.evaluate(({ src, roles }) => {
       const re = new RegExp(src, 'i');
-      const btn = [...document.querySelectorAll('[role="button"]')].find((e) => {
-        const l = e.getAttribute('data-tooltip') || e.getAttribute('aria-label') || '';
+      const btn = [...document.querySelectorAll(roles)].filter((e) => e.offsetParent).reverse().find((e) => {
+        const l = e.getAttribute('data-tooltip') || e.getAttribute('aria-label') || e.innerText || '';
         return re.test(l.trim());
       });
       if (!btn) return false;
       btn.click();
       return true;
-    }, RE_REPLY);
+    }, { src, roles });
+    let clicked = await clickByLabel(RE_REPLY, '[role="button"]');
+    if (!clicked && WANT_ALL) {
+      // תפריט שלוש הנקודות של ההודעה האחרונה, ומשם "תשובה לכולם".
+      if (await clickByLabel('^(עוד|More|אפשרויות נוספות)$', '[role="button"]')) {
+        await page.waitForTimeout(1000);
+        clicked = await clickByLabel(RE_REPLY, '[role="menuitem"]');
+      }
+    }
     if (!clicked) {
       console.error('לא מצאתי את כפתור "השב" בשרשור. ייתכן ש-messageId שגוי או שההודעה בחשבון השני (--account 1).');
       process.exit(1);
