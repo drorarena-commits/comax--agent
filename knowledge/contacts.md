@@ -37,6 +37,7 @@
 | איש קשר | תפקיד/חברה | מתי פונים אליו |
 |---|---|---|
 | מיטל — `meital_n@sportm.co.il` (עותק: מאיר `meir_h@sportm.co.il`, שי `shayn@logistikal.co.il`) | ספורט-מ | זיכויים על שורות הובלה בחשבוניות |
+| זיווה מדמוני — `ziva_d@sportm.co.il` (שמורה באנשי הקשר בג'ימייל, 17/09/2026) | ספורט-מ — מנהלת יבוא | קובץ קליטת חשבוניות רכש (TY96) |
 | נלי — `Nelly@logistikal.co.il` | לוגיסטיקל | חשבוניות מס מלוגיסטיקל |
 | `dror@finbot-docs.co.il` | הנהלת חשבונות (finbot) | לשם מעבירים חשבוניות הוצאה |
 | Eva Vitali — `E.Vitali@arenasport.com`, Angelica Pennesi — `a.pennesi@arenasport.com` (עותק תמיד: `gal@arenaisrael.co.il`, `revital_m@sportm.co.il`, מאיר) | ארנה איטליה | הזמנות עונתיות |
