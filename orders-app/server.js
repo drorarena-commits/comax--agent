@@ -11,13 +11,34 @@
  */
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { appendFileSync, mkdirSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { timingSafeEqual } from 'node:crypto';
-import { config, APP_ROOT } from './config.js';
+import { config, APP_ROOT, ROOT } from './config.js';
 import { listOrders, getOrder, setOrderStatus, listOrderNotes, addPrivateNote, ping } from './woo.js';
 import { checkOrderItems } from './comax-check.js';
 import { currencySymbol } from './format.js';
 import { pollOnce } from './watch.js';
+
+/**
+ * יומן גישה — השורה הראשונה של כל אבחון "לא נפתח לי בטלפון".
+ *
+ * בלעדיו אי אפשר להבדיל בין בקשה שלא הגיעה בכלל (תקלת מנהרה) לבין בקשה
+ * שהגיעה ונדחתה (תקלת טוקן) — ושתי התקלות נראות בטלפון בדיוק אותו דבר:
+ * מסך ריק. הטוקן עצמו לעולם לא נכתב ליומן, רק האם התאים.
+ */
+const ACCESS_LOG = join(ROOT, 'runs', 'orders-access.log');
+function logAccess(req, url, note) {
+  try {
+    mkdirSync(join(ROOT, 'runs'), { recursive: true });
+    const ua = (req.headers['user-agent'] || '-').slice(0, 120);
+    const via = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '-';
+    appendFileSync(ACCESS_LOG,
+      [new Date().toISOString(), req.method, url.pathname, note, via, ua].join(String.fromCharCode(9)) + String.fromCharCode(10),
+      'utf8');
+  } catch { /* יומן שנכשל לא מפיל בקשה */ }
+}
+
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -190,7 +211,9 @@ export function startServer() {
     // כניסה עם ?k= — מניחה עוגייה ומנקה את הטוקן מהכתובת, כדי שלא יישאר
     // בהיסטוריית הדפדפן ובלוגים של המנהרה.
     const viaQuery = url.searchParams.get('k');
+    if (viaQuery && !tokenOk(viaQuery)) logAccess(req, url, 'k-שגוי');
     if (viaQuery && tokenOk(viaQuery)) {
+      logAccess(req, url, 'k-תקין → 302 + עוגייה');
       url.searchParams.delete('k');
       res.writeHead(302, {
         'Set-Cookie': `orders_token=${encodeURIComponent(viaQuery)}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax`,
@@ -201,6 +224,7 @@ export function startServer() {
 
     const given = cookieToken(req) || (req.headers.authorization || '').replace(/^Bearer /, '');
     const role = roleOf(given);
+    logAccess(req, url, role ? `מחובר:${role}` : (given ? 'עוגייה/כותרת שגויה' : 'בלי עוגייה → 401'));
     if (!role) {
       if (url.pathname.startsWith('/api/')) return json(res, 401, { error: 'נדרשת כניסה' });
       res.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8' });
